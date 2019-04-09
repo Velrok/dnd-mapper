@@ -4,8 +4,14 @@
   "src/main"
   "src/test"]
 
+ :dev-http {8080 "target/"}
+
  :dependencies
- []
+ [[reagent "0.8.1"]]
 
  :builds
- {}}
+ {:app {:target :browser
+        :output-dir "public/js"
+        :asset-path "/js"
+        :modules  {:main {:init-fn app.main/main!}}
+        :devtools {:after-load app.main/reload!}}}}
