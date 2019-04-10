@@ -38,7 +38,7 @@ else
 fi
 
 # copy over or recompile the new site
-cp -a "../${siteSource}/public/." .
+cp -a "${siteSource}/public/." .
 
 # stage any changes and new files
 git add -A
