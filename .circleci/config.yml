@@ -48,4 +48,4 @@ jobs:
       # build
       - run: shadow-cljs release app
       # release on GH
-      - run: bash scripts/deploy-ghpages.sh
+      - run: bash scripts/deploy-ghpages.sh ~/repo
