@@ -14,10 +14,6 @@ jobs:
       # specify the version you desire here
       - image: theasp/clojurescript-nodejs:shadow-cljs
 
-      - add_ssh_keys:
-          fingerprints:
-            - "99:8d:31:8f:11:b4:81:c2:83:2f:d9:9f:6d:5c:c8:34"
-
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -31,6 +27,10 @@ jobs:
       JVM_OPTS: -Xmx3200m
 
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "99:8d:31:8f:11:b4:81:c2:83:2f:d9:9f:6d:5c:c8:34"
+
       - checkout
 
       # Download and cache dependencies
