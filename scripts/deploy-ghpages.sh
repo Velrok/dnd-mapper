@@ -2,7 +2,7 @@
 # source: https://github.com/eldarlabs/ghpages-deploy-script/blob/master/scripts/deploy-ghpages.sh
 
 # abort the script if there is a non-zero error
-set -e
+set -ex
 
 # show where we are on the machine
 pwd
