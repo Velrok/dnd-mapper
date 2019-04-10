@@ -2,12 +2,14 @@
 #
 # Check https://circleci.com/docs/2.0/language-clojure/ for more details
 #
+general:
+  branches:
+    only:
+      - master
+
 version: 2
 jobs:
   build:
-    filters:
-            branches:
-              only: master
     docker:
       # specify the version you desire here
       - image: theasp/clojurescript-nodejs:shadow-cljs
@@ -43,5 +45,7 @@ jobs:
             - ~/repo/node_modules
           key: v1-dependencies-{{ checksum "shadow-cljs.edn" }}-{{ checksum "package-lock.json" }}
 
-      # run tests!
+      # build
       - run: shadow-cljs release app
+      # release on GH
+      - run: bash scripts/deploy-ghpages.sh
