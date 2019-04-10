@@ -1,0 +1,16 @@
+.map-cell {
+  width: 40px;
+  height: 40px;
+  display: block;
+  padding: 0px;
+  margin: 0px;
+  border: solid grey 1px;
+  flex: unset;
+}
+
+.map-cell__active {
+  background-color: black;
+}
+
+.map-preview {
+}
