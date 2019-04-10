@@ -7,7 +7,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: urbanslug/shadow-cljs
+      - image: theasp/clojurescript-nodejs:shadow-cljs
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -31,7 +31,6 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
-      - run: npm install -g shadow-cljs
       - run: npm install
       - run: shadow-cljs check
 
