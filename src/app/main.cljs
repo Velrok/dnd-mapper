@@ -15,8 +15,7 @@
   []
   [:div
    [:h1 "home view"]
-   [:button {:on-click #(do (prn ::new-session)
-                            (reset! active-view-id ::session-new))}
+   [:button {:on-click #(reset! active-view-id ::session-new)}
     "new session"]
    [:button "join session"]])
 
@@ -24,47 +23,57 @@
 
 (defn <map-definition-input>
   [map-width map-height]
-  [:div
-   [:label {:for "#map-width"} "width"]
-   [:input#map-width
-    {:type :number
-     :value @map-width
-     :on-change #(reset! map-width (some-> % .-target .-value int))
-     }]
+  (fn []
+    [:div
+     [:label {:for "#map-width"} "width"]
+     [:input#map-width
+      {:type :number
+       :value @map-width
+       :min 1
+       :on-change #(do
+                     (prn (some-> % .-target .-value int))
+                     (reset! map-width (some-> % .-target .-value int)))
+       }]
 
-   [:label {:for "#map-height"} "height"]
-   [:input#map-height
-    {:type :number
-     :value @map-height
-     :on-change #(reset! map-height (some-> % .-target .-value int))
-     }]])
+     [:label {:for "#map-height"} "height"]
+     [:input#map-height
+      {:type :number
+       :min 1
+       :value @map-height
+       :on-change #(reset! map-height (some-> % .-target .-value int))
+       }]]))
 
 (defn <map-preview>
   [w h active-position]
-  [:table.map-preview
-   [:tbody
-    (doall
-      (for [y (range h)]
-        [:tr {:key (str "m-prev-y" y)}
-         (doall
-           (for [x (range w)]
-             [:td.map-cell {:key (str "map-prev-yx-" y x)
-                            :on-click #(reset! active-position [x y])
-                            :class (if (= [x y] @active-position)
-                                     "map-cell__active"
-                                     "")}
-              (str "(" x "," y ")")]))]))]])
+  (fn []
+    [:div
+     [:img.map-preview__map {:src "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"
+            :alt "Created by DLIMedia: https://www.deviantart.com/dlimedia/art/Abandoned-Temple-of-Blackfire-285053467"}]
+     [:table.map-preview
+      [:tbody.map-preview__tbody
+       (doall
+         (for [y (range @h)]
+           [:tr {:key (str "m-prev-y" y)}
+            (doall
+              (for [x (range @w)]
+                [:td.map-cell {:key (str "map-prev-yx-" y x)
+                               :on-click #(reset! active-position [x y])
+                               :class (if (= [x y] @active-position)
+                                        "map-cell__active"
+                                        "")}
+                 (str "(" x "," y ")")]))]))]]]))
+
+(defonce map-width  (r/atom 5))
+(defonce map-height (r/atom 5))
 
 (defn <session-new>
   []
-  (let [map-width  (r/atom 5)
-        map-height (r/atom 5)
-        active-position (r/atom nil)]
+  (let [active-position (r/atom nil)]
       [:div
        [:h2 "Sesson New "]
        [<map-definition-input> map-width map-height]
 
-       [<map-preview> @map-width @map-height
+       [<map-preview> map-width map-height
         active-position]]))
 
 (defn <session-join>
