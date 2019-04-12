@@ -7,17 +7,30 @@
 (defonce map-width  (r/atom 35))
 (defonce map-height (r/atom 50))
 
-(def players
-  ["https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
-   "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
-   "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"])
+(defonce players
+  [(r/atom {:id (str (gensym "player"))
+            :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
+            :position ::offsite})
+   (r/atom {:id (str (gensym "player"))
+            :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
+            :position ::offsite})
+   (r/atom {:id (str (gensym "player"))
+            :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
+            :position ::offsite})])
 
 (defn <char-avatar>
-  [id image-url]
-  [:div.char-avatar
-   {:id id
-    :style {:background-image (str "url(" image-url ")")}
-    :draggable true}])
+  [player]
+  (let [{:keys [id img-url]} @player]
+    [:div.char-avatar
+     {:id id
+      :key (str "player-id-" id)
+      :style {:background-image (str "url(" img-url ")")}
+      :draggable true
+      :on-drag-start (fn [e]
+                       (prn [::drag-start e])
+                       (-> e
+                           .-dataTransfer
+                           (.setData "player-id" id)))}]))
 
 (defn <nav>
   []
@@ -69,11 +82,12 @@
 (defn <map-preview>
   [w h active-position]
   (fn []
-    [:div 
+    [:div
      [:div {:style {:height "100px"}}
-      (map-indexed (fn [i p]
-                     [<char-avatar> (str "player-" i) p])
-                   players) ]
+      (doall
+        (for [p players
+              :when (= ::offsite (:position @p))]
+          [<char-avatar> p ]))]
      [:div.map-preview-wrapper
       [:img.map-preview-img {:src "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"
                              :alt "Created by DLIMedia: https://www.deviantart.com/dlimedia/art/Abandoned-Temple-of-Blackfire-285053467"}]
@@ -87,10 +101,21 @@
                  [:td.map-preview-cell
                   {:key (str "map-prev-yx-" y x)
                    :on-click #(reset! active-position [x y])
+                   :on-drag-over #(.preventDefault %)
+                   :on-drop (fn [e]
+                              (prn [::drop e])
+                              (.preventDefault e)
+                              (when-let [id (some-> e .-dataTransfer (.getData "player-id"))]
+                                (prn [::id id])
+                                (when-let [p (some->> players
+                                                    (filter (fn [p] (= id (:id @p))))
+                                                    first)]
+                                  (prn [::p p {:x x :y y}])
+                                  (swap! p assoc-in [:position] {:x x :y y}))))
                    :class [(when @highlight-overlay
                              "map-cell__highlight")]}
-                  ;(str "(" x "," y ")")
-                  ]))]))]]]]))
+                  (when-let [p (some->> players (filter (fn [p] (= {:x x :y y} (:position @p)))) first)]
+                    [<char-avatar> p])]))]))]]]]))
 
 
 (defn <session-new>
