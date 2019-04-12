@@ -59,10 +59,10 @@
   [w h active-position]
   (fn []
     [:div.map-preview-wrapper
-     [:img.map-preview__map {:src "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"
+     [:img.map-preview-img {:src "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"
             :alt "Created by DLIMedia: https://www.deviantart.com/dlimedia/art/Abandoned-Temple-of-Blackfire-285053467"}]
-     [:table.map-preview
-      [:tbody.map-preview__tbody
+     [:table.map-preview-table
+      [:tbody.map-preview-tbody
        (doall
          (for [y (range @h)]
            [:tr.map-preview-row {:key (str "m-prev-y" y)}

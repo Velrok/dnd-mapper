@@ -10,40 +10,49 @@
   position: relative;
 }
 
-.map-preview__map {
+.map-preview-img {
   width: 100%;
   height: auto;
+  max-height: 800px;
+  display: inline-block;
 }
 
-.map-preview {
-  height: 100%;
-  width: 100%;
+.map-preview-tbody {
   padding: 0px;
   margin: 0px;
   position: absolute;
   left: 0px;
   top: 0px;
-}
-
-.map-preview__tbody {
   display: flex;
+  flex: 1;
+  flex-flow: column;
   justify-content: center;
-  flex-wrap: wrap;
+  height: 100%;
+  width: 100%;
+  /* flex-wrap: wrap;
+  align-items: stretch;
+   */
 }
 
 .map-preview-row{
   display: flex;
   flex: 1;
+  /* 
+  background-color: #00004499;
   align-items: stretch;
+  */
 }
 
 .map-preview-cell {
+  border: solid #55555555 1px;
+  background-color: transparent;
   padding: 0px;
   margin: 0px;
   display: flex;
   flex: 1;
-  background-color: transparent;
-  border: solid #5555556b 1px;
+  /*
+  height: 100px;
+  */
 }
 
 .map-cell__active {
