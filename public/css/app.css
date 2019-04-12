@@ -54,12 +54,12 @@ fieldset label {
   left: 0px;
   top: 0px;
   display: flex;
-  flex: 1;
   flex-flow: column;
-  justify-content: center;
+  /* flex-wrap: wrap;
   height: 100%;
   width: 100%;
-  /* flex-wrap: wrap;
+  flex: 1;
+  justify-content: center;
   align-items: stretch;
    */
 }

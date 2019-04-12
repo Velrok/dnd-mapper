@@ -3,9 +3,13 @@
 
 (defonce active-view-id (r/atom ::home))
 
-(defonce highlight-overlay (r/atom false))
+(defonce highlight-overlay (r/atom true))
 (defonce map-width  (r/atom 35))
 (defonce map-height (r/atom 50))
+
+(defonce dnd-map
+  (r/atom {:img-url "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"
+           :alt "Created by DLIMedia: https://www.deviantart.com/dlimedia/art/Abandoned-Temple-of-Blackfire-285053467"}))
 
 (defonce players
   [(r/atom {:id (str (gensym "player"))
@@ -53,30 +57,39 @@
   [map-width map-height]
   (fn []
     [:div
-     [:label {:for "#map-width"} "width"]
-     [:input#map-width
-      {:type :number
-       :value @map-width
-       :min 1
-       :on-change #(do
-                     (prn (some-> % .-target .-value int))
-                     (reset! map-width (some-> % .-target .-value int)))
-       }]
+     [:fieldset
+      [:label {:for "#map-url"} "url"]
+      [:input#map-url
+       {:type :url
+        :value (:img-url @dnd-map)
+        :on-change #(swap! dnd-map assoc :img-url (some-> % .-target .-value))
+        }]]
 
-     [:label {:for "#map-height"} "height"]
-     [:input#map-height
-      {:type :number
-       :min 1
-       :value @map-height
-       :on-change #(reset! map-height (some-> % .-target .-value int))
-       }]
+     [:fieldset
+      [:label {:for "#map-width"} "width"]
+      [:input#map-width
+       {:type :number
+        :value @map-width
+        :min 1
+        :on-change #(reset! map-width (some-> % .-target .-value int))
+        }]]
 
-     [:label {:for "#map-height"} "highlight overlay"]
-     [:input#highlight-overlay
-      {:type :checkbox
-       :checked @highlight-overlay
-       :on-change #(reset! highlight-overlay (some-> % .-target .-checked))
-       }]
+     [:fieldset
+      [:label {:for "#map-height"} "height"]
+      [:input#map-height
+       {:type :number
+        :min 1
+        :value @map-height
+        :on-change #(reset! map-height (some-> % .-target .-value int))
+        }]]
+
+     [:fieldset
+      [:label {:for "#map-height"} "highlight overlay"]
+      [:input#highlight-overlay
+       {:type :checkbox
+        :checked @highlight-overlay
+        :on-change #(reset! highlight-overlay (some-> % .-target .-checked))
+        }]]
      ]))
 
 (defn <map-preview>
@@ -89,10 +102,11 @@
               :when (= ::offsite (:position @p))]
           [<char-avatar> p ]))]
      [:div.map-preview-wrapper
-      [:img.map-preview-img {:src "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"
-                             :alt "Created by DLIMedia: https://www.deviantart.com/dlimedia/art/Abandoned-Temple-of-Blackfire-285053467"}]
+      [:img.map-preview-img {:src (:img-url @dnd-map)
+                             :alt (:alt @dnd-map)}]
       [:table.map-preview-table
        [:tbody.map-preview-tbody
+        {:style {:top "0px" :left "0px" :right "0px" :bottom "0px"}}
         (doall
           (for [y (range @h)]
             [:tr.map-preview-row {:key (str "m-prev-y" y)}
