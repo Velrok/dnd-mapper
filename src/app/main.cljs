@@ -6,6 +6,11 @@
 (defonce highlight-overlay (r/atom true))
 (defonce map-width  (r/atom 35))
 (defonce map-height (r/atom 50))
+(defonce dm?        (r/atom false))
+
+(defonce fog-of-war-mode (r/atom ::reveil)) ; ::obsure
+
+(defonce reveiled-cells (r/atom {}))
 
 (defonce dnd-map
   (r/atom {:img-url "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"
@@ -90,10 +95,18 @@
         :checked @highlight-overlay
         :on-change #(reset! highlight-overlay (some-> % .-target .-checked))
         }]]
+
+     [:fieldset
+      [:label {:for "#is-dm"} "DM mode?"]
+      [:input#is-dm
+       {:type :checkbox
+        :checked @dm?
+        :on-change #(reset! dm? (some-> % .-target .-checked))
+        }]]
      ]))
 
 (defn <map-preview>
-  [w h active-position]
+  [w h]
   (fn []
     [:div
      [:div {:style {:height "100px"}}
@@ -102,6 +115,11 @@
               :when (= ::offsite (:position @p))]
           [<char-avatar> p ]))]
      [:div.map-preview-wrapper
+      {:class [(when @dm?
+                 "dm-mode")]
+       :style {:cursor (case @fog-of-war-mode
+                        ::reveil "copy"
+                        ::obsure "no-drop")}}
       [:img.map-preview-img {:src (:img-url @dnd-map)
                              :alt (:alt @dnd-map)}]
       [:table.map-preview-table
@@ -112,35 +130,44 @@
             [:tr.map-preview-row {:key (str "m-prev-y" y)}
              (doall
                (for [x (range @w)]
+                 (let [pos {:x x :y y}]
                  [:td.map-preview-cell
                   {:key (str "map-prev-yx-" y x)
-                   :on-click #(reset! active-position [x y])
+                   :on-mouse-over (fn [e]
+                                    (when (= 1 (.-buttons e))
+                                      (case @fog-of-war-mode
+                                        ::reveil (swap! reveiled-cells assoc pos)
+                                        ::obsure (swap! reveiled-cells dissoc pos))))
+                   :on-click (fn [e]
+                               (prn [::pos pos :contains? (contains? @reveiled-cells pos)])
+                               (if (contains? @reveiled-cells pos)
+                                (swap! reveiled-cells dissoc pos)
+                                (swap! reveiled-cells assoc pos nil)))
                    :on-drag-over #(.preventDefault %)
                    :on-drop (fn [e]
-                              (prn [::drop e])
                               (.preventDefault e)
                               (when-let [id (some-> e .-dataTransfer (.getData "player-id"))]
                                 (prn [::id id])
                                 (when-let [p (some->> players
                                                     (filter (fn [p] (= id (:id @p))))
                                                     first)]
-                                  (prn [::p p {:x x :y y}])
-                                  (swap! p assoc-in [:position] {:x x :y y}))))
+                                  (swap! p assoc-in [:position] pos))))
                    :class [(when @highlight-overlay
-                             "map-cell__highlight")]}
-                  (when-let [p (some->> players (filter (fn [p] (= {:x x :y y} (:position @p)))) first)]
-                    [<char-avatar> p])]))]))]]]]))
+                             "map-cell__highlight")
+                           (when-not (contains? @reveiled-cells
+                                                pos)
+                             "fog-of-war")]}
+                  (when-let [p (some->> players (filter (fn [p] (= pos (:position @p)))) first)]
+                    [<char-avatar> p])])))]))]]]]))
 
 
 (defn <session-new>
   []
-  (let [active-position (r/atom nil)]
-      [:div
-       [:h2 "Sesson New "]
-       [<map-definition-input> map-width map-height]
+  [:div
+   [:h2 "Sesson New "]
+   [<map-definition-input> map-width map-height]
 
-       [<map-preview> map-width map-height
-        active-position]]))
+   [<map-preview> map-width map-height]])
 
 (defn <session-join>
   []

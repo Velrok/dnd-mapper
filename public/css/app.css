@@ -114,3 +114,11 @@ fieldset label {
   border: solid yellow 1px;
 }
 
+.fog-of-war {
+  background-color: grey;
+}
+
+.dm-mode .fog-of-war {
+  background-color: #ffa50096;
+}
+
