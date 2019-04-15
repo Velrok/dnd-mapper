@@ -8,7 +8,7 @@
 (defonce map-height (r/atom 50))
 (defonce dm?        (r/atom false))
 
-(defonce fog-of-war-mode (r/atom ::reveil)) ; ::obsure
+(defonce fog-of-war-mode (r/atom ::reveil)) ; ::obscure
 
 (defonce reveiled-cells (r/atom {}))
 
@@ -103,6 +103,27 @@
         :checked @dm?
         :on-change #(reset! dm? (some-> % .-target .-checked))
         }]]
+
+     (when @dm?
+       [:fieldset
+        [:label {:for "#fog-of-war-mode"} "Fog of war: "]
+
+        [:label {:for "#fog-of-war-mode-reveil"
+                 :style {:margin-right "0.5em"}} "reveil"]
+        [:input#fog-of-war-mode-reveil
+         {:type :radio
+          :name "fog-of-war-mode"
+          :checked (= ::reveil @fog-of-war-mode)
+          :on-change #(reset! fog-of-war-mode ::reveil)}]
+
+        [:label {:for "#fog-of-war-mode-obscure"
+                 :style {:margin-right "0.5em"
+                         :margin-left "1em"}} "obscure"]
+        [:input#fog-of-war-mode-obscure
+         {:type :radio
+          :name "obscure"
+          :checked (= ::obscure @fog-of-war-mode)
+          :on-change #(reset! fog-of-war-mode ::obscure) }]])
      ]))
 
 (defn <map-preview>
@@ -119,7 +140,7 @@
                  "dm-mode")]
        :style {:cursor (case @fog-of-war-mode
                         ::reveil "copy"
-                        ::obsure "no-drop")}}
+                        ::obscure "no-drop")}}
       [:img.map-preview-img {:src (:img-url @dnd-map)
                              :alt (:alt @dnd-map)}]
       [:table.map-preview-table
@@ -136,8 +157,8 @@
                    :on-mouse-over (fn [e]
                                     (when (= 1 (.-buttons e))
                                       (case @fog-of-war-mode
-                                        ::reveil (swap! reveiled-cells assoc pos)
-                                        ::obsure (swap! reveiled-cells dissoc pos))))
+                                        ::reveil  (swap! reveiled-cells assoc pos)
+                                        ::obscure (swap! reveiled-cells dissoc pos))))
                    :on-click (fn [e]
                                (prn [::pos pos :contains? (contains? @reveiled-cells pos)])
                                (if (contains? @reveiled-cells pos)
