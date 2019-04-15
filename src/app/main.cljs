@@ -36,7 +36,6 @@
       :style {:background-image (str "url(" img-url ")")}
       :draggable true
       :on-drag-start (fn [e]
-                       (prn [::drag-start e])
                        (-> e
                            .-dataTransfer
                            (.setData "player-id" id)))}]))
@@ -160,7 +159,6 @@
                                         ::reveil  (swap! reveiled-cells assoc pos)
                                         ::obscure (swap! reveiled-cells dissoc pos))))
                    :on-click (fn [e]
-                               (prn [::pos pos :contains? (contains? @reveiled-cells pos)])
                                (if (contains? @reveiled-cells pos)
                                 (swap! reveiled-cells dissoc pos)
                                 (swap! reveiled-cells assoc pos nil)))
@@ -168,7 +166,6 @@
                    :on-drop (fn [e]
                               (.preventDefault e)
                               (when-let [id (some-> e .-dataTransfer (.getData "player-id"))]
-                                (prn [::id id])
                                 (when-let [p (some->> players
                                                     (filter (fn [p] (= id (:id @p))))
                                                     first)]
@@ -210,10 +207,8 @@
 
 (defn ^:dev/after-load render
   []
-  (prn ::render)
   (r/render [app] (js/document.getElementById "app")))
 
 (defn ^:export  main
   []
-  (prn ::main)
   (render))
