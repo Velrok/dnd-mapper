@@ -17,28 +17,42 @@
            :alt "Created by DLIMedia: https://www.deviantart.com/dlimedia/art/Abandoned-Temple-of-Blackfire-285053467"}))
 
 (defonce players
-  [(r/atom {:id (str (gensym "player"))
-            :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
-            :position ::offsite})
-   (r/atom {:id (str (gensym "player"))
-            :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
-            :position ::offsite})
-   (r/atom {:id (str (gensym "player"))
-            :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
-            :position ::offsite})])
+  (r/atom
+    [(r/atom {:id (str (gensym "player"))
+              :name "Negwen"
+              :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
+              :player-visible true
+              :on-map false
+              :position nil})
+     (r/atom {:id (str (gensym "player"))
+              :name "Ikara"
+              :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
+              :player-visible true
+              :on-map false
+              :position nil})
+     (r/atom {:id (str (gensym "player"))
+              :name "Udrik"
+              :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
+              :player-visible true
+              :on-map false
+              :position nil})]))
 
 (defn <char-avatar>
-  [player]
-  (let [{:keys [id img-url]} @player]
-    [:div.char-avatar
-     {:id id
-      :key (str "player-id-" id)
-      :style {:background-image (str "url(" img-url ")")}
-      :draggable true
-      :on-drag-start (fn [e]
-                       (-> e
-                           .-dataTransfer
-                           (.setData "player-id" id)))}]))
+  ([player]
+   (<char-avatar> {} player))
+  ([attr player]
+   (let [{:keys [id img-url]} @player]
+     [:div.char-avatar
+      (merge
+        {:id id
+         :key (str "player-id-" id)
+         :style {:background-image (str "url(" img-url ")")}
+         :draggable true
+         :on-drag-start (fn [e]
+                          (-> e
+                              .-dataTransfer
+                              (.setData "player-id" id)))}
+        attr)])))
 
 (defn <nav>
   []
@@ -58,9 +72,10 @@
 
 
 (defn <map-definition-input>
-  [map-width map-height]
+  [attr]
   (fn []
-    [:div
+    [:div#map-definition-input
+     attr
      [:fieldset
       [:label {:for "#map-url"} "url"]
       [:input#map-url
@@ -125,15 +140,54 @@
           :on-change #(reset! fog-of-war-mode ::obscure) }]])
      ]))
 
+(defn <characters-list>
+  [attr]
+  [:ul (merge {:style {:height "100px"}}
+              attr)
+   (doall
+     (for [p @players]
+       [:li.flex-cols {:key (str "char-list-" (:id @p))}
+        [<char-avatar> p]
+        [:div.flex-rows
+         [:p (:name @p)]
+         [:input {:type "text"
+                  :value (:img-url @p)}]
+         [:div.flex-cols
+          [:label "Player visible"]
+          [:input {:type :checkbox
+                   :on-change #(swap! p assoc :player-visible (some-> % .-target .-checked))
+                   :checked (:player-visible @p)}]]]]))
+   [:li {:key "char-list-placeholder"}
+    (let [n (r/atom nil)
+          img (r/atom nil)]
+      [:div.flex-cols
+       [:div.char-avatar
+        {:style {:background-image (str "url(https://svgsilh.com/svg_v2/1270001.svg)")}
+         :on-click #(do
+                      (prn "add enemy")
+                      (swap! players
+                             conj
+                             (r/atom
+                               {:id             (str (gensym "enemy"))
+                                :name           @n
+                                :img-url        @img
+                                :player-visible false
+                                :on-map         false
+                                :position       nil})))}]
+       [:div.flex-rows
+        [:p "Add"]
+        [:input {:type "text"
+                 :placeholder (str "Enemy" (count @players))
+                 :on-change #(reset! n (-> % .-target .-value))}]
+        [:input {:type "text"
+                 :placeholder (str "http://")
+                 :on-change #(reset! img (-> % .-target .-value))}]]])]])
+
 (defn <map-preview>
-  [w h]
+  [attr]
   (fn []
-    [:div
-     [:div {:style {:height "100px"}}
-      (doall
-        (for [p players
-              :when (= ::offsite (:position @p))]
-          [<char-avatar> p ]))]
+    [:div#map-preview
+     attr
      [:div.map-preview-wrapper
       {:class [(when @dm?
                  "dm-mode")]
@@ -146,10 +200,10 @@
        [:tbody.map-preview-tbody
         {:style {:top "0px" :left "0px" :right "0px" :bottom "0px"}}
         (doall
-          (for [y (range @h)]
+          (for [y (range @map-height)]
             [:tr.map-preview-row {:key (str "m-prev-y" y)}
              (doall
-               (for [x (range @w)]
+               (for [x (range @map-width)]
                  (let [pos {:x x :y y}]
                  [:td.map-preview-cell
                   {:key (str "map-prev-yx-" y x)
@@ -166,26 +220,35 @@
                    :on-drop (fn [e]
                               (.preventDefault e)
                               (when-let [id (some-> e .-dataTransfer (.getData "player-id"))]
-                                (when-let [p (some->> players
-                                                    (filter (fn [p] (= id (:id @p))))
-                                                    first)]
+                                (when-let [p (some->> @players
+                                                      (filter (fn [p] (= id (:id @p))))
+                                                      first)]
                                   (swap! p assoc-in [:position] pos))))
                    :class [(when @highlight-overlay
                              "map-cell__highlight")
                            (when-not (contains? @reveiled-cells
                                                 pos)
                              "fog-of-war")]}
-                  (when-let [p (some->> players (filter (fn [p] (= pos (:position @p)))) first)]
-                    [<char-avatar> p])])))]))]]]]))
+                  (when-let [p (some->> @players
+                                        (filter
+                                          (fn [p] (= pos (:position @p))))
+                                        first)]
+                    [<char-avatar> {:class (when-not (:player-visible @p)
+                                             (if @dm?
+                                               "player-invisible-dm-mode"
+                                               "player-invisible"))}
+                     p])])))]))]]]]))
 
 
 (defn <session-new>
   []
-  [:div
+  [:div#session-new.flex-rows
    [:h2 "Sesson New "]
-   [<map-definition-input> map-width map-height]
-
-   [<map-preview> map-width map-height]])
+   [:div.flex-cols
+    [<map-preview> {:style {:width "100%"}}]
+    [:div.flex-rows
+     [<map-definition-input>]
+     [<characters-list>]]]])
 
 (defn <session-join>
   []

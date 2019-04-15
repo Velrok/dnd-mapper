@@ -95,8 +95,8 @@ fieldset label {
 
 
 .char-avatar {
-  width: 80px;
-  height: 80px;
+  width: 50px;
+  height: 50px;
   display: inline-block;
   background-repeat: no-repeat;
   background-position: center center;
@@ -120,5 +120,27 @@ fieldset label {
 
 .dm-mode .fog-of-war {
   background-color: #ffa50096;
+}
+
+#session-new {
+  display: flex;
+}
+
+.flex-rows {
+  display: flex;
+  flex-flow: column;
+}
+
+.flex-cols {
+  display: flex;
+  flex-flow: row;
+}
+
+.player-invisible {
+  display: none;
+}
+
+.player-invisible-dm-mode {
+  opacity:0.5;
 }
 
