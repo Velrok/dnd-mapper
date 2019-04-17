@@ -144,3 +144,10 @@ fieldset label {
   opacity:0.5;
 }
 
+#map-definition-input {
+  margin-bottom: 10px;
+}
+
+.character-list-entry {
+  margin-bottom: 0.7em;
+}

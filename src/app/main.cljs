@@ -118,11 +118,12 @@
           attr)
    (doall
      (for [p @state/players]
-       [:li.flex-cols {:key (str "char-list-" (:id @p))
-                       :class [(when-not (:player-visible @p)
-                                 (if @state/dm?
-                                   "player-invisible-dm-mode"
-                                   "player-invisible"))]}
+       [:li.flex-cols.character-list-entry
+        {:key (str "char-list-" (:id @p))
+         :class [(when-not (:player-visible @p)
+                   (if @state/dm?
+                     "player-invisible-dm-mode"
+                     "player-invisible"))]}
         [<char-avatar> p]
         [:div.flex-rows
          [:p (:name @p)]
