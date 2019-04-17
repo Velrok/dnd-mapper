@@ -128,25 +128,26 @@
          [:p (:name @p)]
          [:input {:type "text"
                   :value (:img-url @p)}]
-         [:div.flex-cols
-          [:label "Player visible"]
-          [:input {:type :checkbox
-                   :on-change #(swap! p assoc :player-visible (some-> % .-target .-checked))
-                   :checked (:player-visible @p)}]]
-         [:div.flex-cols
-          [:label "Dead?"]
-          [:input {:type :checkbox
-                   :on-change #(swap! p assoc :dead (some-> % .-target .-checked))
-                   :checked (:dead @p)}]]]]))
-   [:li {:key "char-list-placeholder"}
-    (let [n (r/atom nil)
-          img (r/atom nil)]
-      [:div.flex-cols
-       [:div.char-avatar
-        {:style {:background-image (str "url(https://svgsilh.com/svg_v2/1270001.svg)")}
-         :on-click #(do
-                      (prn "add enemy")
-                      (swap! state/players
+         (when @state/dm?
+           [:div.flex-cols
+            [:label "Player visible"]
+            [:input {:type :checkbox
+                     :on-change #(swap! p assoc :player-visible (some-> % .-target .-checked))
+                     :checked (:player-visible @p)}]])
+         (when @state/dm?
+           [:div.flex-cols
+            [:label "Dead?"]
+            [:input {:type :checkbox
+                     :on-change #(swap! p assoc :dead (some-> % .-target .-checked))
+                     :checked (:dead @p)}]])]]))
+   (when @state/dm?
+     [:li {:key "char-list-placeholder"}
+      (let [n (r/atom nil)
+            img (r/atom nil)]
+        [:div.flex-cols
+         [:div.char-avatar
+          {:style {:background-image (str "url(https://svgsilh.com/svg_v2/1270001.svg)")}
+           :on-click #(swap! state/players
                              conj
                              (r/atom
                                {:id             (str (gensym "enemy"))
@@ -155,15 +156,15 @@
                                 :player-visible false
                                 :on-map         false
                                 :dead           false
-                                :position       nil})))}]
-       [:div.flex-rows
-        [:p "Add"]
-        [:input {:type "text"
-                 :placeholder (str "Enemy" (count @state/players))
-                 :on-change #(reset! n (-> % .-target .-value))}]
-        [:input {:type "text"
-                 :placeholder (str "http://")
-                 :on-change #(reset! img (-> % .-target .-value))}]]])]])
+                                :position       nil}))}]
+         [:div.flex-rows
+          [:p "Add"]
+          [:input {:type "text"
+                   :placeholder (str "Enemy" (count @state/players))
+                   :on-change #(reset! n (-> % .-target .-value))}]
+          [:input {:type "text"
+                   :placeholder (str "http://")
+                   :on-change #(reset! img (-> % .-target .-value))}]]])])])
 
 (defn <map-preview>
   [attr]
