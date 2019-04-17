@@ -23,18 +23,21 @@
               :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
               :player-visible true
               :on-map false
-              :position nil})
+              :position nil
+              :dead false})
      (r/atom {:id (str (gensym "player"))
               :name "Ikara"
               :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
               :player-visible true
               :on-map false
-              :position nil})
+              :position nil
+              :dead false})
      (r/atom {:id (str (gensym "player"))
               :name "Udrik"
               :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
               :player-visible true
               :on-map false
-              :position nil})]))
+              :position nil
+              :dead false})]))
 
 
