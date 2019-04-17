@@ -142,11 +142,16 @@
 
 (defn <characters-list>
   [attr]
-  [:ul (merge {:style {:height "100px"}}
-              attr)
+  [:ul#characters-list
+   (merge {:style {:height "100px"}}
+          attr)
    (doall
      (for [p @players]
-       [:li.flex-cols {:key (str "char-list-" (:id @p))}
+       [:li.flex-cols {:key (str "char-list-" (:id @p))
+                       :class [(when-not (:player-visible @p)
+                                 (if @dm?
+                                   "player-invisible-dm-mode"
+                                   "player-invisible"))]}
         [<char-avatar> p]
         [:div.flex-rows
          [:p (:name @p)]
