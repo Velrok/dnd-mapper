@@ -120,7 +120,8 @@
 
      (when @dm?
        [:fieldset
-        [:label {:for "#fog-of-war-mode"} "Fog of war: "]
+        [:label {:for "#fog-of-war-mode"
+                 :style {:display "block"}} "Fog of war: "]
 
         [:label {:for "#fog-of-war-mode-reveil"
                  :style {:margin-right "0.5em"}} "reveil"]
@@ -252,6 +253,8 @@
    [:div.flex-cols
     [<map-preview> {:style {:width "100%"}}]
     [:div.flex-rows
+     {:style {:min-width "13em"
+              :padding-left "7px"}}
      [<map-definition-input>]
      [<characters-list>]]]])
 
