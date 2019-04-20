@@ -2,6 +2,7 @@
   (:require
     [reagent.core :as r]
     [app.state :as state]
+    [app.web-rtc :as web-rtc]
     [cljs.core.async :refer [chan >! <!]]
     [cljs.core.async :refer-macros [go]]))
 
@@ -169,6 +170,8 @@
                    :placeholder (str "http://")
                    :on-change #(reset! img (-> % .-target .-value))}]]])])])
 
+
+
 (defn <map-preview>
   [attr]
   (fn []
@@ -228,15 +231,17 @@
 
 (defn <session-new>
   []
-  [:div#session-new.flex-rows
-   [:h2 "Sesson New "]
-   [:div.flex-cols
-    [<map-preview> {:style {:width "100%"}}]
-    [:div.flex-rows
-     {:style {:min-width "13em"
-              :padding-left "7px"}}
-     [<map-definition-input>]
-     [<characters-list>]]]])
+  (web-rtc/init-rtc-connection!)
+  (fn []
+    [:div#session-new.flex-rows
+     [:h2 "Sesson New "]
+     [:div.flex-cols
+      [<map-preview> {:style {:width "100%"}}]
+      [:div.flex-rows
+       {:style {:min-width "13em"
+                :padding-left "7px"}}
+       [<map-definition-input>]
+       [<characters-list>]]]]))
 
 (defn <session-join>
   []
@@ -256,9 +261,7 @@
    (let [active-view (get views @state/active-view-id)]
      [active-view])])
 
-(def configuration
-  {"iceServers"
-   [{"url" "stun:stun.l.google.com:19302"}]})
+
 
 (def web-rtc-con (atom nil))
 
@@ -271,53 +274,8 @@
     (clj->js {:room room-name
                :message msg})))
 
-;; based on https://www.scaledrone.com/blog/webrtc-chat-tutorial/
-(defn start-web-rtc
-  [drone mode]
-  (prn (str "Starting WebRTC as " mode))
-  (let [con (js/RTCPeerConnection. (clj->js configuration))]
-    (set!
-      (.-onicecandidate con)
-      (fn [e]
-        (when-let [candidate (.candidate e)]
-          (send-signaling! drone (clj->js {:candidate candidate})))))
-    
-    (case mode
-      "offerer"
-      (do
-        (set! (.-onnegotiationneeded con)
-              #(.createOffer con
-                             )))
-
-      "waiter"
-      )))
-
-(defn establish-signaling!
-  []
-  (let [drone (js/ScaleDrone. "LXCppaqiOVc7EpsB")
-        room-ch (chan)]
-    (.on drone "open"
-         (fn [err]
-           (if err
-             (prn err)
-             (go
-               (>! room-ch (.subscribe drone room-name))))))
-    (go
-      (let [room (<! room-ch)]
-        (.on room "open"
-             (fn [err]
-               (if err
-                 (prn err)
-                 (prn "Connected to signaling server"))))
-        (.on room "members"
-             #(let [members (js->clj %)]
-                (if (< 1 (count members))
-                  (start-web-rtc drone "waiter")
-                  (start-web-rtc drone "offerer"))))))))
-
 (defn ^:dev/after-load render
   []
-  (establish-signaling!)
   (r/render [app] (js/document.getElementById "app")))
 
 (defn ^:export  main
