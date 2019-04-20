@@ -3,7 +3,9 @@
  [ "src" ]
 
  :dependencies
- [[reagent "0.8.1"]]
+ [[reagent "0.8.1"]
+  [com.arohner/uri "0.1.2"]
+  [org.clojure/core.async "0.4.490"]]
 
  :dev-http {8080 "public"}
 
