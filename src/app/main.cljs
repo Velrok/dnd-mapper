@@ -129,19 +129,19 @@
                      "player-invisible"))]}
         [<char-avatar> p]
         [:div.flex-rows
-         [:p (:name @p)]
-         [:input {:type "text"
+          [:p (:name @p)]
+          [:input {:type "text"
                   :value (:img-url @p)}]
-         (when @state/dm?
-           [:div.flex-cols
-            [:label "Player visible"]
-            [:input {:type :checkbox
+          (when @state/dm?
+            [:div.flex-cols
+              [:label "Player visible"]
+              [:input {:type :checkbox
                      :on-change #(swap! p assoc :player-visible (some-> % .-target .-checked))
                      :checked (:player-visible @p)}]])
-         (when @state/dm?
-           [:div.flex-cols
-            [:label "Dead?"]
-            [:input {:type :checkbox
+          (when @state/dm?
+            [:div.flex-cols
+              [:label "Dead?"]
+              [:input {:type :checkbox
                      :on-change #(swap! p assoc :dead (some-> % .-target .-checked))
                      :checked (:dead @p)}]])]]))
    (when @state/dm?
@@ -234,7 +234,7 @@
   (web-rtc/init-rtc-connection!)
   (fn []
     [:div#session-new.flex-rows
-     [:h2 "Sesson New "]
+     [:h2 "Session New "]
      [:div.flex-cols
       [<map-preview> {:style {:width "100%"}}]
       [:div.flex-rows
@@ -245,7 +245,7 @@
 
 (defn <session-join>
   []
-  [:h2 "Sesson JOIN"])
+  [:h2 "Session JOIN"])
 
 (def views
   {:home         <home>
