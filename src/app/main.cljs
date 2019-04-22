@@ -234,7 +234,7 @@
   (web-rtc/init-rtc-connection!)
   (fn []
     [:div#session-new.flex-rows
-     [:h2 "Sesson New "]
+     [:h2 "Session New "]
      [:div.flex-cols
       [<map-preview> {:style {:width "100%"}}]
       [:div.flex-rows
@@ -245,7 +245,7 @@
 
 (defn <session-join>
   []
-  [:h2 "Sesson JOIN"])
+  [:h2 "Session JOIN"])
 
 (def views
   {:home         <home>
