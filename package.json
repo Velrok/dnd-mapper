@@ -4,6 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "deps": "npm install",
+    "watch": "shadow-cljs watch app;",
+    "release": "shadow-cljs release app;",
+    "postinstall": "shadow-cljs release app;",
+    "start": "shadow-cljs server;",
+    "server": "shadow-cljs server;",
+    "clean": "rm -rf target; rm -rf public/js/compiled",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
