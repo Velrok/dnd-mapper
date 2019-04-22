@@ -129,19 +129,19 @@
                      "player-invisible"))]}
         [<char-avatar> p]
         [:div.flex-rows
-         [:p (:name @p)]
-         [:input {:type "text"
+          [:p (:name @p)]
+          [:input {:type "text"
                   :value (:img-url @p)}]
-         (when @state/dm?
-           [:div.flex-cols
-            [:label "Player visible"]
-            [:input {:type :checkbox
+          (when @state/dm?
+            [:div.flex-cols
+              [:label "Player visible"]
+              [:input {:type :checkbox
                      :on-change #(swap! p assoc :player-visible (some-> % .-target .-checked))
                      :checked (:player-visible @p)}]])
-         (when @state/dm?
-           [:div.flex-cols
-            [:label "Dead?"]
-            [:input {:type :checkbox
+          (when @state/dm?
+            [:div.flex-cols
+              [:label "Dead?"]
+              [:input {:type :checkbox
                      :on-change #(swap! p assoc :dead (some-> % .-target .-checked))
                      :checked (:dead @p)}]])]]))
    (when @state/dm?
