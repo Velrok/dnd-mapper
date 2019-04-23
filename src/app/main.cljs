@@ -2,7 +2,8 @@
   (:require
     [reagent.core :as r]
     [app.state :as state]
-    [app.web-rtc :as web-rtc]
+    ;[app.web-rtc :as web-rtc]
+    [app.websocket-io :as ws]
     [cljs.core.async :refer [chan >! <!]]
     [cljs.core.async :refer-macros [go]]))
 
@@ -201,10 +202,10 @@
                                       (case @state/fog-of-war-mode
                                         :reveil  (swap! state/reveiled-cells assoc pos)
                                         :obscure (swap! state/reveiled-cells dissoc pos))))
-                   :on-click (fn [e]
-                               (if (contains? @state/reveiled-cells pos)
-                                (swap! state/reveiled-cells dissoc pos)
-                                (swap! state/reveiled-cells assoc pos nil)))
+                  ; :on-click #_(fn [e]
+                  ;             (if (contains? @state/reveiled-cells pos)
+                  ;              (swap! state/reveiled-cells dissoc pos)
+                  ;              (swap! state/reveiled-cells assoc pos nil)))
                    :on-drag-over #(.preventDefault %)
                    :on-drop (fn [e]
                               (.preventDefault e)
@@ -231,7 +232,8 @@
 
 (defn <session-new>
   []
-  (web-rtc/init-rtc-connection!)
+
+  ;(web-rtc/init-rtc-connection!)
   (fn []
     [:div#session-new.flex-rows
      [:h2 "Session New "]
@@ -257,25 +259,28 @@
   []
   [:div
    [:h1 "DND Mapper"]
+   [:button {:on-click #(ws/send-hello)}
+    "hello"]
    [<nav>]
    (let [active-view (get views @state/active-view-id)]
      [active-view])])
 
 
 
-(def web-rtc-con (atom nil))
+;;(def web-rtc-con (atom nil))
 
-(def room-name "observable-default")
+;(def room-name "observable-default")
 
-(defn send-signaling!
-  [drone msg]
-  (.publish
-    drone
-    (clj->js {:room room-name
-               :message msg})))
+;(defn send-signaling!
+;  [drone msg]
+;  (.publish
+;    drone
+;    (clj->js {:room room-name
+;               :message msg})))
 
 (defn ^:dev/after-load render
   []
+  (ws/send-hello)
   (r/render [app] (js/document.getElementById "app")))
 
 (defn ^:export  main
