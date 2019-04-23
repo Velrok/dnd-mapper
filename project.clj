@@ -7,4 +7,10 @@
 
   :source-paths ["server/src"]
 
-  :dependencies [[org.clojure/clojure "1.10.0"]])
+  :main dnd-mapper.server.main
+
+  :dependencies
+  [[org.clojure/clojure "1.10.0"]
+   [org.clojure/core.async "0.4.490"]
+   [compojure "1.6.1"]
+   [jarohen/chord "0.8.1"]])

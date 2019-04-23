@@ -5,9 +5,10 @@
  :dependencies
  [[reagent "0.8.1"]
   [com.arohner/uri "0.1.2"]
+  [jarohen/chord "0.8.1"]
   [org.clojure/core.async "0.4.490"]]
 
- :dev-http {8080 "public"}
+ ;:dev-http {8080 "public"}
 
  :builds
  {:app {:target :browser
