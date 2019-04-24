@@ -92,9 +92,7 @@
 
 (defn -main
   [& args]
-  (mount/start 'http-server)
-  
-  )
+  (mount/start))
 
 (comment
 
