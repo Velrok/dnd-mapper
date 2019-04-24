@@ -8,8 +8,7 @@
 
 (def port (Integer/parseInt (get (System/getenv) "PORT" "3000")))
 
-(defonce sessions (atom {:by-id {}
-                         :by-ch {}}))
+(defonce sessions (atom {:by-ch {}}))
 
 (defmulti process-message! (fn [msg & _others]
                             (:type msg)))
