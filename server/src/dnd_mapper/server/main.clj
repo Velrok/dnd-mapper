@@ -62,6 +62,10 @@
                                [:by-ch ws-ch]
                                session-id)
                         (println "Message received:" message)
+                        (process-message! (:message message)
+                                          ws-ch
+                                          session-id
+                                          @sessions)
                         (>! ws-ch "Hello client from server!")
                         (recur ws-ch)))))))
        {:status 200})
