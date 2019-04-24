@@ -28,7 +28,7 @@
   (go
   (when @session-ch
     (>! @session-ch
-        {:session-id @session-id
+        {:session-id (str @session-id)
          :message msg
          :ts (-> (js/Date.) (.getTime))}))))
 
@@ -44,7 +44,7 @@
 
 (defn join!
   [s-id]
-  (reset! session-id s-id)
+  (reset! session-id (str s-id))
   (reset! session-host false)
   @heart-beat
   (go
@@ -64,14 +64,15 @@
   :start (js/window.setInterval #(send!
                                    {:type  :state-broadcast
                                     :state @distributed-state})
-                                30000)
+                                10000)
   :stop (js/window.clearInterval @state-broadcast))
 
 (defn create!
   []
   (reset! session-id (-> (Math/random)
                          (* 100000000)
-                         int))
+                         int
+                         str))
   (reset! session-host true)
   @heart-beat
   @state-broadcast

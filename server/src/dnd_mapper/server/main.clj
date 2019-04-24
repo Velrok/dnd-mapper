@@ -3,33 +3,30 @@
     [chord.http-kit :refer [wrap-websocket-handler]]
     [org.httpkit.server :refer [run-server]]
     [compojure.core :refer [defroutes GET ANY]]
+    [mount.core :as mount :refer [defstate]]
     [compojure.route :as route]
     [clojure.core.async :as a :refer [<! >! close! go]]))
 
 (def port (Integer/parseInt (get (System/getenv) "PORT" "3000")))
 
-(defonce sessions (atom {:by-ch {}}))
+(defonce sessions (atom {}))
 
 (defmulti process-message! (fn [msg & _others]
                             (:type msg)))
 
 (defmethod process-message! :heart-beat
-  [& _args]
-  ::no-op)
+  [_msg ch & _args]
+  (go
+    (>! ch "Ack.")))
 
 (defmethod process-message! :state-broadcast
   [{:keys [state]} ch session-id sessions]
   (let [session-channels (->> sessions
-                              :by-ch
-                              (filter (fn [[k v]]
-                                        (prn [::filter
-                                              :kv [k v]])
-                                        (= session-id v)))
+                              (filter (fn [[_ch s-id]] (= session-id s-id)))
                               (map first)
-                              set)]
-    (println (format "Broadcasting to %d channels."
-                     (count session-channels)))
-    (doseq [c (disj session-channels ch)]
+                              set)
+        targets (disj session-channels ch)]
+    (doseq [c targets]
       (go (>! c {:type  :state-reset
                  :state state}))))
   ::no-op)
@@ -57,15 +54,14 @@
              ws-ch ([{:keys [message]}]
                     (when message
                       (let [{:keys [session-id]} message]
-                        (swap! sessions assoc-in
-                               [:by-ch ws-ch]
-                               session-id)
+                        (swap! sessions
+                               assoc ws-ch session-id)
                         (println "Message received:" message)
                         (process-message! (:message message)
                                           ws-ch
                                           session-id
                                           @sessions)
-                        (>! ws-ch "Hello client from server!")
+                        ;(>! ws-ch "Hello client from server!")
                         (recur ws-ch)))))))
        {:status 200})
   (route/files "/"))
@@ -87,14 +83,23 @@
 ;       :body "Not Found!"})
 ;    ))
 
+(defstate http-server
+  :start (do (println (format "Starting web server on http://localhost:%d" port))
+             (run-server (-> #'api wrap-websocket-handler)
+                         {:port port}))
+  :stop (do (println  "Stopping web server!")
+            (http-server)))
+
 (defn -main
   [& args]
-  (println (format "Starting web server on http://localhost:%d" port))
-  (run-server (-> #'api wrap-websocket-handler)
-              {:port port}))
+  (mount/start 'http-server)
+  
+  )
 
 (comment
-  
-  (-main)
-  
+
+  (do
+    (mount/stop)
+    (mount/start))
+
   )

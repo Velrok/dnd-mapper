@@ -266,9 +266,12 @@
     [:div#session-new.flex-rows
      [:h2 "Session New "]
      [:pre (str "session: " @ws/session-id)]
-     [:pre (str "join link: " (str (assoc-in (current-uri)
-                                             [:query :join-session-id]
-                                             @ws/session-id)))]
+     [:p "join link: "
+      (let [link (str (assoc-in (current-uri)
+                                [:query :join-session-id]
+                                @ws/session-id))]
+        [:a {:href link} link])
+      ]
      [:button {:on-click ping} "ping"]
      [:div.flex-cols
       [<map-preview> {:style {:width "100%"}}]
