@@ -14,11 +14,18 @@
         :body (-> "public/index.html"
                   slurp)})
   (ANY "/ws" {:keys [ws-channel] :as req}
-       (go
-         (let [{:keys [message]} (<! ws-channel)]
-           (println "Message received:" message)
-           (>! ws-channel "Hello client from server!")
-           (close! ws-channel)))
+       (a/go-loop
+         [ws-ch ws-channel]
+         (let [timeout-ch (a/timeout (* 1000 60 10))]
+           (a/alt!
+             timeout-ch (do
+                          (println "Closing channel " ws-ch)
+                          (close! ws-ch))
+             ws-ch ([{:keys [message]}]
+                    (when message
+                      (println "Message received:" message)
+                      (>! ws-ch "Hello client from server!")
+                      (recur ws-ch))))))
        {:status 200})
   (route/files "/"))
 
