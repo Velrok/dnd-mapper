@@ -1,12 +1,13 @@
 (ns app.state
   (:require [reagent.core :as r]))
 
-(defonce active-view-id (r/atom :home))
+(defonce active-view-id (r/atom :start))
 
 (defonce highlight-overlay (r/atom true))
 (defonce map-width  (r/atom 35))
 (defonce map-height (r/atom 50))
 (defonce dm?        (r/atom false))
+(defonce username   (r/atom nil))
 
 (defonce fog-of-war-mode (r/atom :reveil)) ; :obscure
 
