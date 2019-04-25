@@ -230,9 +230,10 @@
      [:div.map-preview-wrapper
       {:class [(when @state/dm?
                  "dm-mode")]
-       :style {:cursor (case @state/fog-of-war-mode
-                        :reveil "copy"
-                        :obscure "no-drop")}}
+       :style (when @state/dm?
+                {:cursor (case @state/fog-of-war-mode
+                           :reveil "copy"
+                           :obscure "no-drop")})}
       [:img.map-preview-img {:src (:img-url @state/dnd-map)
                              :alt (:alt @state/dnd-map)}]
       [:table.map-preview-table
@@ -246,11 +247,12 @@
                  (let [pos {:x x :y y}]
                  [:td.map-preview-cell
                   {:key (str "map-prev-yx-" y x)
-                   :on-mouse-over (fn [e]
-                                    (when (= 1 (.-buttons e))
-                                      (case @state/fog-of-war-mode
-                                        :reveil  (swap! state/reveiled-cells assoc pos)
-                                        :obscure (swap! state/reveiled-cells dissoc pos))))
+                   :on-mouse-over (when @state/dm?
+                                    (fn [e]
+                                      (when (= 1 (.-buttons e))
+                                        (case @state/fog-of-war-mode
+                                          :reveil  (swap! state/reveiled-cells assoc pos)
+                                          :obscure (swap! state/reveiled-cells dissoc pos)))))
                   ; :on-click #_(fn [e]
                   ;             (if (contains? @state/reveiled-cells pos)
                   ;              (swap! state/reveiled-cells dissoc pos)
@@ -281,7 +283,7 @@
 (defstate create-session
   :start (do
            (prn [::<session-new>])
-           (reset! state/dm? true)
+           (state/host-default-state!)
            (go
              (let [server-messages (<! (ws/create!))]
                (prn [::server-messages server-messages
@@ -309,17 +311,27 @@
        [<characters-list>]]]]))
 
 (defstate join-session
-  :start (do (prn [::<session-join>])
-             (go
-               (let [server-messages (<! (ws/join! (get-in (current-uri)
-                                                           [:query "join-session-id"])))]
-                 @server-message-processor)))
+  :start (do
+           (prn [::<session-join>])
+           (state/guest-default-state!)
+           (go
+             (let [server-messages (<! (ws/join! (get-in (current-uri)
+                                                         [:query "join-session-id"])))]
+               @server-message-processor)))
 )
 
 (defn <session-join>
   []
   @join-session
-  [:h2 "Join session " @ws/session-id])
+  [:div
+   [:h2 "Join session " @ws/session-id]
+   [:div.flex-cols
+    [<map-preview> {:style {:width "100%"}}]
+    [:div.flex-rows
+     {:style {:min-width "13em"
+              :padding-left "7px"}}
+     ;[<map-definition-input>]
+     [<characters-list>]]]])
 
 (def views
   {:start        <start>

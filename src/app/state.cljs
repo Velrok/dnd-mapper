@@ -3,7 +3,7 @@
 
 (defonce active-view-id (r/atom :start))
 
-(defonce highlight-overlay (r/atom true))
+(defonce highlight-overlay (r/atom false))
 (defonce map-width  (r/atom 35))
 (defonce map-height (r/atom 50))
 (defonce dm?        (r/atom false))
@@ -41,4 +41,13 @@
               :position nil
               :dead false})]))
 
+(defn host-default-state!
+  []
+  (reset! dm? true)
+  (reset! highlight-overlay true))
+
+(defn guest-default-state!
+  []
+  (reset! dm? false)
+  (reset! highlight-overlay false))
 
