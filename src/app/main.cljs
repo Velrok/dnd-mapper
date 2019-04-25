@@ -30,6 +30,21 @@
   (reset! state/players
           (some-> message :data :data)))
 
+(defmethod process-server-message! ::dnd-map-reset
+  [{:keys [message]}]
+  (reset! state/dnd-map
+          (some-> message :data :data)))
+
+(defmethod process-server-message! ::map-width-reset
+  [{:keys [message]}]
+  (reset! state/map-width
+          (some-> message :data :data)))
+
+(defmethod process-server-message! ::map-height-reset
+  [{:keys [message]}]
+  (reset! state/map-height
+          (some-> message :data :data)))
+
 
 (defstate server-message-processor
   :start (do
@@ -307,7 +322,10 @@
 
 (defstate create-session
   :start (let [cells-watcher-id (gensym "reveiled-cells-sync")
-               players-w-id     (gensym "players-sync")]
+               players-w-id     (gensym "players-sync")
+               map-img-w-id     (gensym "map-img-sync")
+               map-width-w-id   (gensym "map-width-sync")
+               map-height-w-id  (gensym "map-height-sync")]
            (state/host-default-state!)
            (go
              (let [server-messages (<! (ws/create!))]
@@ -324,8 +342,29 @@
                         (ws/send! {:type ::players-reset
                                    :data new-val}
                                   {:audience :guests})))
+           (add-watch state/dnd-map
+                      map-img-w-id
+                      (fn [_k _a _old new-val]
+                        (ws/send! {:type ::dnd-map-reset
+                                   :data new-val}
+                                  {:audience :guests})))
+           (add-watch state/map-width
+                      map-width-w-id
+                      (fn [_k _a _old new-val]
+                        (ws/send! {:type ::map-width-reset
+                                   :data new-val}
+                                  {:audience :guests})))
+           (add-watch state/map-height
+                      map-height-w-id
+                      (fn [_k _a _old new-val]
+                        (ws/send! {:type ::map-height-reset
+                                   :data new-val}
+                                  {:audience :guests})))
            {:watchers [[state/reveiled-cells cells-watcher-id]
-                       [state/players        players-w-id]]})
+                       [state/players        players-w-id]
+                       [state/dnd-map        map-img-w-id]
+                       [state/map-width      map-width-w-id]
+                       [state/map-height     map-height-w-id]]})
   :stop (do
           (doseq [[a w-id] (:w-ids @create-session)]
             (remove-watch a w-id))))
