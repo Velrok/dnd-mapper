@@ -5,35 +5,55 @@
     [compojure.core :refer [defroutes GET ANY]]
     [mount.core :as mount :refer [defstate]]
     [compojure.route :as route]
+    [clojure.tools.logging :as log]
     [clojure.core.async :as a :refer [<! >! close! go]]))
 
 (def port (Integer/parseInt (get (System/getenv) "PORT" "3000")))
 
-(defonce sessions (atom {}))
+(defonce ws-connections (atom {}))
 
-(defmulti process-message! (fn [msg & _others]
-                            (:type msg)))
+(defn session-connections
+  [s-id connections]
+  (->> connections
+       vals
+       (filter #(= s-id (:session-id %)))
+       set))
 
-(defmethod process-message! :heart-beat
-  [_msg ch & _args]
+(defmulti process-message! (fn [msg _ch _connections]
+                            (:audience msg)))
+
+(defmethod process-message! :server
+  [msg ch _connections]
   (go
-    (>! ch "Ack.")))
+    (let [now (System/currentTimeMillis)]
+    (>! ch {:response ::received
+            :at       now
+            :latency  (- now (:ts msg))}))))
 
-(defmethod process-message! :state-broadcast
-  [{:keys [state]} ch session-id sessions]
-  (let [session-channels (->> sessions
-                              (filter (fn [[_ch s-id]] (= session-id s-id)))
-                              (map first)
-                              set)
-        targets (disj session-channels ch)]
+(defmethod process-message! :others
+  [{:keys [session-id] :as msg} ch connections]
+  (let [targets (disj (set (map :ch (session-connections connections session-id)))
+                      ch)]
+    (log/info (format "[%s] Forwarding messge to %d targets." session-id (count targets)))
     (doseq [c targets]
-      (go (>! c {:type  :state-reset
-                 :state state}))))
-  ::no-op)
+      (go (>! c {:audience :others
+                 :message msg})))))
+
+(defmethod process-message! :guests
+  [{:keys [session-id] :as msg} ch connections]
+  (let [targets (disj (->> (session-connections session-id connections)
+                           (filter #(false? (:host %)))
+                           (map :ch)
+                           set)
+                      ch)]
+    (log/info (format "[%s] Forwarding messge to %d guests." session-id (count targets)))
+    (doseq [c targets]
+      (go (>! c {:audience :guests
+                 :message msg})))))
 
 (defmethod process-message! :default
   [message & _others]
-  (println (format "No handler for message of type %s" (:type message))))
+  (log/warn (format "No handler for message audience %s" (:audience message))))
 
 (defroutes api
   (GET "/" []
@@ -46,21 +66,23 @@
          (let [timeout-ch (a/timeout (* 1000 60 10))]
            (a/alt!
              timeout-ch (do
-                          (println "Closing channel " ws-ch)
-                          (swap! sessions dissoc
-                                 :by-ch
-                                 ws-ch)
+                          (log/info "Closing channel " ws-ch)
+                          (swap! ws-connections dissoc ws-ch)
                           (close! ws-ch))
              ws-ch ([{:keys [message]}]
                     (when message
-                      (let [{:keys [session-id]} message]
-                        (swap! sessions
-                               assoc ws-ch session-id)
-                        (println "Message received:" message)
-                        (process-message! (:message message)
+                      (let [{:keys [session-id host instance-id]} message]
+                        (swap! ws-connections
+                               assoc
+                               ws-ch
+                               {:session-id  session-id
+                                :ch          ws-ch
+                                :host        host
+                                :instance-id instance-id})
+                        (log/debug "Message received:" message)
+                        (process-message! message
                                           ws-ch
-                                          session-id
-                                          @sessions)
+                                          @ws-connections)
                         ;(>! ws-ch "Hello client from server!")
                         (recur ws-ch)))))))
        {:status 200})
@@ -84,10 +106,10 @@
 ;    ))
 
 (defstate http-server
-  :start (do (println (format "Starting web server on http://localhost:%d" port))
+  :start (do (log/info (format "Starting web server on http://localhost:%d" port))
              (run-server (-> #'api wrap-websocket-handler)
                          {:port port}))
-  :stop (do (println  "Stopping web server!")
+  :stop (do (log/info  "Stopping web server!")
             (http-server)))
 
 (defn -main
@@ -95,6 +117,8 @@
   (mount/start))
 
 (comment
+
+  (clojure.pprint/pprint (vals @ws-connections))
 
   (do
     (mount/stop)

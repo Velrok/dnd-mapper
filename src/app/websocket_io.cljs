@@ -8,6 +8,7 @@
 
 (def pp (.-log js/console))
 
+(defonce instance-id (-> (Math/random) (* 10000000) int str))
 (defonce session-id (r/atom nil))
 (defonce session-ch (r/atom nil))
 (defonce session-host (r/atom nil))
@@ -23,17 +24,23 @@
             {:type    ::error
              :message (pr-str error)})))))
 
+;; audience = #{:others :all :host :guests :server}
 (defn send!
-  [msg]
+  [msg {:keys [audience]
+        :or {audience :others}}]
   (go
-  (when @session-ch
-    (>! @session-ch
-        {:session-id (str @session-id)
-         :message msg
-         :ts (-> (js/Date.) (.getTime))}))))
+    (when @session-ch
+      (>! @session-ch
+          {:session-id  (str @session-id)
+           :host        @session-host
+           :instance-id instance-id
+           :audience    audience
+           :data        msg
+           :ts          (-> (js/Date.) (.getTime))}))))
 
 (defstate heart-beat
-  :start (js/window.setInterval #(send! {:type :heart-beat})
+  :start (js/window.setInterval #(send! {:type :heart-beat}
+                                        {:audience :server})
                                 5000)
   :stop (js/window.clearInterval @heart-beat))
 
@@ -59,11 +66,14 @@
            :websocket-sync
            (fn [_key _atom old-val new-val]
              (when (and @session-host @session-ch)
-               (send! new-val))))
+               (send! {:type ::state-reset
+                       :state new-val}
+                      {:audience :guests}))))
 (defstate state-broadcast
   :start (js/window.setInterval #(send!
-                                   {:type  :state-broadcast
-                                    :state @distributed-state})
+                                   {:type  ::state-reset
+                                    :state @distributed-state}
+                                   {:audience :guests})
                                 10000)
   :stop (js/window.clearInterval @state-broadcast))
 

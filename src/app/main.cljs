@@ -254,10 +254,6 @@
                                                "player-invisible"))}
                      p])])))]))]]]]))
 
-(defn ping
-  []
-  (ws/send! :ping))
-
 (defn <session-new>
   []
   (ws/create!)
@@ -270,9 +266,7 @@
       (let [link (str (assoc-in (current-uri)
                                 [:query :join-session-id]
                                 @ws/session-id))]
-        [:a {:href link} link])
-      ]
-     [:button {:on-click ping} "ping"]
+        [:a {:href link} link])]
      [:div.flex-cols
       [<map-preview> {:style {:width "100%"}}]
       [:div.flex-rows
