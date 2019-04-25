@@ -32,7 +32,7 @@
         :or {audience :others}}]
   (go
     (when @session-ch
-      (prn [::send! msg :audience audience])
+      ;(prn [::send! msg :audience audience])
       (>! @session-ch
           {:session-id  (str @session-id)
            :host        @session-host

@@ -36,8 +36,7 @@
                       ch)]
     (log/info (format "[%s] Forwarding messge to %d targets." session-id (count targets)))
     (doseq [c targets]
-      (go (>! c {:audience :others
-                 :message msg})))))
+      (go (>! c msg)))))
 
 (defmethod process-message! :guests
   [{:keys [session-id] :as msg} ch connections]
@@ -48,8 +47,7 @@
                       ch)]
     (log/info (format "[%s] Forwarding messge to %d guests." session-id (count targets)))
     (doseq [c targets]
-      (go (>! c {:audience :guests
-                 :message msg})))))
+      (go (>! c msg)))))
 
 (defmethod process-message! :default
   [message & _others]

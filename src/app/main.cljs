@@ -13,7 +13,23 @@
 (def pp (.-log js/console))
 
 (defmulti process-server-message!
-  (fn []))
+  (fn [{:keys [message]}]
+    (-> message :data :type)))
+
+(defmethod process-server-message! :default
+  [{:keys [message]}]
+  (prn [:no-handler-for message]))
+
+(defmethod process-server-message! ::reveiled-cells-reset
+  [{:keys [message]}]
+  (reset! state/reveiled-cells
+          (some-> message :data :data)))
+
+(defmethod process-server-message! ::players-reset
+  [{:keys [message]}]
+  (reset! state/players
+          (some-> message :data :data)))
+
 
 (defstate server-message-processor
   :start (do
@@ -27,7 +43,7 @@
                    (go
                      (loop []
                        (if-let [msg (<! my-ch)]
-                         (do (prn [::msg msg])
+                         (do (process-server-message! msg)
                              (recur))
                          (do (prn [:empty-message])
                              (a/close! my-ch)))))))
@@ -49,12 +65,12 @@
   ([player]
    (<char-avatar> {} player))
   ([attr player]
-   (let [{:keys [id img-url]} @player]
+   (let [{:keys [id img-url]} player]
      [:div.char-avatar
       (merge
         {:id id
          :key (str "player-id-" id)
-         :style {:background-image (str "url(" (if (:dead @player)
+         :style {:background-image (str "url(" (if (:dead player)
                                                  dead-icon
                                                  img-url) ")")}
          :draggable true
@@ -172,47 +188,54 @@
    (merge {:style {:height "100px"}}
           attr)
    (doall
-     (for [p @state/players]
+     (for [p (vals @state/players)]
        [:li.flex-cols.character-list-entry
-        {:key (str "char-list-" (:id @p))
-         :class [(when-not (:player-visible @p)
+        {:key (str "char-list-" (:id p))
+         :class [(when-not (:player-visible p)
                    (if @state/dm?
                      "player-invisible-dm-mode"
                      "player-invisible"))]}
         [<char-avatar> p]
         [:div.flex-rows
-          [:p (:name @p)]
+          [:p (:name p)]
           [:input {:type "text"
-                  :default-value (:img-url @p)}]
+                  :default-value (:img-url p)}]
           (when @state/dm?
             [:div.flex-cols
               [:label "Player visible"]
               [:input {:type :checkbox
-                     :on-change #(swap! p assoc :player-visible (some-> % .-target .-checked))
-                     :checked (:player-visible @p)}]])
+                       :on-change #(swap! state/players
+                                          assoc-in
+                                          [(:id p) :player-visible]
+                                          (some-> % .-target .-checked))
+                       :checked (:player-visible p)}]])
           (when @state/dm?
             [:div.flex-cols
               [:label "Dead?"]
               [:input {:type :checkbox
-                     :on-change #(swap! p assoc :dead (some-> % .-target .-checked))
-                     :checked (:dead @p)}]])]]))
+                       :on-change #(swap! state/players
+                                          assoc-in
+                                          [(:id p) :dead]
+                                          (some-> % .-target .-checked))
+                     :checked (:dead p)}]])]]))
    (when @state/dm?
      [:li {:key "char-list-placeholder"}
       (let [n (r/atom nil)
-            img (r/atom nil)]
+            img (r/atom nil)
+            p-id (str (gensym "enemy"))]
         [:div.flex-cols
          [:div.char-avatar
           {:style {:background-image (str "url(https://svgsilh.com/svg_v2/1270001.svg)")}
            :on-click #(swap! state/players
-                             conj
-                             (r/atom
-                               {:id             (str (gensym "enemy"))
-                                :name           @n
-                                :img-url        @img
-                                :player-visible false
-                                :on-map         false
-                                :dead           false
-                                :position       nil}))}]
+                             assoc
+                             p-id
+                             {:id             p-id
+                              :name           @n
+                              :img-url        @img
+                              :player-visible false
+                              :on-map         false
+                              :dead           false
+                              :position       nil})}]
          [:div.flex-rows
           [:p "Add"]
           [:input {:type "text"
@@ -262,33 +285,50 @@
                               (.preventDefault e)
                               (when-let [id (some-> e .-dataTransfer (.getData "player-id"))]
                                 (when-let [p (some->> @state/players
-                                                      (filter (fn [p] (= id (:id @p))))
+                                                      vals
+                                                      (filter (fn [p] (= id (:id p))))
                                                       first)]
-                                  (swap! p assoc-in [:position] pos))))
+                                  (swap! state/players assoc-in [(:id p) :position] pos))))
                    :class [(when @state/highlight-overlay
                              "map-cell__highlight")
                            (when-not (contains? @state/reveiled-cells
                                                 pos)
                              "fog-of-war")]}
                   (when-let [p (some->> @state/players
+                                        vals
                                         (filter
-                                          (fn [p] (= pos (:position @p))))
+                                          (fn [p] (= pos (:position p))))
                                         first)]
-                    [<char-avatar> {:class (when-not (:player-visible @p)
+                    [<char-avatar> {:class (when-not (:player-visible p)
                                              (if @state/dm?
                                                "player-invisible-dm-mode"
                                                "player-invisible"))}
                      p])])))]))]]]]))
 
 (defstate create-session
-  :start (do
-           (prn [::<session-new>])
+  :start (let [cells-watcher-id (gensym "reveiled-cells-sync")
+               players-w-id     (gensym "players-sync")]
            (state/host-default-state!)
            (go
              (let [server-messages (<! (ws/create!))]
-               (prn [::server-messages server-messages
-                     ::ws/server-messages @ws/server-messages])
-               @server-message-processor))))
+               @server-message-processor))
+           (add-watch state/reveiled-cells
+                      cells-watcher-id
+                      (fn [_k _a _old new-val]
+                        (ws/send! {:type ::reveiled-cells-reset
+                                   :data new-val}
+                                  {:audience :guests})))
+           (add-watch state/players
+                      players-w-id
+                      (fn [_k _a _old new-val]
+                        (ws/send! {:type ::players-reset
+                                   :data new-val}
+                                  {:audience :guests})))
+           {:watchers [[state/reveiled-cells cells-watcher-id]
+                       [state/players        players-w-id]]})
+  :stop (do
+          (doseq [[a w-id] (:w-ids @create-session)]
+            (remove-watch a w-id))))
 
 (defn <session-new>
   []
@@ -312,7 +352,6 @@
 
 (defstate join-session
   :start (do
-           (prn [::<session-join>])
            (state/guest-default-state!)
            (go
              (let [server-messages (<! (ws/join! (get-in (current-uri)
