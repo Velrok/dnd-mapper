@@ -1,7 +1,7 @@
 (ns app.websocket-io
   (:require [chord.client :refer [ws-ch]]
             [reagent.core :as r]
-            [cljs.core.async :refer [<! >! put! close!]]
+            [cljs.core.async :as a :refer [<! >! put! close!]]
             [mount.core :as mount]
             [mount.core :refer-macros [defstate]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
@@ -10,8 +10,10 @@
 
 (defonce instance-id (-> (Math/random) (* 10000000) int str))
 (defonce session-id (r/atom nil))
-(defonce session-ch (r/atom nil))
 (defonce session-host (r/atom nil))
+
+(defonce server-messages (r/atom nil))
+(defonce session-ch (r/atom nil))
 
 (defn join-or-create-session
   [session-id]
@@ -30,6 +32,7 @@
         :or {audience :others}}]
   (go
     (when @session-ch
+      (prn [::send! msg :audience audience])
       (>! @session-ch
           {:session-id  (str @session-id)
            :host        @session-host
@@ -57,25 +60,11 @@
   (go
     (let [{:keys [type ch message]} (<! (join-or-create-session @session-id))]
       (case type
-        ::channel (reset! session-ch ch)
+        ::channel (do
+                    (reset! session-ch ch)
+                    (reset! server-messages (a/mult ch))
+                    ch)
         ::error   (pp message)))))
-
-(defonce distributed-state (atom {}))
-
-(add-watch distributed-state
-           :websocket-sync
-           (fn [_key _atom old-val new-val]
-             (when (and @session-host @session-ch)
-               (send! {:type ::state-reset
-                       :state new-val}
-                      {:audience :guests}))))
-(defstate state-broadcast
-  :start (js/window.setInterval #(send!
-                                   {:type  ::state-reset
-                                    :state @distributed-state}
-                                   {:audience :guests})
-                                10000)
-  :stop (js/window.clearInterval @state-broadcast))
 
 (defn create!
   []
@@ -85,11 +74,14 @@
                          str))
   (reset! session-host true)
   @heart-beat
-  @state-broadcast
+  ;@state-broadcast
   (go
     (let [{:keys [type ch message]} (<! (join-or-create-session @session-id))]
       (case type
-        ::channel (reset! session-ch ch)
+        ::channel (do
+                    (reset! session-ch ch)
+                    (reset! server-messages (a/mult ch))
+                    ch)
         ::error   (pp message)))))
 
 

@@ -4,13 +4,37 @@
     [app.state :as state]
     [cemerick.uri :refer [uri]]
     ;[app.web-rtc :as web-rtc]
-    ;[mount.core :as mount]
-    ;[mount.core :refer-macros [defstate]]
+    [mount.core :as mount]
+    [mount.core :refer-macros [defstate]]
     [app.websocket-io :as ws]
-    [cljs.core.async :refer [chan >! <! close!]]
+    [cljs.core.async :as a :refer [chan >! <! close!]]
     [cljs.core.async :refer-macros [go]]))
 
 (def pp (.-log js/console))
+
+(defmulti process-server-message!
+  (fn []))
+
+(defstate server-message-processor
+  :start (do
+           (prn [::server-message-processor "start"])
+           (go
+             (let [my-ch (a/chan)]
+               (if-not @ws/server-messages
+                 (prn [::ws/server-messages-empty!])
+                 (do
+                   (a/tap @ws/server-messages my-ch)
+                   (go
+                     (loop []
+                       (if-let [msg (<! my-ch)]
+                         (do (prn [::msg msg])
+                             (recur))
+                         (do (prn [:empty-message])
+                             (a/close! my-ch)))))))
+               my-ch)))
+  :stop  (do
+           (prn [::server-message-processor "stop"])
+           (a/close! @server-message-processor)))
 
 (defn current-uri
   []
@@ -48,6 +72,7 @@
     [:li {:on-click #(reset! state/active-view-id :session-new)} "new session"]
     [:li {:on-click #(reset! state/active-view-id :session-join)} "join session"]]])
 
+
 (defn <start>
   []
   (let [u-name          (r/atom (gensym "User"))
@@ -72,7 +97,6 @@
         {:on-click #(do (reset! state/username @u-name)
                         (reset! state/active-view-id :session-join))}
         ">>"]])))
-
 
 (defn <map-definition-input>
   [attr]
@@ -140,6 +164,8 @@
           :on-change #(reset! state/fog-of-war-mode :obscure) }]])
      ]))
 
+
+
 (defn <characters-list>
   [attr]
   [:ul#characters-list
@@ -195,8 +221,6 @@
           [:input {:type "text"
                    :placeholder (str "http://")
                    :on-change #(reset! img (-> % .-target .-value))}]]])])])
-
-
 
 (defn <map-preview>
   [attr]
@@ -254,10 +278,19 @@
                                                "player-invisible"))}
                      p])])))]))]]]]))
 
+(defstate create-session
+  :start (do
+           (prn [::<session-new>])
+           (reset! state/dm? true)
+           (go
+             (let [server-messages (<! (ws/create!))]
+               (prn [::server-messages server-messages
+                     ::ws/server-messages @ws/server-messages])
+               @server-message-processor))))
+
 (defn <session-new>
   []
-  (ws/create!)
-  (reset! state/dm? true)
+  @create-session
   (fn []
     [:div#session-new.flex-rows
      [:h2 "Session New "]
@@ -275,15 +308,25 @@
        [<map-definition-input>]
        [<characters-list>]]]]))
 
+(defstate join-session
+  :start (do (prn [::<session-join>])
+             (go
+               (let [server-messages (<! (ws/join! (get-in (current-uri)
+                                                           [:query "join-session-id"])))]
+                 @server-message-processor)))
+)
+
 (defn <session-join>
   []
-  (ws/join! (get-in (current-uri) [:query "join-session-id"]))
+  @join-session
   [:h2 "Join session " @ws/session-id])
 
 (def views
   {:start        <start>
    :session-new  <session-new>
    :session-join <session-join>})
+
+
 
 (defn app
   []
@@ -292,8 +335,6 @@
    ;[<nav>]
    (let [active-view (get views @state/active-view-id)]
      [active-view])])
-
-
 
 ;;(def web-rtc-con (atom nil))
 
@@ -310,6 +351,7 @@
 
 (defn ^:dev/after-load render
   []
+  (mount/stop)
   (r/render [app] (js/document.getElementById "app")))
 
 (defn ^:export  main
