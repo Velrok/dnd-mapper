@@ -111,10 +111,11 @@
     (if-not join-session-id
       [:div
        [:h2 (str "create session")]
-       [:input {:type "text"
-                :value @u-name
-                :on-change #(reset! u-name (some-> % .-target .-value))}]
-       [:button 
+       [:input.size-medium
+        {:type "text"
+         :value @u-name
+         :on-change #(reset! u-name (some-> % .-target .-value))}]
+       [:button.btn
         {:on-click #(do (reset! state/username @u-name)
                         (reset! state/active-view-id :session-new))}
         ">>"]]
@@ -374,14 +375,14 @@
   @create-session
   (fn []
     [:div#session-new.flex-rows
-     [:h2 "Session New "]
-     [:pre (str "session: " @ws/session-id)]
+     [:h2 "New Session"]
+     [:pre (str "session id: " @ws/session-id)]
      [:p "join link: "
       (let [link (str (assoc-in (current-uri)
                                 [:query :join-session-id]
                                 @ws/session-id))]
         [:a {:href link} link])]
-     [:div.flex-cols
+     [:div.game.flex-cols
       [<map-preview> {:style {:width "100%"}}]
       [:div.flex-rows
        {:style {:min-width "13em"
@@ -421,7 +422,7 @@
 (defn app
   []
   [:div
-   [:h1 "DND Mapper"]
+   [:h1 "D&D Mapper"]
    ;[<nav>]
    (let [active-view (get views @state/active-view-id)]
      [active-view])])

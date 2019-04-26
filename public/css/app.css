@@ -1,12 +1,20 @@
+/*
+ * font-family: 'Open Sans Condensed', sans-serif;
+ * font-family: 'Cinzel Decorative', cursive;
+*/
+
 body {
   font-size: 18px;
-  font-family: monospace;
+  font-family: 'Open Sans Condensed', sans-serif;
   padding: 1em;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Cinzel Decorative', cursive;
 }
 
 h1 {
   font-size: 4rem;
-  font-family: sans-serif;
 }
 
 h2 {
@@ -90,7 +98,7 @@ fieldset label {
 }
 
 .map-cell__highlight {
-  border: solid orange 1px;
+  border: solid #458BC163 1px;
 }
 
 
@@ -115,11 +123,11 @@ fieldset label {
 }
 
 .fog-of-war {
-  background-color: grey;
+  background-color: white;
 }
 
 .dm-mode .fog-of-war {
-  background-color: #ffa50096;
+  background-color: #326D9A70;
 }
 
 #session-new {
@@ -150,4 +158,21 @@ fieldset label {
 
 .character-list-entry {
   margin-bottom: 0.7em;
+}
+
+.size-medium {
+  font-size: 1em;
+}
+
+.btn {
+  font-size: 1em;
+  background-color: #EF7443;
+}
+
+.game {
+  margin: 5px 0px;
+}
+
+a {
+  color: #743B24;
 }
