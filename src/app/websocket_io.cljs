@@ -10,12 +10,15 @@
 (def pp (.-log js/console))
 
 (def endpoint
-  (let [{host :host port :port}
+  (let [{host :host port :port proto :protocol}
         (-> js/window
             .-location
             .-href
             uri)]
-    (str "ws://" host
+    (str (if (= "https" proto)
+           "wss://"
+           "ws://")
+         host
          (when (< 0 port)
            (str ":" port))
          "/ws")))
