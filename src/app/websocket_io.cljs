@@ -15,7 +15,10 @@
             .-location
             .-href
             uri)]
-    (str "ws://" host ":" port "/ws")))
+    (str "ws://" host
+         (when (< 0 port)
+           (str ":" port))
+         "/ws")))
 
 (defonce instance-id (-> (Math/random) (* 10000000) int str))
 (defonce session-id (r/atom nil))
