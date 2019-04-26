@@ -1,16 +1,24 @@
 /*
  * font-family: 'Open Sans Condensed', sans-serif;
  * font-family: 'Cinzel Decorative', cursive;
+ * font-family: 'Open Sans', sans-serif;
 */
 
 body {
   font-size: 18px;
-  font-family: 'Open Sans Condensed', sans-serif;
+  font-family: 'Open Sans', sans-serif;
   padding: 1em;
 }
 
 h1, h2, h3, h4, h5 {
   font-family: 'Cinzel Decorative', cursive;
+  margin-bottom: 0.5em;
+}
+
+input {
+  font-family: 'Open Sans Condensed', sans-serif;
+  font-size: 0.9rem;
+
 }
 
 h1 {
@@ -19,8 +27,6 @@ h1 {
 
 h2 {
   font-size: 2rem;
-  margin: 1em 0;
-  margin-bottom: 0.5em;
 }
 
 nav li {
@@ -175,4 +181,12 @@ fieldset label {
 
 a {
   color: #743B24;
+}
+
+.pull-right {
+  float: right;
+}
+
+.pull-left {
+  float: left;
 }

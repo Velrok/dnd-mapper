@@ -137,7 +137,7 @@
      attr
      [:fieldset
       [:label {:for "#map-url"} "url"]
-      [:input#map-url
+      [:input#map-url.pull-right
        {:type :url
         :value (:img-url @state/dnd-map)
         :on-change #(swap! state/dnd-map assoc :img-url (some-> % .-target .-value))
@@ -145,7 +145,7 @@
 
      [:fieldset
       [:label {:for "#map-width"} "width"]
-      [:input#map-width
+      [:input#map-width.pull-right
        {:type :number
         :value @state/map-width
         :min 1
@@ -154,7 +154,7 @@
 
      [:fieldset
       [:label {:for "#map-height"} "height"]
-      [:input#map-height
+      [:input#map-height.pull-right
        {:type :number
         :min 1
         :value @state/map-height
@@ -163,7 +163,7 @@
 
      [:fieldset
       [:label {:for "#map-height"} "highlight overlay"]
-      [:input#highlight-overlay
+      [:input#highlight-overlay.pull-right
        {:type :checkbox
         :checked @state/highlight-overlay
         :on-change #(reset! state/highlight-overlay (some-> % .-target .-checked))
@@ -171,29 +171,30 @@
 
      [:fieldset
       [:label {:for "#is-dm"} "DM"]
-      [:strong (if @state/dm? "yes" "no")]]
+      [:strong.pull-right (if @state/dm? "yes" "no")]]
 
      (when @state/dm?
        [:fieldset
         [:label {:for "#fog-of-war-mode"
                  :style {:display "block"}} "Fog of war: "]
 
-        [:label {:for "#fog-of-war-mode-reveil"
-                 :style {:margin-right "0.5em"}} "reveil"]
-        [:input#fog-of-war-mode-reveil
-         {:type :radio
-          :name "fog-of-war-mode"
-          :checked (= :reveil @state/fog-of-war-mode)
-          :on-change #(reset! state/fog-of-war-mode :reveil)}]
+        [:div.pull-right
+         [:label {:for "#fog-of-war-mode-reveil"
+                  :style {:margin-right "0.5em"}} "reveil"]
+         [:input#fog-of-war-mode-reveil
+          {:type :radio
+           :name "fog-of-war-mode"
+           :checked (= :reveil @state/fog-of-war-mode)
+           :on-change #(reset! state/fog-of-war-mode :reveil)}]
 
-        [:label {:for "#fog-of-war-mode-obscure"
-                 :style {:margin-right "0.5em"
-                         :margin-left "1em"}} "obscure"]
-        [:input#fog-of-war-mode-obscure
-         {:type :radio
-          :name "obscure"
-          :checked (= :obscure @state/fog-of-war-mode)
-          :on-change #(reset! state/fog-of-war-mode :obscure) }]])
+         [:label {:for "#fog-of-war-mode-obscure"
+                  :style {:margin-right "0.5em"
+                          :margin-left "1em"}} "obscure"]
+         [:input#fog-of-war-mode-obscure
+          {:type :radio
+           :name "obscure"
+           :checked (= :obscure @state/fog-of-war-mode)
+           :on-change #(reset! state/fog-of-war-mode :obscure) }]]])
      ]))
 
 
@@ -380,20 +381,27 @@
   @create-session
   (fn []
     [:div#session-new.flex-rows
-     [:h2 "New Session"]
-     [:pre (str "session id: " @ws/session-id)]
-     [:p "join link: "
+     [:p "player link: "
       (let [link (str (assoc-in (current-uri)
                                 [:query :join-session-id]
                                 @ws/session-id))]
-        [:a {:href link} link])]
+        [:input#player-join-url
+         {:type :text
+          :read-only true
+          :value link
+          :on-click
+          (fn []
+            (.select (js/document.getElementById "player-join-url"))
+            (js/document.execCommand "copy")
+            (js/alert "player link copied"))}])]
      [:div.game.flex-cols
       [<map-preview> {:style {:width "100%"}}]
       [:div.flex-rows
        {:style {:min-width "13em"
                 :padding-left "7px"}}
        [<map-definition-input>]
-       [<characters-list>]]]]))
+       [<characters-list>]]]
+     [:pre (str "session id: " @ws/session-id)]]))
 
 (defstate join-session
   :start (do
