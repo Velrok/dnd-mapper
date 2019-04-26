@@ -17,11 +17,6 @@
             uri)]
     (str "ws://" host ":" port "/ws")))
 
-(prn [::endpoint endpoint])
-
-
-
-
 (defonce instance-id (-> (Math/random) (* 10000000) int str))
 (defonce session-id (r/atom nil))
 (defonce session-host (r/atom nil))
