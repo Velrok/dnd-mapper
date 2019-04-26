@@ -2,11 +2,25 @@
   (:require [chord.client :refer [ws-ch]]
             [reagent.core :as r]
             [cljs.core.async :as a :refer [<! >! put! close!]]
+            [cemerick.uri :refer [uri]]
             [mount.core :as mount]
             [mount.core :refer-macros [defstate]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def pp (.-log js/console))
+
+(def endpoint
+  (let [{host :host port :port}
+        (-> js/window
+            .-location
+            .-href
+            uri)]
+    (str "ws://" host ":" port "/ws")))
+
+(prn [::endpoint endpoint])
+
+
+
 
 (defonce instance-id (-> (Math/random) (* 10000000) int str))
 (defonce session-id (r/atom nil))
@@ -18,7 +32,7 @@
 (defn join-or-create-session
   [session-id]
   (go
-    (let [{:keys [ws-channel error]} (<! (ws-ch "ws://localhost:3000/ws"))]
+    (let [{:keys [ws-channel error]} (<! (ws-ch endpoint))]
       (if-not error
         {:type ::channel
          :ch   ws-channel}
@@ -86,12 +100,12 @@
 
 
 ;(go
-;  (let [{:keys [ws-channel]} (<! (ws-ch "ws://localhost:3000/ws"))
+;  (let [{:keys [ws-channel]} (<! (ws-ch endpoint))
 ;        {:keys [message]} (<! ws-channel)]
 ;    (js/console.log "Got message from server:" (pr-str message))))
 
 ;(go
-;  (let [{:keys [ws-channel]} (<! (ws-ch "ws://localhost:3000/ws"))
+;  (let [{:keys [ws-channel]} (<! (ws-ch endpoint))
 ;        {:keys [message error]} (<! ws-channel)]
 ;    (if error
 ;      (js/console.log "Uh oh:" error)
