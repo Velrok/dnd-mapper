@@ -11,7 +11,7 @@
 
 (defonce fog-of-war-mode (r/atom :reveil)) ; :obscure
 
-(defonce reveiled-cells (r/atom {}))
+(defonce reveiled-cells (r/atom #{}))
 
 (defonce dnd-map
   (r/atom {:img-url "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"

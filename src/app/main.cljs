@@ -283,15 +283,20 @@
             [:tr.map-preview-row {:key (str "m-prev-y" y)}
              (doall
                (for [x (range @state/map-width)]
-                 (let [pos {:x x :y y}]
+                 (let [pos {:x x :y y}
+                       surrounding (for [dx (range -1 2)
+                                         dy (range -1 2)]
+                                     (-> pos
+                                         (update :x (partial + dx))
+                                         (update :y (partial + dy))))]
                  [:td.map-preview-cell
                   {:key (str "map-prev-yx-" y x)
                    :on-mouse-over (when @state/dm?
                                     (fn [e]
                                       (when (= 1 (.-buttons e))
                                         (case @state/fog-of-war-mode
-                                          :reveil  (swap! state/reveiled-cells assoc pos)
-                                          :obscure (swap! state/reveiled-cells dissoc pos)))))
+                                          :reveil  (swap! state/reveiled-cells #(apply conj % surrounding))
+                                          :obscure (swap! state/reveiled-cells #(apply disj % surrounding))))))
                   ; :on-click #_(fn [e]
                   ;             (if (contains? @state/reveiled-cells pos)
                   ;              (swap! state/reveiled-cells dissoc pos)
