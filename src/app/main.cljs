@@ -43,6 +43,16 @@
   (reset! state/map-height
           (some-> message :data :data)))
 
+(defmethod process-server-message! ::request-state-init
+  [_message]
+  (prn [::process-server-message!-request-state-init])
+  (when @state/dm?
+    (doseq [m [{:type ::reveiled-cells-reset :data @state/reveiled-cells}
+               {:type ::players-reset        :data @state/players}
+               {:type ::dnd-map-reset        :data @state/dnd-map}
+               {:type ::map-width-reset      :data @state/map-width}
+               {:type ::map-height-reset     :data @state/map-height}]]
+      (ws/send! m {:audience :guests}))))
 
 (defstate server-message-processor
   :start (do
@@ -118,17 +128,18 @@
   :start (do
            (state/guest-default-state!)
            (go
-             (let [server-messages (<! (ws/join! (get-in (browser/current-uri)
-                                                         [:query "join-session-id"])))]
-               @server-message-processor)))
-)
+             (let [_ (<! (ws/join! (get-in (browser/current-uri)
+                                         [:query "join-session-id"])))]
+               (ws/send! {:type ::request-state-init}
+                         {})
+               @server-message-processor))))
 
 (def views
   {:start        v/<start>
    :session-new  (partial v/<session-new>  {:state-init  create-session
-                                            :session-id ws/session-id})
+                                            :session-id  ws/session-id})
    :session-join (partial v/<session-join> {:state-init  join-session
-                                            :session-id ws/session-id})})
+                                            :session-id  ws/session-id})})
 
 (defn app
   []

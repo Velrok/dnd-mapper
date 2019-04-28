@@ -49,6 +49,17 @@
     (doseq [c targets]
       (go (>! c msg)))))
 
+(defmethod process-message! :host
+  [{:keys [session-id] :as msg} ch connections]
+  (let [targets (disj (->> (session-connections session-id connections)
+                           (filter #(true? (:host %)))
+                           (map :ch)
+                           set)
+                      ch)]
+    (log/info (format "[%s] Forwarding messge to %d guests." session-id (count targets)))
+    (doseq [c targets]
+      (go (>! c msg)))))
+
 (defmethod process-message! :default
   [message & _others]
   (log/warn (format "No handler for message audience %s" (:audience message))))
