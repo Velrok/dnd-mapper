@@ -10,3 +10,11 @@
       uri))
 
 (def pp (.-log js/console))
+
+(defn debug?
+  []
+  (if (some-> (current-uri)
+              :query
+              (get "debug"))
+    true
+    false))
