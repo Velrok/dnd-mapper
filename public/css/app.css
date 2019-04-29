@@ -124,7 +124,14 @@ fieldset label {
   border-radius: 10px;
 }
 
-.map-cell .token {
+.map-cell .token-wrapper {
+  width: 100%;
+  height: 100%;
+  padding: 0px;
+  margin: 0px;
+}
+
+.map-cell .token-wrapper .token {
   width: 100%;
   height: 100%;
   padding: 0px;

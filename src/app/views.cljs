@@ -249,11 +249,14 @@
                                         (filter
                                           (fn [p] (= pos (:position p))))
                                         first)]
-                    [<token> {:class (when-not (:player-visible p)
-                                             (if @state/dm?
-                                               "player-invisible-dm-mode"
-                                               "player-invisible"))}
-                     p])])))]))]]]]))
+                    [:div.token-wrapper
+                     [<token> {:class (when-not (:player-visible p)
+                                        (if @state/dm?
+                                          "player-invisible-dm-mode"
+                                          "player-invisible"))}
+                      p]
+                     #_[:span.token-map-label
+                      (:name p)]])])))]))]]]]))
 
 
 (defn <session-new>
