@@ -290,7 +290,7 @@
            session-id]}]
   @state-init
   [:div
-   [:h2 "Join session " @session-id]
+   [:p "Session " @session-id]
    [:div.flex-cols
     [<map> {:style {:width "100%"}}]
     [:div.flex-rows
