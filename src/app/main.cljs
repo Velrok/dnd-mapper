@@ -78,7 +78,7 @@
            (prn [::server-message-processor "stop"])
            (a/close! @server-message-processor)))
 
-(defstate create-session
+(defstate ^{:on-reload :noop} create-session
   :start (let [cells-watcher-id (gensym "reveiled-cells-sync")
                players-w-id     (gensym "players-sync")
                map-img-w-id     (gensym "map-img-sync")
@@ -127,7 +127,7 @@
           (doseq [[a w-id] (:w-ids @create-session)]
             (remove-watch a w-id))))
 
-(defstate join-session
+(defstate ^{:on-reload :noop} join-session
   :start (do
            (state/guest-default-state!)
            (go
