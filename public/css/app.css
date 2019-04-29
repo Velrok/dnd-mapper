@@ -43,7 +43,7 @@ fieldset label {
   margin-right: 1em;
 }
 
-.map-preview-wrapper {
+.map-wrapper {
   width: 100%;
   height: auto;
   max-width: unset;
@@ -55,13 +55,13 @@ fieldset label {
   position: relative;
 }
 
-.map-preview-img {
+.map-img {
   width: 100%;
   height: auto;
   display: inline-block;
 }
 
-.map-preview-tbody {
+.map-tbody {
   padding: 0px;
   margin: 0px;
   position: absolute;
@@ -78,7 +78,7 @@ fieldset label {
    */
 }
 
-.map-preview-row{
+.map-row{
   display: flex;
   flex: 1;
   /* 
@@ -87,7 +87,7 @@ fieldset label {
   */
 }
 
-.map-preview-cell {
+.map-cell {
   /* border: solid #55555555 1px; */
   background-color: transparent;
   padding: 0px;
@@ -108,7 +108,7 @@ fieldset label {
 }
 
 
-.char-avatar {
+.token {
   width: 50px;
   height: 50px;
   display: inline-block;
@@ -120,7 +120,7 @@ fieldset label {
   border-radius: 10px;
 }
 
-.map-preview-cell .char-avatar {
+.map-cell .token {
   width: 100%;
   height: 100%;
   padding: 0px;
