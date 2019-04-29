@@ -14,6 +14,8 @@
 
 (defn session-connections
   [s-id connections]
+  (assert (map? connections) (str (type connections)))
+  (assert (string? s-id) (str (type s-id)))
   (->> connections
        vals
        (filter #(= s-id (:session-id %)))
@@ -32,7 +34,7 @@
 
 (defmethod process-message! :others
   [{:keys [session-id] :as msg} ch connections]
-  (let [targets (disj (set (map :ch (session-connections connections session-id)))
+  (let [targets (disj (set (map :ch (session-connections session-id connections)))
                       ch)]
     (log/info (format "[%s] Forwarding messge to %d targets." session-id (count targets)))
     (doseq [c targets]
