@@ -66,7 +66,7 @@
         }]]
 
      [:fieldset
-      [:label {:for "#map-width"} "width"]
+      [:label {:for "#map-width"} "columns"]
       [:input#map-width.pull-right
        {:type :number
         :value @state/map-width
@@ -75,7 +75,7 @@
         }]]
 
      [:fieldset
-      [:label {:for "#map-height"} "height"]
+      [:label {:for "#map-height"} "rows"]
       [:input#map-height.pull-right
        {:type :number
         :min 1

@@ -39,6 +39,10 @@ nav ul {
   margin: 1em 0;
 }
 
+fieldset {
+  margin-bottom: 5px;
+}
+
 fieldset label {
   margin-right: 1em;
 }
