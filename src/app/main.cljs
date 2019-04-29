@@ -12,11 +12,14 @@
 
 (defmulti process-server-message!
   (fn [{:keys [message]}]
+    (when (browser/debug?)
+      (println (str "[" (-> message :data :type) "] < "
+                    (prn-str message))))
     (-> message :data :type)))
 
 (defmethod process-server-message! :default
   [{:keys [message]}]
-  (prn [:no-handler-for message]))
+  )
 
 (defmethod process-server-message! ::reveiled-cells-reset
   [{:keys [message]}]
@@ -145,7 +148,6 @@
   []
   [:div
    [:h1 "D&D Mapper"]
-   ;[<nav>]
    (let [active-view (get views @state/active-view-id)]
      [active-view])])
 
