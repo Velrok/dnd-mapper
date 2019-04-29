@@ -4,10 +4,9 @@
             [cljs.core.async :as a :refer [<! >! put! close!]]
             [cemerick.uri :refer [uri]]
             [mount.core :as mount]
+            [app.browser :as browser :refer [pp]]
             [mount.core :refer-macros [defstate]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
-
-(def pp (.-log js/console))
 
 (def endpoint
   (let [{host :host port :port proto :protocol}
@@ -47,7 +46,10 @@
         :or {audience :others}}]
   (go
     (when @session-ch
-      ;(prn [::send! msg :audience audience])
+      (when (browser/debug?)
+        (println (str "[" audience "]"
+                      " > "
+                      (prn-str msg))))
       (>! @session-ch
           {:session-id  (str @session-id)
            :host        @session-host

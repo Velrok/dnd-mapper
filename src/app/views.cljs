@@ -255,7 +255,7 @@
     [:div#session-new.flex-rows
      [:p "player link: "
       (let [link (str (assoc-in (browser/current-uri)
-                                [:query :join-session-id]
+                                [:query "join-session-id"]
                                 @session-id))]
         [:input#player-join-url
          {:type :text
