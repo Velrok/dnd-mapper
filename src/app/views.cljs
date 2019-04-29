@@ -133,9 +133,18 @@
                      "player-invisible"))]}
         [<token> p]
         [:div.flex-rows
-          [:p (:name p)]
           [:input {:type "text"
-                  :default-value (:img-url p)}]
+                   :value (:name p)
+                   :on-change #(swap! state/players
+                                      assoc-in
+                                      [(:id p) :name]
+                                      (some-> % .-target .-value))}]
+          [:input {:type "text"
+                   :value (:img-url p)
+                   :on-change #(swap! state/players
+                                      assoc-in
+                                      [(:id p) :img-url]
+                                      (some-> % .-target .-value))}]
           (when @state/dm?
             [:div.flex-cols
               [:label "Player visible"]
