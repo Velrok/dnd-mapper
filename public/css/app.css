@@ -201,3 +201,14 @@ a {
 .pull-left {
   float: left;
 }
+
+.token-map-label {
+  position: relative;
+  width: 0px;
+  height: 0px;
+  float: left;
+  transform: rotate(-45deg) translate(48px,-12px);
+  text-shadow: black 0 0 4px;
+  font-weigth: 900;
+  color: white;
+}

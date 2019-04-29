@@ -255,7 +255,7 @@
                                           "player-invisible-dm-mode"
                                           "player-invisible"))}
                       p]
-                     #_[:span.token-map-label
+                     [:span.token-map-label
                       (:name p)]])])))]))]]]]))
 
 
