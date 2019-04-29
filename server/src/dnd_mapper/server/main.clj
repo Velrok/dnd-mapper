@@ -74,7 +74,7 @@
   (ANY "/ws" {:keys [ws-channel] :as req}
        (a/go-loop
          [ws-ch ws-channel]
-         (let [timeout-ch (a/timeout (* 1000 60 10))]
+         (let [timeout-ch (a/timeout (* 1000 60 60 8))]
            (a/alt!
              timeout-ch (do
                           (log/info "Closing channel " ws-ch)
