@@ -124,7 +124,7 @@
    (merge {:style {:height "100px"}}
           attr)
    (doall
-     (for [p (vals @state/players)]
+     (for [p (sort-by :order (vals @state/players))]
        [:li.flex-cols.character-list-entry
         {:key (str "char-list-" (:id p))
          :class [(when-not (:player-visible p)
@@ -165,30 +165,37 @@
                      :checked (:dead p)}]])]]))
    (when @state/dm?
      [:li {:key "char-list-placeholder"}
-      (let [n (r/atom nil)
-            img (r/atom nil)
-            p-id (str (gensym "enemy"))]
+      (let [default-name (str "Enemy" (count @state/players))
+            token-name   (r/atom default-name)
+            default-img  "https://cdn.pixabay.com/photo/2016/03/22/17/28/transparent-background-1273346_960_720.png"
+            token-img    (r/atom default-img)
+            p-id         (str (gensym "token-"))
+            add-token   #(swap! state/players
+                                assoc
+                                p-id
+                                {:id             p-id
+                                 :order          (count @state/players)
+                                 :name           @token-name
+                                 :img-url        @token-img
+                                 :player-visible false
+                                 :on-map         false
+                                 :dead           false
+                                 :position       nil})]
         [:div.flex-cols
          [:div.token
-          {:style {:background-image (str "url(https://svgsilh.com/svg_v2/1270001.svg)")}
-           :on-click #(swap! state/players
-                             assoc
-                             p-id
-                             {:id             p-id
-                              :name           @n
-                              :img-url        @img
-                              :player-visible false
-                              :on-map         false
-                              :dead           false
-                              :position       nil})}]
+          {:style {:background-image (str "url(" (or @token-img (str default-img)) ")")}
+           :on-click add-token}]
          [:div.flex-rows
           [:p "Add"]
           [:input {:type "text"
-                   :placeholder (str "Enemy" (count @state/players))
-                   :on-change #(reset! n (-> % .-target .-value))}]
+                   :value (or @token-name default-name)
+                   :on-change #(reset! token-name (-> % .-target .-value))}]
           [:input {:type "text"
-                   :placeholder (str "http://")
-                   :on-change #(reset! img (-> % .-target .-value))}]]])])])
+                   :value (or @token-img default-img)
+                   :on-change #(reset! token-img (-> % .-target .-value))}]
+          [:button.btn
+           {:on-click add-token}
+           "add"]]])])])
 
 (defn <map>
   [attr]

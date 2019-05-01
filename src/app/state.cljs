@@ -19,27 +19,30 @@
 
 (defonce players
   (r/atom
-    {"neg1" {:id "neg1"
-             :name "Negwen"
-             :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
-             :player-visible true
-             :on-map false
-             :position nil
-             :dead false}
+    {"neg1"   {:id "neg1"
+               :order 1
+               :name "Negwen"
+               :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
+               :player-visible true
+               :on-map false
+               :position nil
+               :dead false}
      "ikara1" {:id "ikara1"
+               :order 2
                :name "Ikara"
                :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
                :player-visible true
                :on-map false
                :position nil
                :dead false}
-     "Udrik" {:id "Udrik"
-              :name "Udrik"
-              :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
-              :player-visible true
-              :on-map false
-              :position nil
-              :dead false}}))
+     "Udrik"  {:id "Udrik"
+               :order 3
+               :name "Udrik"
+               :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
+               :player-visible true
+               :on-map false
+               :position nil
+               :dead false}}))
 
 (defn host-default-state!
   []
