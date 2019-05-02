@@ -146,6 +146,10 @@
          (for [p (sort-by :order (vals @state/players))]
            [:li.flex-cols.character-list-entry
             {:key (str "char-list-" (:id p))
+             :on-mouse-over (when @state/dm?
+                              #(swap! state/players assoc-in [(:id p) :dm-focus] true))
+             :on-mouse-leave (when @state/dm?
+                               #(swap! state/players assoc-in [(:id p) :dm-focus] false))
              :class [(when-not (:player-visible p)
                        (if @state/dm?
                          "player-invisible-dm-mode"
@@ -237,10 +241,6 @@
                                          (case @state/fog-of-war-mode
                                            :reveil  (swap! state/reveiled-cells #(apply conj % surrounding))
                                            :obscure (swap! state/reveiled-cells #(apply disj % surrounding))))))
-                  ; :on-click #_(fn [e]
-                  ;             (if (contains? @state/reveiled-cells pos)
-                  ;              (swap! state/reveiled-cells dissoc pos)
-                  ;              (swap! state/reveiled-cells assoc pos nil)))
                    :on-drag-over #(.preventDefault %)
                    :on-drop (fn [e]
                               (.preventDefault e)
@@ -261,10 +261,12 @@
                                           (fn [p] (= pos (:position p))))
                                         first)]
                     [:div.token-wrapper
-                     [<token> {:class (when-not (:player-visible p)
+                     [<token> {:class [(when-not (:player-visible p)
                                         (if @state/dm?
                                           "player-invisible-dm-mode"
-                                          "player-invisible"))}
+                                          "player-invisible"))
+                                       (when (and @state/dm? (:dm-focus p))
+                                         "dm-focused")]}
                       p]
                      [:span.token-map-label
                       (:name p)]])])))]))]]]]))
