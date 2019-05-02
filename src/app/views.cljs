@@ -231,12 +231,12 @@
                                          (update :y (partial + dy))))]
                  [:td.map-cell
                   {:key (str "map-prev-yx-" y x)
-                   :on-mouse-over (when @state/dm?
-                                    (fn [e]
-                                      (when (= 1 (.-buttons e))
-                                        (case @state/fog-of-war-mode
-                                          :reveil  (swap! state/reveiled-cells #(apply conj % surrounding))
-                                          :obscure (swap! state/reveiled-cells #(apply disj % surrounding))))))
+                   :on-mouse-enter (when @state/dm?
+                                     (fn [e]
+                                       (when (= 1 (.-buttons e))
+                                         (case @state/fog-of-war-mode
+                                           :reveil  (swap! state/reveiled-cells #(apply conj % surrounding))
+                                           :obscure (swap! state/reveiled-cells #(apply disj % surrounding))))))
                   ; :on-click #_(fn [e]
                   ;             (if (contains? @state/reveiled-cells pos)
                   ;              (swap! state/reveiled-cells dissoc pos)
