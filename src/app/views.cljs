@@ -120,82 +120,86 @@
 
 (defn <token-list>
   [attr]
-  [:ul#characters-list
-   (merge {:style {:height "100px"}}
-          attr)
-   (doall
-     (for [p (sort-by :order (vals @state/players))]
-       [:li.flex-cols.character-list-entry
-        {:key (str "char-list-" (:id p))
-         :class [(when-not (:player-visible p)
-                   (if @state/dm?
-                     "player-invisible-dm-mode"
-                     "player-invisible"))]}
-        [<token> p]
-        [:div.flex-rows
-          [:input {:type "text"
-                   :value (:name p)
-                   :on-change #(swap! state/players
-                                      assoc-in
-                                      [(:id p) :name]
-                                      (some-> % .-target .-value))}]
-          [:input {:type "text"
-                   :value (:img-url p)
-                   :on-change #(swap! state/players
-                                      assoc-in
-                                      [(:id p) :img-url]
-                                      (some-> % .-target .-value))}]
-          (when @state/dm?
-            [:div.flex-cols
-              [:label "Player visible"]
-              [:input {:type :checkbox
-                       :on-change #(swap! state/players
-                                          assoc-in
-                                          [(:id p) :player-visible]
-                                          (some-> % .-target .-checked))
-                       :checked (:player-visible p)}]])
-          (when @state/dm?
-            [:div.flex-cols
-              [:label "Dead?"]
-              [:input {:type :checkbox
-                       :on-change #(swap! state/players
-                                          assoc-in
-                                          [(:id p) :dead]
-                                          (some-> % .-target .-checked))
-                     :checked (:dead p)}]])]]))
-   (when @state/dm?
-     [:li {:key "char-list-placeholder"}
-      (let [default-name (str "Enemy" (count @state/players))
-            token-name   (r/atom default-name)
-            default-img  "https://cdn.pixabay.com/photo/2016/03/22/17/28/transparent-background-1273346_960_720.png"
-            token-img    (r/atom default-img)
-            p-id         (str (gensym "token-"))
-            add-token   #(swap! state/players
-                                assoc
-                                p-id
-                                {:id             p-id
-                                 :order          (count @state/players)
-                                 :name           @token-name
-                                 :img-url        @token-img
-                                 :player-visible false
-                                 :on-map         false
-                                 :dead           false
-                                 :position       nil})]
-        [:div.flex-cols
-         [:div.token
-          {:style {:background-image (str "url(" (or @token-img (str default-img)) ")")}
-           :on-click add-token}]
-         [:div.flex-rows
-          [:p "Add"]
-          [:input {:type "text"
-                   :value (or @token-name default-name)
-                   :on-change #(reset! token-name (-> % .-target .-value))}]
-          [:input {:type "text"
-                   :value (or @token-img default-img)
-                   :on-change #(reset! token-img (-> % .-target .-value))}]
-          [:button.btn
-           {:on-click add-token}
-           "add"]]])])])
+  (let [default-name (str "Enemy " (count @state/players))
+        token-name   (r/atom default-name)
+        default-img  "https://cdn.pixabay.com/photo/2016/03/22/17/28/transparent-background-1273346_960_720.png"
+        token-img    (r/atom default-img)
+        p-id         (r/atom (str (gensym "token-")))
+        add-token    #(do (swap! state/players
+                             assoc
+                             @p-id
+                             {:id             @p-id
+                              :order          (count @state/players)
+                              :name           @token-name
+                              :img-url        @token-img
+                              :player-visible false
+                              :on-map         false
+                              :dead           false
+                              :position       nil})
+                          (reset! token-name (str "Enemy " (count @state/players)))
+                          (reset! p-id (str (gensym "token-"))))]
+    (fn []
+      [:ul#characters-list
+       (merge {:style {:height "100px"}}
+              attr)
+       (doall
+         (for [p (sort-by :order (vals @state/players))]
+           [:li.flex-cols.character-list-entry
+            {:key (str "char-list-" (:id p))
+             :class [(when-not (:player-visible p)
+                       (if @state/dm?
+                         "player-invisible-dm-mode"
+                         "player-invisible"))]}
+            [<token> p]
+            [:div.flex-rows
+             [:input {:type "text"
+                      :value (:name p)
+                      :on-change #(swap! state/players
+                                         assoc-in
+                                         [(:id p) :name]
+                                         (some-> % .-target .-value))}]
+             [:input {:type "text"
+                      :value (:img-url p)
+                      :on-change #(swap! state/players
+                                         assoc-in
+                                         [(:id p) :img-url]
+                                         (some-> % .-target .-value))}]
+             (when @state/dm?
+               [:div.flex-cols
+                [:label "Player visible"]
+                [:input {:type :checkbox
+                         :on-change #(swap! state/players
+                                            assoc-in
+                                            [(:id p) :player-visible]
+                                            (some-> % .-target .-checked))
+                         :checked (:player-visible p)}]])
+             (when @state/dm?
+               [:div.flex-cols
+                [:label "Dead?"]
+                [:input {:type :checkbox
+                         :on-change #(swap! state/players
+                                            assoc-in
+                                            [(:id p) :dead]
+                                            (some-> % .-target .-checked))
+                         :checked (:dead p)}]])]]))
+       (when @state/dm?
+         [:li {:key "char-list-placeholder"}
+
+          [:div.flex-cols
+           [:div.token
+            {:style {:background-image (str "url(" (or @token-img (str default-img)) ")")}
+             :on-click add-token}]
+           [:div.flex-rows
+            [:p "Add"]
+            [:input {:type      "text"
+                     :value     (or @token-name default-name)
+                     :on-change #(reset! token-name (-> % .-target .-value))}]
+            [:input {:type      "text"
+                     :value     (or @token-img default-img)
+                     :on-change #(reset! token-img (-> % .-target .-value))}]
+            [:button.btn
+             {:on-click add-token}
+             "add"]]]])])))
 
 (defn <map>
   [attr]
