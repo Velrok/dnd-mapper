@@ -185,7 +185,17 @@
                                             assoc-in
                                             [(:id p) :dead]
                                             (some-> % .-target .-checked))
-                         :checked (:dead p)}]])]]))
+                         :checked (:dead p)}]])
+             (when @state/dm?
+               [:div.flex-cols
+                [:button.btn
+                 {:style {:width "100%"
+                          :font-size "0.5em"
+                          :background-color "#FF8C5F"}
+                  :on-click #(swap! state/players
+                                    dissoc
+                                    (:id p))}
+                 "delete"]])]]))
        (when @state/dm?
          [:li {:key "char-list-placeholder"}
 
