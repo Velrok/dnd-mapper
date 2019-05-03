@@ -39,7 +39,6 @@
                map-img-w-id     (gensym "map-img-sync")
                map-width-w-id   (gensym "map-width-sync")
                map-height-w-id  (gensym "map-height-sync")]
-           (state/host-default-state!)
            (go
              (let [server-messages (<! (ws/create!))]
                @server-message-processor))
@@ -49,12 +48,7 @@
                         (ws/send! {:type ::reveiled-cells-reset
                                    :data new-val}
                                   {:audience :guests})))
-           (add-watch state/players
-                      players-w-id
-                      (fn [_k _a _old new-val]
-                        (ws/send! {:type ::players-reset
-                                   :data new-val}
-                                  {:audience :guests})))
+           
            (add-watch state/dnd-map
                       map-img-w-id
                       (fn [_k _a _old new-val]
@@ -74,7 +68,6 @@
                                    :data new-val}
                                   {:audience :guests})))
            {:watchers [[state/reveiled-cells cells-watcher-id]
-                       [state/players        players-w-id]
                        [state/dnd-map        map-img-w-id]
                        [state/map-width      map-width-w-id]
                        [state/map-height     map-height-w-id]]})
@@ -84,7 +77,6 @@
 
 (defstate ^{:on-reload :noop} join-session
   :start (do
-           (state/guest-default-state!)
            (go
              (let [_ (<! (ws/join! (get-in (browser/current-uri)
                                          [:query "join-session-id"])))]
@@ -108,6 +100,7 @@
      :dm? false
      :fog-of-war-mode :reveil
      :reveiled-cells #{}
+     :session-id nil
      :players {"neg1"   {:id "neg1"
                          :order 1
                          :name "Negwen"
@@ -132,7 +125,6 @@
                          :on-map false
                          :position nil
                          :dead false}}}))
-; Query
 
 (def views
   {:start        v/<start>
@@ -140,11 +132,43 @@
                                             :session-id  ws/session-id})
    :session-join (partial v/<session-join> {:state-init  join-session
                                             :session-id  ws/session-id})})
+(rf/reg-event-db
+  :change-active-view
+  (fn [db [_ view-id]]
+    (assoc db :active-view-id view-id )))
+
+(rf/reg-event-db
+  :host-session
+  (fn [db [_ session-id]]
+    (-> db
+        (assoc :session-id session-id)
+        (assoc :dm? true)
+        (assoc :active-view-id :session-new))))
+
+(rf/reg-event-db
+  :join-session
+  (fn [db [_ session-id]]
+    (-> db
+        (assoc :session-id session-id)
+        (assoc :dm? false)
+        (assoc :active-view-id :session-join))))
+
+; Query
 
 (rf/reg-sub
   :active-view
   (fn [db _query-vec]
     (get views (:active-view-id db))))
+
+(rf/reg-sub
+  :token-count
+  (fn [db _query-vec]
+    (-> db :players count)))
+
+(rf/reg-sub
+  :tokens
+  (fn [db _query-vec]
+    (-> db :players)))
 
 ; View Functions
 
