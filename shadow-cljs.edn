@@ -4,6 +4,7 @@
 
  :dependencies
  [[reagent "0.8.1"]
+  [re-frame "0.10.5"]
   [com.arohner/uri "0.1.2"]
   [jarohen/chord "0.8.1"]
   [mount "0.1.16"]

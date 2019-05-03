@@ -1,6 +1,8 @@
 (ns app.main
   (:require
+    [re-frame.core :as rf]
     [reagent.core :as r]
+    [app.message-processing :as msg-process]
     [app.state :as state]
     [mount.core :as mount]
     [mount.core :refer-macros [defstate]]
@@ -9,53 +11,6 @@
     [app.websocket-io :as ws]
     [cljs.core.async :as a :refer [chan >! <! close!]]
     [cljs.core.async :refer-macros [go]]))
-
-(defmulti process-server-message!
-  (fn [{:keys [message]}]
-    (when (browser/debug?)
-      (println (str "[" (-> message :data :type) "] < "
-                    (prn-str message))))
-    (-> message :data :type)))
-
-(defmethod process-server-message! :default
-  [{:keys [message]}]
-  )
-
-(defmethod process-server-message! ::reveiled-cells-reset
-  [{:keys [message]}]
-  (reset! state/reveiled-cells
-          (some-> message :data :data)))
-
-(defmethod process-server-message! ::players-reset
-  [{:keys [message]}]
-  (reset! state/players
-          (some-> message :data :data)))
-
-(defmethod process-server-message! ::dnd-map-reset
-  [{:keys [message]}]
-  (reset! state/dnd-map
-          (some-> message :data :data)))
-
-(defmethod process-server-message! ::map-width-reset
-  [{:keys [message]}]
-  (reset! state/map-width
-          (some-> message :data :data)))
-
-(defmethod process-server-message! ::map-height-reset
-  [{:keys [message]}]
-  (reset! state/map-height
-          (some-> message :data :data)))
-
-(defmethod process-server-message! ::request-state-init
-  [_message]
-  (prn [::process-server-message!-request-state-init])
-  (when @state/dm?
-    (doseq [m [{:type ::reveiled-cells-reset :data @state/reveiled-cells}
-               {:type ::players-reset        :data @state/players}
-               {:type ::dnd-map-reset        :data @state/dnd-map}
-               {:type ::map-width-reset      :data @state/map-width}
-               {:type ::map-height-reset     :data @state/map-height}]]
-      (ws/send! m {:audience :guests}))))
 
 (defstate server-message-processor
   :start (do
@@ -69,7 +24,7 @@
                    (go
                      (loop []
                        (if-let [msg (<! my-ch)]
-                         (do (process-server-message! msg)
+                         (do (msg-process/process-server-message! msg)
                              (recur))
                          (do (prn [:empty-message])
                              (a/close! my-ch)))))))
@@ -137,6 +92,48 @@
                          {})
                @server-message-processor))))
 
+; Event dispatch
+
+; Event Handlers
+
+(rf/reg-event-db
+  :initialize
+  (fn [_db _event]
+    {:active-view-id :start
+     :highlight-overlay false
+     :map {:width 35
+           :height 50
+           :img-url  "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"
+           :img-alt  "Created by DLIMedia: https://www.deviantart.com/dlimedia/art/Abandoned-Temple-of-Blackfire-285053467"}
+     :dm? false
+     :fog-of-war-mode :reveil
+     :reveiled-cells #{}
+     :players {"neg1"   {:id "neg1"
+                         :order 1
+                         :name "Negwen"
+                         :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
+                         :player-visible true
+                         :on-map false
+                         :position nil
+                         :dead false}
+               "ikara1" {:id "ikara1"
+                         :order 2
+                         :name "Ikara"
+                         :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
+                         :player-visible true
+                         :on-map false
+                         :position nil
+                         :dead false}
+               "Udrik"  {:id "Udrik"
+                         :order 3
+                         :name "Udrik"
+                         :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
+                         :player-visible true
+                         :on-map false
+                         :position nil
+                         :dead false}}}))
+; Query
+
 (def views
   {:start        v/<start>
    :session-new  (partial v/<session-new>  {:state-init  create-session
@@ -144,11 +141,20 @@
    :session-join (partial v/<session-join> {:state-init  join-session
                                             :session-id  ws/session-id})})
 
+(rf/reg-sub
+  :active-view
+  (fn [db _query-vec]
+    (get views (:active-view-id db))))
+
+; View Functions
+
+
+
 (defn app
   []
   [:div
    [:h1 "D&D Mapper"]
-   (let [active-view (get views @state/active-view-id)]
+   (let [active-view @(rf/subscribe [:active-view])]
      [active-view])])
 
 
@@ -159,4 +165,5 @@
 
 (defn ^:export  main
   []
+  (rf/dispatch-sync [:initialize])
   (render))
