@@ -33,56 +33,7 @@
            (prn [::server-message-processor "stop"])
            (a/close! @server-message-processor)))
 
-(defstate ^{:on-reload :noop} create-session
-  :start (let [cells-watcher-id (gensym "reveiled-cells-sync")
-               players-w-id     (gensym "players-sync")
-               map-img-w-id     (gensym "map-img-sync")
-               map-width-w-id   (gensym "map-width-sync")
-               map-height-w-id  (gensym "map-height-sync")]
-           (go
-             (let [server-messages (<! (ws/create!))]
-               @server-message-processor))
-           (add-watch state/reveiled-cells
-                      cells-watcher-id
-                      (fn [_k _a _old new-val]
-                        (ws/send! {:type ::reveiled-cells-reset
-                                   :data new-val}
-                                  {:audience :guests})))
-           
-           (add-watch state/dnd-map
-                      map-img-w-id
-                      (fn [_k _a _old new-val]
-                        (ws/send! {:type ::dnd-map-reset
-                                   :data new-val}
-                                  {:audience :guests})))
-           (add-watch state/map-width
-                      map-width-w-id
-                      (fn [_k _a _old new-val]
-                        (ws/send! {:type ::map-width-reset
-                                   :data new-val}
-                                  {:audience :guests})))
-           (add-watch state/map-height
-                      map-height-w-id
-                      (fn [_k _a _old new-val]
-                        (ws/send! {:type ::map-height-reset
-                                   :data new-val}
-                                  {:audience :guests})))
-           {:watchers [[state/reveiled-cells cells-watcher-id]
-                       [state/dnd-map        map-img-w-id]
-                       [state/map-width      map-width-w-id]
-                       [state/map-height     map-height-w-id]]})
-  :stop (do
-          (doseq [[a w-id] (:w-ids @create-session)]
-            (remove-watch a w-id))))
 
-(defstate ^{:on-reload :noop} join-session
-  :start (do
-           (go
-             (let [_ (<! (ws/join! (get-in (browser/current-uri)
-                                         [:query "join-session-id"])))]
-               (ws/send! {:type ::request-state-init}
-                         {})
-               @server-message-processor))))
 
 ; Event dispatch
 
@@ -97,7 +48,7 @@
            :height 50
            :img-url  "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"
            :img-alt  "Created by DLIMedia: https://www.deviantart.com/dlimedia/art/Abandoned-Temple-of-Blackfire-285053467"}
-     :dm? false
+     :dm? true
      :fog-of-war-mode :reveil
      :reveiled-cells #{}
      :session-id nil
@@ -128,10 +79,9 @@
 
 (def views
   {:start        v/<start>
-   :session-new  (partial v/<session-new>  {:state-init  create-session
-                                            :session-id  ws/session-id})
-   :session-join (partial v/<session-join> {:state-init  join-session
-                                            :session-id  ws/session-id})})
+   :session-new  (partial v/<session-new>  {:session-id  ws/session-id})
+   :session-join (partial v/<session-join> {:session-id  ws/session-id})})
+
 (rf/reg-event-db
   :change-active-view
   (fn [db [_ view-id]]
@@ -158,6 +108,25 @@
   (fn [db [_ value]]
     (-> db (assoc :highlight-overlay value))))
 
+(rf/reg-event-db
+  :map-img-url-changed
+  (fn [db [_ img-url]]
+    (-> db
+        (assoc-in [:map :img-url] img-url)
+        (assoc-in [:map :img-alt] ""))))
+
+(rf/reg-event-db
+  :map-width-changed
+  (fn [db [_ w]]
+    (-> db
+        (assoc-in [:map :width] w))))
+
+(rf/reg-event-db
+  :map-height-changed
+  (fn [db [_ h]]
+    (-> db
+        (assoc-in [:map :height] h))))
+
 ; Query
 
 (rf/reg-sub
@@ -179,6 +148,31 @@
   :highlight-overlay
   (fn [db _query-vec]
     (-> db :highlight-overlay)))
+
+(rf/reg-sub
+  :map-width
+  (fn [db _query-vec]
+    (some-> db :map :width)))
+
+(rf/reg-sub
+  :map-height
+  (fn [db _query-vec]
+    (some-> db :map :height)))
+
+(rf/reg-sub
+  :map-img-url
+  (fn [db _query-vec]
+    (some-> db :map :img-url)))
+
+(rf/reg-sub
+  :map-img-alt
+  (fn [db _query-vec]
+    (some-> db :map :img-alt)))
+
+(rf/reg-sub
+  :dm?
+  (fn [db _query-vec]
+    (some-> db :dm?)))
 
 ; View Functions
 

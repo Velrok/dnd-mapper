@@ -55,17 +55,18 @@
       [:label {:for "#map-url"} "url"]
       [:input#map-url.pull-right
        {:type :url
-        :value (:img-url @state/dnd-map)
-        :on-change #(swap! state/dnd-map assoc :img-url (some-> % .-target .-value))
-        }]]
+        :value @(rf/subscribe [:map-img-url])
+        :on-change #(rf/dispatch [:map-img-url-changed
+                                  (some-> % .-target .-value)])}]]
 
      [:fieldset
       [:label {:for "#map-width"} "columns"]
       [:input#map-width.pull-right
        {:type :number
-        :value @state/map-width
+        :value @(rf/subscribe [:map-width])
         :min 1
-        :on-change #(reset! state/map-width (some-> % .-target .-value int))
+        :on-change #(rf/dispatch [:map-width-changed
+                                  (some-> % .-target .-value int)])
         }]]
 
      [:fieldset
@@ -73,8 +74,9 @@
       [:input#map-height.pull-right
        {:type :number
         :min 1
-        :value @state/map-height
-        :on-change #(reset! state/map-height (some-> % .-target .-value int))
+        :value @(rf/subscribe [:map-height])
+        :on-change #(rf/dispatch [:map-height-changed
+                                  (some-> % .-target .-value int)])
         }]]
 
      [:fieldset
@@ -87,9 +89,9 @@
 
      [:fieldset
       [:label {:for "#is-dm"} "DM"]
-      [:strong.pull-right (if @state/dm? "yes" "no")]]
+      [:strong.pull-right (if @(rf/subscribe [:dm?]) "yes" "no")]]
 
-     (when @state/dm?
+     (when @(rf/subscribe [:dm?])
        [:fieldset
         [:label {:for "#fog-of-war-mode"
                  :style {:display "block"}} "Fog of war: "]
@@ -136,12 +138,12 @@
          (for [p (sort-by :order (vals @(rf/subscribe [:tokens])))]
            [:li.flex-cols.character-list-entry
             {:key (str "char-list-" (:id p))
-             :on-mouse-over (when @state/dm?
+             :on-mouse-over (when @(rf/subscribe [:dm?])
                               #(rf/dispatch [:token-gain-dm-focus (:id p)]))
-             :on-mouse-leave (when @state/dm?
+             :on-mouse-leave (when @(rf/subscribe [:dm?])
                                #(rf/dispatch [:token-loose-dm-focus (:id p)]))
              :class [(when-not (:player-visible p)
-                       (if @state/dm?
+                       (if @(rf/subscribe [:dm?])
                          "player-invisible-dm-mode"
                          "player-invisible"))]}
             [<token> p]
@@ -154,21 +156,21 @@
                       :value (:img-url p)
                       :on-change #(rf/dispatch [:token-img-url-change
                                                 (some-> % .-target .-value)])}]
-             (when @state/dm?
+             (when @(rf/subscribe [:dm?])
                [:div.flex-cols
                 [:label "Player visible"]
                 [:input {:type :checkbox
                          :on-change #(rf/dispatch [:token-visitble-change]
                                                   (some-> % .-target .-checked))
                          :checked (:player-visible p)}]])
-             (when @state/dm?
+             (when @(rf/subscribe [:dm?])
                [:div.flex-cols
                 [:label "Dead?"]
                 [:input {:type :checkbox
                          :on-change #(rf/dispatch [:token-dead-change
                                                    (some-> % .-target .-checked)])
                          :checked (:dead p)}]])
-             (when @state/dm?
+             (when @(rf/subscribe [:dm?])
                [:div.flex-cols
                 [:button.btn
                  {:style {:width "100%"
@@ -176,7 +178,7 @@
                           :background-color "#FF8C5F"}
                   :on-click #(rf/dispatch [:delete-token (:id p)])}
                  "delete"]])]]))
-       (when @state/dm?
+       (when @(rf/subscribe [:dm?])
          [:li {:key "char-list-placeholder"}
 
           [:div.flex-cols
@@ -201,22 +203,22 @@
     [:div#map
      attr
      [:div.map-wrapper
-      {:class [(when @state/dm?
+      {:class [(when @(rf/subscribe [:dm?])
                  "dm-mode")]
-       :style (when @state/dm?
+       :style (when @(rf/subscribe [:dm?])
                 {:cursor (case @state/fog-of-war-mode
                            :reveil "copy"
                            :obscure "no-drop")})}
-      [:img.map-img {:src (:img-url @state/dnd-map)
-                             :alt (:alt @state/dnd-map)}]
+      [:img.map-img {:src @(rf/subscribe [:map-img-url])
+                     :alt @(rf/subscribe [:map-img-alt])}]
       [:table.map-table
        [:tbody.map-tbody
         {:style {:top "0px" :left "0px" :right "0px" :bottom "0px"}}
         (doall
-          (for [y (range @state/map-height)]
+          (for [y (range @(rf/subscribe [:map-height]))]
             [:tr.map-row {:key (str "m-prev-y" y)}
              (doall
-               (for [x (range @state/map-width)]
+               (for [x (range @(rf/subscribe [:map-width]))]
                  (let [pos {:x x :y y}
                        surrounding (for [dx (range -1 2)
                                          dy (range -1 2)]
@@ -225,7 +227,7 @@
                                          (update :y (partial + dy))))]
                  [:td.map-cell
                   {:key (str "map-prev-yx-" y x)
-                   :on-mouse-enter (when @state/dm?
+                   :on-mouse-enter (when @(rf/subscribe [:dm?])
                                      (fn [e]
                                        (when (= 1 (.-buttons e))
                                          (case @state/fog-of-war-mode
@@ -252,10 +254,10 @@
                                         first)]
                     [:div.token-wrapper
                      [<token> {:class [(when-not (:player-visible p)
-                                        (if @state/dm?
+                                        (if @(rf/subscribe [:dm?])
                                           "player-invisible-dm-mode"
                                           "player-invisible"))
-                                       (when (and @state/dm? (:dm-focus p))
+                                       (when (and @(rf/subscribe [:dm?]) (:dm-focus p))
                                          "dm-focused")]}
                       p]
                      [:span.token-map-label
@@ -263,9 +265,7 @@
 
 
 (defn <session-new>
-  [{:keys [state-init
-           session-id]}]
-  @state-init
+  [{:keys [session-id]}]
   (fn []
     [:div#session-new.flex-rows
      [:p "player link: "
@@ -292,9 +292,7 @@
 
 
 (defn <session-join>
-  [{:keys [state-init
-           session-id]}]
-  @state-init
+  [{:keys [session-id]}]
   [:div
    [:p "Session " @session-id]
    [:div.flex-cols
