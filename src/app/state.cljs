@@ -1,9 +1,6 @@
 (ns app.state
   (:require [reagent.core :as r]))
 
-(defonce active-view-id (r/atom :start))
-
-(defonce highlight-overlay (r/atom false))
 (defonce map-width  (r/atom 35))
 (defonce map-height (r/atom 50))
 (defonce dm?        (r/atom false))

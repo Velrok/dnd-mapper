@@ -153,6 +153,11 @@
         (assoc :dm? false)
         (assoc :active-view-id :session-join))))
 
+(rf/reg-event-db
+  :highlight-overlay-changed
+  (fn [db [_ value]]
+    (-> db (assoc :highlight-overlay value))))
+
 ; Query
 
 (rf/reg-sub
@@ -169,6 +174,11 @@
   :tokens
   (fn [db _query-vec]
     (-> db :players)))
+
+(rf/reg-sub
+  :highlight-overlay
+  (fn [db _query-vec]
+    (-> db :highlight-overlay)))
 
 ; View Functions
 

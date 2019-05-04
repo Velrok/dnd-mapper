@@ -81,9 +81,9 @@
       [:label {:for "#map-height"} "highlight overlay"]
       [:input#highlight-overlay.pull-right
        {:type :checkbox
-        :checked @state/highlight-overlay
-        :on-change #(reset! state/highlight-overlay (some-> % .-target .-checked))
-        }]]
+        :checked   @(rf/subscribe [:highlight-overlay])
+        :on-change #(rf/dispatch [:highlight-overlay-changed
+                                  (some-> % .-target .-checked)]) }]]
 
      [:fieldset
       [:label {:for "#is-dm"} "DM"]
@@ -240,7 +240,7 @@
                                                       (filter (fn [p] (= id (:id p))))
                                                       first)]
                                   (rf/dispatch [:token-position-change (:id p) pos]))))
-                   :class [(when @state/highlight-overlay
+                   :class [(when @(rf/subscribe [:highlight-overlay])
                              "map-cell__highlight")
                            (when-not (contains? @state/reveiled-cells
                                                 pos)
