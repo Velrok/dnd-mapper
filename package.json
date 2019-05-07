@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "deps": "npm install",
-    "watch": "shadow-cljs watch app",
+    "watch": "shadow-cljs watch --debug app",
     "prepare": "shadow-cljs release app",
     "start": "shadow-cljs server",
     "stop": "shadow-cljs stop",

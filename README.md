@@ -16,4 +16,4 @@ The backend is written in clojure the frontend in clojure script via `shadow-clj
 
  - start the backend `lein run`
     - or run `lein repl` and eval `(mount/start)` in the `dnd-mapper.server.main` namespace
- - start the clojurescript compilation pipeline via `shadow-cljs watch --debug app`
+ - start the clojurescript compilation pipeline via `npm run watch`
