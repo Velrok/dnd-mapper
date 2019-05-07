@@ -1,0 +1,220 @@
+/*
+ * font-family: 'Open Sans Condensed', sans-serif;
+ * font-family: 'Cinzel Decorative', cursive;
+ * font-family: 'Open Sans', sans-serif;
+*/
+
+body {
+  font-size: 18px;
+  font-family: 'Open Sans', sans-serif;
+  padding: 1em;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Cinzel Decorative', cursive;
+  margin-bottom: 0.5em;
+}
+
+input {
+  font-family: 'Open Sans Condensed', sans-serif;
+  font-size: 0.9rem;
+
+}
+
+h1 {
+  font-size: 4rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+nav li {
+  display: inline;
+  margin-right: 2em;
+  text-decoration: underline;
+}
+
+nav ul {
+  margin: 1em 0;
+}
+
+fieldset {
+  margin-bottom: 5px;
+}
+
+fieldset label {
+  margin-right: 1em;
+}
+
+.map-wrapper {
+  width: 100%;
+  height: auto;
+  max-width: unset;
+  max-height: unset;
+  padding: unset;
+  margin: unset;
+  display: block;
+  overflow: unset;
+  position: relative;
+}
+
+.map-img {
+  width: 100%;
+  height: auto;
+  display: inline-block;
+}
+
+.map-tbody {
+  padding: 0px;
+  margin: 0px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  display: flex;
+  flex-flow: column;
+  /* flex-wrap: wrap;
+  height: 100%;
+  width: 100%;
+  flex: 1;
+  justify-content: center;
+  align-items: stretch;
+   */
+}
+
+.map-row{
+  display: flex;
+  flex: 1;
+  /* 
+  background-color: #00004499;
+  align-items: stretch;
+  */
+}
+
+.map-cell {
+  /* border: solid #55555555 1px; */
+  background-color: transparent;
+  padding: 0px;
+  margin: 0px;
+  display: flex;
+  flex: 1;
+  /*
+  height: 100px;
+  */
+}
+
+.map-cell__active {
+  background-color: black;
+}
+
+.map-cell__highlight {
+  border: solid #458BC163 1px;
+}
+
+
+.token {
+  width: 50px;
+  height: 50px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  margin: 3px;
+  border: solid gray 2px;
+  border-radius: 10px;
+}
+
+.map-cell .token-wrapper {
+  width: 100%;
+  height: 100%;
+  padding: 0px;
+  margin: 0px;
+}
+
+
+.token-wrapper .token {
+  width: 100%;
+  height: 100%;
+  padding: 0px;
+  margin: 0px;
+  border: solid yellow 1px;
+}
+
+.map-cell .token-wrapper .dm-focused {
+  border: solid #EF7443 1px;
+  box-shadow: #EF7443 0 0 14px;
+}
+
+.fog-of-war {
+  background-color: white;
+}
+
+.dm-mode .fog-of-war {
+  background-color: #326D9A70;
+}
+
+#session-new {
+  display: flex;
+}
+
+.flex-rows {
+  display: flex;
+  flex-flow: column;
+}
+
+.flex-cols {
+  display: flex;
+  flex-flow: row;
+}
+
+.player-invisible {
+  display: none;
+}
+
+.player-invisible-dm-mode {
+  opacity:0.5;
+}
+
+#map-definition-input {
+  margin-bottom: 10px;
+}
+
+.character-list-entry {
+  margin-bottom: 0.7em;
+}
+
+.size-medium {
+  font-size: 1em;
+}
+
+.btn {
+  font-size: 1em;
+  background-color: #5FABE6;
+}
+
+.game {
+  margin: 5px 0px;
+}
+
+a {
+  color: #743B24;
+}
+
+.pull-right {
+  float: right;
+}
+
+.pull-left {
+  float: left;
+}
+
+.token-map-label {
+  position: relative;
+  width: 0px;
+  height: 0px;
+  float: left;
+  transform: rotate(-45deg) translate(48px,-12px);
+  text-shadow: black 0 0 4px;
+  font-weigth: 900;
+  color: white;
+}
