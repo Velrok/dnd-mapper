@@ -120,10 +120,9 @@
         token-name   (r/atom default-name)
         default-img  "/images/monster.png"
         token-img    (r/atom default-img)
-        p-id         (r/atom (str (gensym "token-")))
         add-token    #(rf/dispatch [:add-token
-                                    {:id             @p-id
-                                     :order          (rf/subscribe [:token-count])
+                                    {:id             (str "token-" @(rf/subscribe [:token-count]))
+                                     :order          @(rf/subscribe [:token-count])
                                      :name           @token-name
                                      :img-url        @token-img
                                      :player-visible false
@@ -160,14 +159,16 @@
                [:div.flex-cols
                 [:label "Player visible"]
                 [:input {:type :checkbox
-                         :on-change #(rf/dispatch [:token-visitble-change]
-                                                  (some-> % .-target .-checked))
+                         :on-change #(rf/dispatch [:token-visitble-change
+                                                   (:id p)
+                                                   (some-> % .-target .-checked)])
                          :checked (:player-visible p)}]])
              (when @(rf/subscribe [:dm?])
                [:div.flex-cols
                 [:label "Dead?"]
                 [:input {:type :checkbox
                          :on-change #(rf/dispatch [:token-dead-change
+                                                   (:id p)
                                                    (some-> % .-target .-checked)])
                          :checked (:dead p)}]])
              (when @(rf/subscribe [:dm?])

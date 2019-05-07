@@ -151,9 +151,30 @@
 (rf/reg-event-db
   :reveil-cells
   (fn [db [_ cells]]
-    (prn [(type (:reveiled-cells db))])
     (-> db
-        (update-in [:reveiled-cells] conj cells))))
+        (update-in [:reveiled-cells] #(into % cells)))))
+
+
+(rf/reg-event-db
+  :token-dead-change
+  (fn [db [_ token-id dead?]]
+    (-> db (assoc-in [:players token-id :dead] dead?))))
+
+(rf/reg-event-db
+  :token-visitble-change
+  (fn [db [_ token-id visible?]]
+    (-> db (assoc-in [:players token-id :player-visible] visible?))))
+
+(rf/reg-event-db
+  :add-token
+  (fn [db [_ token]]
+    (-> db (assoc-in [:players (:id token)] token))))
+
+(rf/reg-event-db
+  :delete-token
+  (fn [db [_ token-id]]
+    (-> db (update-in [:players] dissoc token-id))))
+
 
 ; Query
 
