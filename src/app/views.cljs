@@ -102,8 +102,8 @@
          [:input#fog-of-war-mode-reveil
           {:type :radio
            :name "fog-of-war-mode"
-           :checked (= :reveil @state/fog-of-war-mode)
-           :on-change #(reset! state/fog-of-war-mode :reveil)}]
+           :checked (= :reveil @(rf/subscribe [:fog-of-war-mode]))
+           :on-change #(rf/dispatch [:set-fog-of-war-mode :reveil])}]
 
          [:label {:for "#fog-of-war-mode-obscure"
                   :style {:margin-right "0.5em"
@@ -111,8 +111,8 @@
          [:input#fog-of-war-mode-obscure
           {:type :radio
            :name "obscure"
-           :checked (= :obscure @state/fog-of-war-mode)
-           :on-change #(reset! state/fog-of-war-mode :obscure) }]]])]))
+           :checked (= :obscure @(rf/subscribe [:fog-of-war-mode]))
+           :on-change #(rf/dispatch [:set-fog-of-war-mode :obscure])}]]])]))
 
 (defn <token-list>
   [attr]
@@ -206,7 +206,7 @@
       {:class [(when @(rf/subscribe [:dm?])
                  "dm-mode")]
        :style (when @(rf/subscribe [:dm?])
-                {:cursor (case @state/fog-of-war-mode
+                {:cursor (case @(rf/subscribe [:fog-of-war-mode])
                            :reveil "copy"
                            :obscure "no-drop")})}
       [:img.map-img {:src @(rf/subscribe [:map-img-url])
@@ -230,9 +230,9 @@
                    :on-mouse-enter (when @(rf/subscribe [:dm?])
                                      (fn [e]
                                        (when (= 1 (.-buttons e))
-                                         (case @state/fog-of-war-mode
-                                           :reveil  (swap! state/reveiled-cells #(apply conj % surrounding))
-                                           :obscure (swap! state/reveiled-cells #(apply disj % surrounding))))))
+                                         (case @(rf/subscribe [:fog-of-war-mode])
+                                           :reveil  (rf/dispatch [:reveil-cells surrounding])
+                                           :obscure (rf/dispatch [:obscure-cells surrounding])))))
                    :on-drag-over #(.preventDefault %)
                    :on-drop (fn [e]
                               (.preventDefault e)
@@ -244,7 +244,7 @@
                                   (rf/dispatch [:token-position-change (:id p) pos]))))
                    :class [(when @(rf/subscribe [:highlight-overlay])
                              "map-cell__highlight")
-                           (when-not (contains? @state/reveiled-cells
+                           (when-not (contains? @(rf/subscribe [:reveiled-cells])
                                                 pos)
                              "fog-of-war")]}
                   (when-let [p (some->> @(rf/subscribe [:tokens])

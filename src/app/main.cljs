@@ -59,6 +59,7 @@
                          :player-visible true
                          :on-map false
                          :position nil
+                         :dm-focus false
                          :dead false}
                "ikara1" {:id "ikara1"
                          :order 2
@@ -67,6 +68,7 @@
                          :player-visible true
                          :on-map false
                          :position nil
+                         :dm-focus false
                          :dead false}
                "Udrik"  {:id "Udrik"
                          :order 3
@@ -75,6 +77,7 @@
                          :player-visible true
                          :on-map false
                          :position nil
+                         :dm-focus false
                          :dead false}}}))
 
 (def views
@@ -127,6 +130,31 @@
     (-> db
         (assoc-in [:map :height] h))))
 
+(rf/reg-event-db
+  :token-gain-dm-focus
+  (fn [db [_ token-id]]
+    (-> db
+        (assoc-in [:players token-id :dm-focus] true))))
+
+(rf/reg-event-db
+  :token-loose-dm-focus
+  (fn [db [_ token-id]]
+    (-> db
+        (assoc-in [:players token-id :dm-focus] false))))
+
+(rf/reg-event-db
+  :token-position-change
+  (fn [db [_ token-id position]]
+    (-> db
+        (assoc-in [:players token-id :position] position))))
+
+(rf/reg-event-db
+  :reveil-cells
+  (fn [db [_ cells]]
+    (prn [(type (:reveiled-cells db))])
+    (-> db
+        (update-in [:reveiled-cells] conj cells))))
+
 ; Query
 
 (rf/reg-sub
@@ -173,6 +201,16 @@
   :dm?
   (fn [db _query-vec]
     (some-> db :dm?)))
+
+(rf/reg-sub
+  :reveiled-cells
+  (fn [db _query-vec]
+    (some-> db :reveiled-cells)))
+
+(rf/reg-sub
+  :fog-of-war-mode
+  (fn [db _query-vec]
+    (some-> db :fog-of-war-mode)))
 
 ; View Functions
 
