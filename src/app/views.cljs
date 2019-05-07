@@ -118,7 +118,7 @@
   [attr]
   (let [default-name (str "Enemy " @(rf/subscribe [:token-count]))
         token-name   (r/atom default-name)
-        default-img  "https://cdn.pixabay.com/photo/2016/03/22/17/28/transparent-background-1273346_960_720.png"
+        default-img  "/images/monster.png"
         token-img    (r/atom default-img)
         p-id         (r/atom (str (gensym "token-")))
         add-token    #(rf/dispatch [:add-token
