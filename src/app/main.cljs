@@ -258,10 +258,10 @@
 
 (defn ^:dev/after-load render
   []
-  (mount/stop)
   (r/render [app] (js/document.getElementById "app")))
 
 (defn ^:export  main
   []
   (rf/dispatch-sync [:initialize])
+  (ws/connect!)
   (render))
