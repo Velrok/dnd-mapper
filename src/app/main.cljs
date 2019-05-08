@@ -209,6 +209,11 @@
   (fn [db [_ mode]]
     (-> db (assoc-in [:fog-of-war-mode] mode))))
 
+(rf/reg-event-db
+  :heart-beat
+  (fn [db [_ ts latency]]
+    (-> db (assoc-in [:last-heart-beat] (js/Date. ts)))))
+
 
 ; Query
 
