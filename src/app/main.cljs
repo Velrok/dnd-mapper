@@ -154,6 +154,12 @@
     (-> db
         (update-in [:reveiled-cells] #(into % cells)))))
 
+(rf/reg-event-db
+  :obscure-cells
+  (fn [db [_ cells]]
+    (-> db
+        (update-in [:reveiled-cells] #(apply disj % cells)))))
+
 
 (rf/reg-event-db
   :token-dead-change
@@ -174,6 +180,11 @@
   :delete-token
   (fn [db [_ token-id]]
     (-> db (update-in [:players] dissoc token-id))))
+
+(rf/reg-event-db
+  :set-fog-of-war-mode
+  (fn [db [_ mode]]
+    (-> db (assoc-in [:fog-of-war-mode] mode))))
 
 
 ; Query
