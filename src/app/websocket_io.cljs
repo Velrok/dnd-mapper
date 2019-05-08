@@ -29,27 +29,35 @@
 (defonce server-messages (r/atom nil))
 (defonce session-ch (r/atom nil))
 
-(defn join-or-create-session
-  [session-id]
-  (go
-    (let [{:keys [ws-channel error]} (<! (ws-ch endpoint))]
-      (if-not error
-        {:type ::channel
-         :ch   ws-channel}
-        (do (js/console.log "Error:" (pr-str error))
-            {:type    ::error
-             :message (pr-str error)})))))
+(defstate ^{:on-reload :noop} connection
+  :start
+  (do
+    (prn "starting: connection")
+    (go
+      (let [{:keys [ws-channel error]} (<! (ws-ch endpoint))]
+        (if-not error
+          (reset! session-ch ws-channel)
+          (do
+            (js/console.log "Error:" (pr-str error))
+            error)))))
 
-;; audience = #{:others :all :host :guests :server}
-(defn send!
+  :stop
+  (do
+    (prn "stopping: connection")
+    (when @session-ch
+      (go
+        (a/close! @session-ch)))))
+
+(defn ^:export send!
+  "audience = #{:others :all :host :guests :server}"
   [msg {:keys [audience]
         :or {audience :others}}]
   (go
+    (when (browser/debug?)
+      (println (str (pr-str msg)
+                    " -> "
+                    "[" audience "]")))
     (when @session-ch
-      (when (browser/debug?)
-        (println (str "[" audience "]"
-                      " > "
-                      (prn-str msg))))
       (>! @session-ch
           {:session-id  (str @session-id)
            :host        @session-host
@@ -59,47 +67,40 @@
            :ts          (-> (js/Date.) (.getTime))}))))
 
 (defstate heart-beat
-  :start (js/window.setInterval #(send! {:type :heart-beat}
+  :start (do
+           (prn (str "starting: heart-beat"))
+           (js/window.setInterval #(send! {:type :heart-beat}
                                         {:audience :server})
-                                5000)
-  :stop (js/window.clearInterval @heart-beat))
+                                5000))
+  :stop (do
+          (prn (str "stopping: heart-beat"))
+          (js/window.clearInterval @heart-beat)))
 
-(defn disconnect!
+
+(defn connect!
   []
-  (mount/stop 'heart-beat 'state-broadcast)
-  (swap! session-ch #(close! %)))
+  (prn ::connect!)
+  @connection
+  @heart-beat)
 
-(defn join!
+
+;(defn disconnect!
+;  []
+;  (mount/stop 'heart-beat 'state-broadcast)
+;  (swap! session-ch #(close! %)))
+
+(defn join-session!
   [s-id]
   (reset! session-id (str s-id))
-  (reset! session-host false)
-  @heart-beat
-  (go
-    (let [{:keys [type ch message]} (<! (join-or-create-session @session-id))]
-      (case type
-        ::channel (do
-                    (reset! session-ch ch)
-                    (reset! server-messages (a/mult ch))
-                    ch)
-        ::error   (pp message)))))
+  (reset! session-host false))
 
-(defn create!
+(defn create-session!
   []
   (reset! session-id (-> (Math/random)
                          (* 100000000)
                          int
                          str))
-  (reset! session-host true)
-  @heart-beat
-  ;@state-broadcast
-  (go
-    (let [{:keys [type ch message]} (<! (join-or-create-session @session-id))]
-      (case type
-        ::channel (do
-                    (reset! session-ch ch)
-                    (reset! server-messages (a/mult ch))
-                    ch)
-        ::error   (pp message)))))
+  (reset! session-host true))
 
 
 ;(go
