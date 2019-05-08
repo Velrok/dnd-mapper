@@ -184,7 +184,7 @@
     (-> db (assoc-in [:players token-id :dead] dead?))))
 
 (rf/reg-event-db
-  :token-visitble-change
+  :token-visible-change
   [broadcast-if-host]
   (fn [db [_ token-id visible?]]
     (-> db (assoc-in [:players token-id :player-visible] visible?))))

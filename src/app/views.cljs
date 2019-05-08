@@ -159,7 +159,7 @@
                [:div.flex-cols
                 [:label "Player visible"]
                 [:input {:type :checkbox
-                         :on-change #(rf/dispatch [:token-visitble-change
+                         :on-change #(rf/dispatch [:token-visible-change
                                                    (:id p)
                                                    (some-> % .-target .-checked)])
                          :checked (:player-visible p)}]])
