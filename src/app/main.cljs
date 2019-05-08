@@ -80,6 +80,16 @@
                          :dm-focus false
                          :dead false}}}))
 
+(def broadcast-if-host
+  (rf/->interceptor
+    :id      :broadcast-if-host
+    :after   (fn [context]
+               (prn (keys context))
+               (when (some-> context :coeffects :db :dm?)
+                 (if-let [e (some-> context :coeffects :event)]
+                   (ws/send! e {:audience :guests})))
+               context)))
+
 (def views
   {:start        v/<start>
    :session-new  (partial v/<session-new>  {:session-id  ws/session-id})
@@ -113,6 +123,7 @@
 
 (rf/reg-event-db
   :map-img-url-changed
+  [broadcast-if-host]
   (fn [db [_ img-url]]
     (-> db
         (assoc-in [:map :img-url] img-url)
@@ -120,12 +131,14 @@
 
 (rf/reg-event-db
   :map-width-changed
+  [broadcast-if-host]
   (fn [db [_ w]]
     (-> db
         (assoc-in [:map :width] w))))
 
 (rf/reg-event-db
   :map-height-changed
+  [broadcast-if-host]
   (fn [db [_ h]]
     (-> db
         (assoc-in [:map :height] h))))
@@ -144,18 +157,21 @@
 
 (rf/reg-event-db
   :token-position-change
+  [broadcast-if-host]
   (fn [db [_ token-id position]]
     (-> db
         (assoc-in [:players token-id :position] position))))
 
 (rf/reg-event-db
   :reveil-cells
+  [broadcast-if-host]
   (fn [db [_ cells]]
     (-> db
         (update-in [:reveiled-cells] #(into % cells)))))
 
 (rf/reg-event-db
   :obscure-cells
+  [broadcast-if-host]
   (fn [db [_ cells]]
     (-> db
         (update-in [:reveiled-cells] #(apply disj % cells)))))
@@ -163,21 +179,25 @@
 
 (rf/reg-event-db
   :token-dead-change
+  [broadcast-if-host]
   (fn [db [_ token-id dead?]]
     (-> db (assoc-in [:players token-id :dead] dead?))))
 
 (rf/reg-event-db
   :token-visitble-change
+  [broadcast-if-host]
   (fn [db [_ token-id visible?]]
     (-> db (assoc-in [:players token-id :player-visible] visible?))))
 
 (rf/reg-event-db
   :add-token
+  [broadcast-if-host]
   (fn [db [_ token]]
     (-> db (assoc-in [:players (:id token)] token))))
 
 (rf/reg-event-db
   :delete-token
+  [broadcast-if-host]
   (fn [db [_ token-id]]
     (-> db (update-in [:players] dissoc token-id))))
 
