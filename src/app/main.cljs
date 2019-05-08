@@ -84,16 +84,19 @@
   (rf/->interceptor
     :id      :broadcast-if-host
     :after   (fn [context]
-               (prn (keys context))
-               (when (some-> context :coeffects :db :dm?)
-                 (if-let [e (some-> context :coeffects :event)]
-                   (ws/send! e {:audience :guests})))
+               (let [db (some-> context :coeffects :db)]
+                 (prn [::broadcast-if-host (:session-id db)])
+                 (when (:dm? db)
+                   (if-let [e (some-> context :coeffects :event)]
+                     (ws/send! e {:audience :guests
+                                  :host true
+                                  :session-id (:session-id db)}))))
                context)))
 
 (def views
   {:start        v/<start>
-   :session-new  (partial v/<session-new>  {:session-id  ws/session-id})
-   :session-join (partial v/<session-join> {:session-id  ws/session-id})})
+   :session-new  v/<session-new>
+   :session-join v/<session-join>})
 
 (rf/reg-event-db
   :change-active-view
@@ -213,6 +216,11 @@
   :active-view
   (fn [db _query-vec]
     (get views (:active-view-id db))))
+
+(rf/reg-sub
+  :session-id
+  (fn [db _query-vec]
+    (-> db :session-id)))
 
 (rf/reg-sub
   :token-count

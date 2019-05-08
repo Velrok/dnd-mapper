@@ -272,7 +272,7 @@
      [:p "player link: "
       (let [link (str (assoc-in (browser/current-uri)
                                 [:query "join-session-id"]
-                                @session-id))]
+                                @(rf/subscribe [:session-id])))]
         [:input#player-join-url
          {:type :text
           :read-only true
@@ -289,13 +289,13 @@
                 :padding-left "7px"}}
        [<map-definition-input>]
        [<token-list>]]]
-     [:pre (str "session id: " @session-id)]]))
+     [:pre (str "session id: " @(rf/subscribe [:session-id]))]]))
 
 
 (defn <session-join>
   [{:keys [session-id]}]
   [:div
-   [:p "Session " @session-id]
+   [:p "Session " @(rf/subscribe [:session-id])]
    [:div.flex-cols
     [<map> {:style {:width "100%"}}]
     [:div.flex-rows

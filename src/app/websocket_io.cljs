@@ -1,12 +1,14 @@
 (ns app.websocket-io
-  (:require [chord.client :refer [ws-ch]]
-            [reagent.core :as r]
-            [cljs.core.async :as a :refer [<! >! put! close!]]
-            [cemerick.uri :refer [uri]]
-            [mount.core :as mount]
-            [app.browser :as browser :refer [pp]]
-            [mount.core :refer-macros [defstate]])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+  (:require
+    [chord.client :refer [ws-ch]]
+    [re-frame.core :as rf]
+    [reagent.core :as r]
+    [cljs.core.async :as a :refer [<! >! put! close!]]
+    [cemerick.uri :refer [uri]]
+    [mount.core :as mount]
+    [app.browser :as browser :refer [pp]]
+    [mount.core :refer-macros [defstate]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (def endpoint
   (let [{host :host port :port proto :protocol}
@@ -23,8 +25,6 @@
          "/ws")))
 
 (defonce instance-id (-> (Math/random) (* 10000000) int str))
-(defonce session-id (r/atom nil))
-(defonce session-host (r/atom nil))
 
 (defonce server-messages (r/atom nil))
 (defonce session-ch (r/atom nil))
@@ -50,8 +50,9 @@
 
 (defn ^:export send!
   "audience = #{:others :all :host :guests :server}"
-  [msg {:keys [audience]
-        :or {audience :others}}]
+  [msg {:keys [audience session-id host]
+        :or {audience :others
+             host false}}]
   (go
     (when (browser/debug?)
       (println (str (pr-str msg)
@@ -59,8 +60,8 @@
                     "[" audience "]")))
     (when @session-ch
       (>! @session-ch
-          {:session-id  (str @session-id)
-           :host        @session-host
+          {:session-id  (str session-id)
+           :host        host
            :instance-id instance-id
            :audience    audience
            :data        msg
@@ -69,48 +70,46 @@
 (defstate heart-beat
   :start (do
            (prn (str "starting: heart-beat"))
-           (js/window.setInterval #(send! {:type :heart-beat}
-                                        {:audience :server})
-                                5000))
+           (js/window.setInterval #(when-let [s-id @(rf/subscribe [:session-id])]
+                                     (send! {:type :heart-beat}
+                                            {:audience :server
+                                             :session-id s-id}))
+                                  5000))
   :stop (do
           (prn (str "stopping: heart-beat"))
           (js/window.clearInterval @heart-beat)))
+
+(defstate ^{:on-reload :noop} server-message-dispatch
+  :start
+  (do
+    (prn "starting: server msg dispatch")
+    (go-loop
+      []
+      (if-not @session-ch
+        (do
+          (prn "session-ch nil waiting for retry ...")
+          (a/<! (a/timeout 1000))
+          (recur))
+        (do
+          (prn "session-ch established listening ...")
+          (go-loop
+            []
+            (when-let [server-event (a/<! @session-ch)]
+              (when (browser/debug?)
+                (println (str " <- " (pr-str server-event))))
+              (rf/dispatch (-> server-event :message :data))
+              (recur))))))))
 
 
 (defn connect!
   []
   (prn ::connect!)
   @connection
-  @heart-beat)
+  @heart-beat
+  @server-message-dispatch)
 
 
 ;(defn disconnect!
 ;  []
 ;  (mount/stop 'heart-beat 'state-broadcast)
 ;  (swap! session-ch #(close! %)))
-
-(defn join-session!
-  [s-id]
-  (reset! session-id (str s-id))
-  (reset! session-host false))
-
-(defn create-session!
-  []
-  (reset! session-id (-> (Math/random)
-                         (* 100000000)
-                         int
-                         str))
-  (reset! session-host true))
-
-
-;(go
-;  (let [{:keys [ws-channel]} (<! (ws-ch endpoint))
-;        {:keys [message]} (<! ws-channel)]
-;    (js/console.log "Got message from server:" (pr-str message))))
-
-;(go
-;  (let [{:keys [ws-channel]} (<! (ws-ch endpoint))
-;        {:keys [message error]} (<! ws-channel)]
-;    (if error
-;      (js/console.log "Uh oh:" error)
-;      (js/console.log "Hooray! Message:" (pr-str message)))))

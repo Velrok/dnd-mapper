@@ -28,9 +28,7 @@
   [msg ch _connections]
   (go
     (let [now (System/currentTimeMillis)]
-    (>! ch {:response ::received
-            :at       now
-            :latency  (- now (:ts msg))}))))
+    (>! ch {:data [:heart-beat now (- now (:ts msg))]}))))
 
 (defmethod process-message! :others
   [{:keys [session-id] :as msg} ch connections]
