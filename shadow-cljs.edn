@@ -8,6 +8,7 @@
   [com.arohner/uri "0.1.2"]
   [jarohen/chord "0.8.1"]
   [mount "0.1.16"]
+  [cheshire "5.8.1"]
   [org.clojure/core.async "0.4.490"]]
 
  ;:dev-http {8080 "public"}

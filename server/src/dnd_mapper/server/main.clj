@@ -4,8 +4,10 @@
     [org.httpkit.server :refer [run-server]]
     [compojure.core :refer [defroutes GET ANY]]
     [mount.core :as mount :refer [defstate]]
+    [cheshire.core :as json]
     [compojure.route :as route]
     [clojure.tools.logging :as log]
+    [clojure.string :as string]
     [clojure.core.async :as a :refer [<! >! close! go]]))
 
 (def port (Integer/parseInt (get (System/getenv) "PORT" "3000")))
@@ -69,6 +71,14 @@
        {:status 200
         :body (-> "public/index.html"
                   slurp)})
+
+  (GET "/clients" []
+       {:status 200
+        :headers {"Content-Type" "application/json"}
+        :body (json/generate-string (->> (vals @ws-connections)
+                                         (map #(dissoc % :ch)))
+                                    {:key-fn #(-> % name (string/replace #"-" "_"))})})
+
   (ANY "/ws" {:keys [ws-channel] :as req}
        (a/go-loop
          [ws-ch ws-channel]
