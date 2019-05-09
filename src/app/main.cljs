@@ -85,11 +85,22 @@
     :id      :broadcast-if-host
     :after   (fn [context]
                (let [db (some-> context :coeffects :db)]
-                 (prn [::broadcast-if-host (:session-id db)])
                  (when (:dm? db)
                    (if-let [e (some-> context :coeffects :event)]
                      (ws/send! e {:audience :guests
                                   :host true
+                                  :session-id (:session-id db)}))))
+               context)))
+
+(def broadcast-if-guest
+  (rf/->interceptor
+    :id      :broadcast-if-guest
+    :after   (fn [context]
+               (let [db (some-> context :coeffects :db)]
+                 (when-not (:dm? db)
+                   (if-let [e (some-> context :coeffects :event)]
+                     (ws/send! e {:audience :host
+                                  :host false
                                   :session-id (:session-id db)}))))
                context)))
 
@@ -111,13 +122,29 @@
         (assoc :dm? true)
         (assoc :active-view-id :session-new))))
 
-(rf/reg-event-db
+(rf/reg-event-fx
   :join-session
-  (fn [db [_ session-id]]
-    (-> db
-        (assoc :session-id session-id)
-        (assoc :dm? false)
-        (assoc :active-view-id :session-join))))
+  (fn [{:keys [db]} [_ session-id]]
+    {:db (-> db
+             (assoc :session-id session-id)
+             (assoc :dm? false)
+             (assoc :active-view-id :session-join))
+     :dispatch [:request-state-init]}))
+
+(rf/reg-event-fx
+  :request-state-init
+  [broadcast-if-guest]
+  (fn [context event]
+    (if (-> context :db :dm?)
+      {:dispatch [:state-init (-> context
+                                  :db
+                                  (select-keys [:map :reveiled-cells :players]))]})))
+
+(rf/reg-event-db
+  :state-init
+  [broadcast-if-host]
+  (fn [db [_ dm-state]]
+    (merge db dm-state)))
 
 (rf/reg-event-db
   :highlight-overlay-changed

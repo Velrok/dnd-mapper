@@ -55,7 +55,8 @@
              host false}}]
   (go
     (when (browser/debug?)
-      (println (str (pr-str msg)
+      (println (str (if host "!" ".")
+                    (pr-str msg)
                     " -> "
                     "[" audience "]")))
     (when @session-ch
@@ -73,6 +74,7 @@
            (js/window.setInterval #(when-let [s-id @(rf/subscribe [:session-id])]
                                      (send! {:type :heart-beat}
                                             {:audience :server
+                                             :host @(rf/subscribe [:dm?])
                                              :session-id s-id}))
                                   5000))
   :stop (do
