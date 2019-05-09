@@ -56,7 +56,7 @@
                            (map :ch)
                            set)
                       ch)]
-    (log/info (format "[%s] Forwarding messge to %d guests." session-id (count targets)))
+    (log/info (format "[%s] Forwarding messge to %d host" session-id (count targets)))
     (doseq [c targets]
       (go (>! c msg)))))
 
