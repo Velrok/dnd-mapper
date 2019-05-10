@@ -189,8 +189,13 @@
   :token-position-change
   [broadcast-if-host]
   (fn [db [_ token-id position]]
-    (-> db
-        (assoc-in [:players token-id :position] position))))
+    (-> db (assoc-in [:players token-id :position] position))))
+
+(rf/reg-event-db
+  :token-name-change
+  [broadcast-if-host]
+  (fn [db [_ token-id name]]
+    (-> db (assoc-in [:players token-id :name] name))))
 
 (rf/reg-event-db
   :reveil-cells

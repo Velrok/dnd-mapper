@@ -150,10 +150,12 @@
              [:input {:type "text"
                       :value (:name p)
                       :on-change #(rf/dispatch [:token-name-change
+                                                (:id p)
                                                 (some-> % .-target .-value)])}]
              [:input {:type "text"
                       :value (:img-url p)
                       :on-change #(rf/dispatch [:token-img-url-change
+                                                (:id p)
                                                 (some-> % .-target .-value)])}]
              (when @(rf/subscribe [:dm?])
                [:div.flex-cols
