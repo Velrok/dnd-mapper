@@ -4,3 +4,4 @@ public/js
 .nrepl-port
 .lein-repl-history
 target
+.DS_Store
