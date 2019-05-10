@@ -111,6 +111,10 @@ fieldset label {
   border: solid #458BC163 1px;
 }
 
+.highlighted-cell {
+  border: solid #EF7443 3px;
+}
+
 
 .token {
   width: 50px;

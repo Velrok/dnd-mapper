@@ -51,6 +51,7 @@
      :dm? true
      :fog-of-war-mode :reveil
      :reveiled-cells #{}
+     :highlighted-cells #{}
      :session-id nil
      :players {"neg1"   {:id "neg1"
                          :order 1
@@ -246,6 +247,20 @@
   (fn [db [_ ts latency]]
     (-> db (assoc-in [:last-heart-beat] (js/Date. ts)))))
 
+(rf/reg-event-fx
+  :request-cell-highlight
+  [broadcast-if-guest]
+  (fn [{:keys [db] :as context} [_ pos origin-instance-id]]
+    (if (-> db :dm?)
+        (do
+          (js/window.setTimeout #(rf/dispatch [:turnoff-cell-highlight pos]) 2000)
+          {:db (update-in db [:highlighted-cells] conj pos)})
+        {})))
+
+(rf/reg-event-db
+  :turnoff-cell-highlight
+  (fn [db [_ pos]]
+    (update-in db [:highlighted-cells] disj pos)))
 
 ; Query
 
@@ -308,6 +323,13 @@
   :fog-of-war-mode
   (fn [db _query-vec]
     (some-> db :fog-of-war-mode)))
+
+
+(rf/reg-sub
+  :highlighted-cells
+  (fn [db _query-vec]
+    (some-> db :highlighted-cells)))
+
 
 ; View Functions
 
