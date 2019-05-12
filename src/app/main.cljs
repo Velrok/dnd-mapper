@@ -225,6 +225,14 @@
   (fn [db [_ token-id visible?]]
     (-> db (assoc-in [:players token-id :player-visible] visible?))))
 
+
+
+(rf/reg-event-db
+  :token-img-url-change
+  [broadcast-if-host]
+  (fn [db [_ token-id img-url]]
+    (-> db (assoc-in [:players token-id :img-url] img-url))))
+
 (rf/reg-event-db
   :add-token
   [broadcast-if-host]
