@@ -33,12 +33,8 @@
            (prn [::server-message-processor "stop"])
            (a/close! @server-message-processor)))
 
-
-
 ; Event dispatch
-
 ; Event Handlers
-
 (rf/reg-event-db
   :initialize
   (fn [_db _event]
@@ -212,7 +208,6 @@
     (-> db
         (update-in [:reveiled-cells] #(apply disj % cells)))))
 
-
 (rf/reg-event-db
   :token-dead-change
   [broadcast-if-host]
@@ -224,8 +219,6 @@
   [broadcast-if-host]
   (fn [db [_ token-id visible?]]
     (-> db (assoc-in [:players token-id :player-visible] visible?))))
-
-
 
 (rf/reg-event-db
   :token-img-url-change
@@ -340,8 +333,6 @@
 
 
 ; View Functions
-
-
 
 (defn app
   []
