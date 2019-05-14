@@ -1,5 +1,6 @@
 (ns app.view.components
   (:require
+    [reagent.core :as r]
     [re-frame.core :as rf]))
 
 
@@ -97,3 +98,89 @@
                       p]
                      [:span.token-map-label
                       (:name p)]])])))]))]]]]))
+
+(defn <token-list>
+  [attr {:keys [tokens token-count dm?]}]
+  (let [default-name (str "Enemy " @token-count)
+        token-name   (r/atom default-name)
+        default-img  "/images/monster.png"
+        token-img    (r/atom default-img)
+        add-token    #(rf/dispatch [:add-token
+                                    {:id             (str "token-" @token-count)
+                                     :order          @token-count
+                                     :name           @token-name
+                                     :img-url        @token-img
+                                     :player-visible false
+                                     :on-map         false
+                                     :dead           false
+                                     :position       nil}])]
+    (fn []
+      [:ul#characters-list
+       (merge {:style {:height "100px"}}
+              attr)
+       (doall
+         (for [p (sort-by :order (vals @tokens))]
+           [:li.flex-cols.character-list-entry
+            {:key (str "char-list-" (:id p))
+             :on-mouse-over (when @dm?
+                              #(rf/dispatch [:token-gain-dm-focus (:id p)]))
+             :on-mouse-leave (when @dm?
+                               #(rf/dispatch [:token-loose-dm-focus (:id p)]))
+             :class [(when-not (:player-visible p)
+                       (if @dm?
+                         "player-invisible-dm-mode"
+                         "player-invisible"))]}
+            [<token> p]
+            [:div.flex-rows
+             [:input {:type "text"
+                      :value (:name p)
+                      :on-change #(rf/dispatch [:token-name-change
+                                                (:id p)
+                                                (some-> % .-target .-value)])}]
+             [:input {:type "text"
+                      :value (:img-url p)
+                      :on-change #(rf/dispatch [:token-img-url-change
+                                                (:id p)
+                                                (some-> % .-target .-value)])}]
+             (when @dm?
+               [:div.flex-cols
+                [:label "Player visible"]
+                [:input {:type :checkbox
+                         :on-change #(rf/dispatch [:token-visible-change
+                                                   (:id p)
+                                                   (some-> % .-target .-checked)])
+                         :checked (:player-visible p)}]])
+             (when @dm?
+               [:div.flex-cols
+                [:label "Dead?"]
+                [:input {:type :checkbox
+                         :on-change #(rf/dispatch [:token-dead-change
+                                                   (:id p)
+                                                   (some-> % .-target .-checked)])
+                         :checked (:dead p)}]])
+             (when @dm?
+               [:div.flex-cols
+                [:button.btn
+                 {:style {:width "100%"
+                          :font-size "0.5em"
+                          :background-color "#FF8C5F"}
+                  :on-click #(rf/dispatch [:delete-token (:id p)])}
+                 "delete"]])]]))
+       (when @dm?
+         [:li {:key "char-list-placeholder"}
+
+          [:div.flex-cols
+           [:div.token
+            {:style {:background-image (str "url(" (or @token-img (str default-img)) ")")}
+             :on-click add-token}]
+           [:div.flex-rows
+            [:p "Add"]
+            [:input {:type      "text"
+                     :value     (or @token-name default-name)
+                     :on-change #(reset! token-name (-> % .-target .-value))}]
+            [:input {:type      "text"
+                     :value     (or @token-img default-img)
+                     :on-change #(reset! token-img (-> % .-target .-value))}]
+            [:button.btn
+             {:on-click add-token}
+             "add"]]]])])))
