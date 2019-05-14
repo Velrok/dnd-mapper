@@ -101,10 +101,7 @@
                                   :session-id (:session-id db)}))))
                context)))
 
-(def views
-  {:start        v/<start>
-   :session-new  v/<session-new>
-   :session-join v/<session-join>})
+
 
 (rf/reg-event-db
   :change-active-view
@@ -268,7 +265,10 @@
 (rf/reg-sub
   :active-view
   (fn [db _query-vec]
-    (get views (:active-view-id db))))
+    (get {:start        v/<start>
+          :session-new  v/<session-new>
+          :session-join v/<session-join>}
+         (:active-view-id db))))
 
 (rf/reg-sub
   :session-id
