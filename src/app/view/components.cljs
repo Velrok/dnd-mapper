@@ -40,11 +40,12 @@
         attr)])))
 
 (defn <map>
-  [attr {:keys [dm? fog-of-war-mode map-img-url map-img-alt
-                reveiled-cells
-                highlighted-cells highlight-overlay
-                tokens
-                map-height map-width]}]
+  [attr
+   {:keys [dm? fog-of-war-mode map-img-url map-img-alt
+           reveiled-cells
+           highlighted-cells highlight-overlay
+           tokens
+           map-height map-width]}]
   (fn []
     [:div#map
      attr
@@ -71,47 +72,47 @@
                                      (-> pos
                                          (update :x (partial + dx))
                                          (update :y (partial + dy))))]
-                 [:td.map-cell
-                  {:key (str "map-prev-yx-" y x)
-                   :on-click (when-not @dm?
-                               #(rf/dispatch [:request-cell-highlight pos]))
-                   :on-mouse-enter (when @dm?
-                                     (fn [e]
-                                       (when (= 1 (.-buttons e))
-                                         (case @fog-of-war-mode
-                                           :reveil  (rf/dispatch [:reveil-cells surrounding])
-                                           :obscure (rf/dispatch [:obscure-cells surrounding])))))
-                   :on-drag-over #(.preventDefault %)
-                   :on-drop (fn [e]
-                              (.preventDefault e)
-                              (when-let [id (some-> e .-dataTransfer (.getData "player-id"))]
-                                (when-let [p (some->> @tokens
-                                                      vals
-                                                      (filter (fn [p] (= id (:id p))))
-                                                      first)]
-                                  (rf/dispatch [:token-position-change (:id p) pos]))))
-                   :class [(when @highlight-overlay
-                             "map-cell__highlight")
-                           (when (contains? @highlighted-cells pos)
-                             "highlighted-cell")
-                           (when-not (contains? @reveiled-cells
-                                                pos)
-                             "fog-of-war")]}
-                  (when-let [p (some->> @tokens
-                                        vals
-                                        (filter
-                                          (fn [p] (= pos (:position p))))
-                                        first)]
-                    [:div.token-wrapper
-                     [<token> {:class [(when-not (:player-visible p)
-                                        (if @dm?
-                                          "player-invisible-dm-mode"
-                                          "player-invisible"))
-                                       (when (and @dm? (:dm-focus p))
-                                         "dm-focused")]}
-                      p]
-                     [:span.token-map-label
-                      (:name p)]])])))]))]]]]))
+                   [:td.map-cell
+                    {:key (str "map-prev-yx-" y x)
+                     :on-click (when-not @dm?
+                                 #(rf/dispatch [:request-cell-highlight pos]))
+                     :on-mouse-enter (when @dm?
+                                       (fn [e]
+                                         (when (= 1 (.-buttons e))
+                                           (case @fog-of-war-mode
+                                             :reveil  (rf/dispatch [:reveil-cells surrounding])
+                                             :obscure (rf/dispatch [:obscure-cells surrounding])))))
+                     :on-drag-over #(.preventDefault %)
+                     :on-drop (fn [e]
+                                (.preventDefault e)
+                                (when-let [id (some-> e .-dataTransfer (.getData "player-id"))]
+                                  (when-let [p (some->> @tokens
+                                                        vals
+                                                        (filter (fn [p] (= id (:id p))))
+                                                        first)]
+                                    (rf/dispatch [:token-position-change (:id p) pos]))))
+                     :class [(when @highlight-overlay
+                               "map-cell__highlight")
+                             (when (contains? @highlighted-cells pos)
+                               "highlighted-cell")
+                             (when-not (contains? @reveiled-cells
+                                                  pos)
+                               "fog-of-war")]}
+                    (when-let [p (some->> @tokens
+                                          vals
+                                          (filter
+                                            (fn [p] (= pos (:position p))))
+                                          first)]
+                      [:div.token-wrapper
+                       [<token> {:class [(when-not (:player-visible p)
+                                           (if @dm?
+                                             "player-invisible-dm-mode"
+                                             "player-invisible"))
+                                         (when (and @dm? (:dm-focus p))
+                                           "dm-focused")]}
+                        p]
+                       [:span.token-map-label
+                        (:name p)]])])))]))]]]]))
 
 (defn <token-list>
   [attr {:keys [tokens token-count dm?]}]
