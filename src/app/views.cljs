@@ -5,7 +5,8 @@
     [re-frame.core :as rf]
     [app.websocket-io :as ws]
     [app.state :as state]
-    [app.view.components :refer [<token-list> <token> <map>]]))
+    [app.view.components :refer [<token-list> <token> <map> <map-definition-input>
+                                 <btn> <btn-group>]]))
 
 (defn <start>
   []
@@ -26,75 +27,6 @@
         {:on-click #(rf/dispatch [:join-session join-session-id])}
         (str "join session "  join-session-id " >>")]])))
 
-
-(defn <map-definition-input>
-  [attr]
-  (fn []
-    [:div#map-definition-input
-     attr
-     [:fieldset
-      [:label {:for "#map-url"} "url"]
-      [:input#map-url.pull-right
-       {:type :url
-        :value @(rf/subscribe [:map-img-url])
-        :on-change #(rf/dispatch [:map-img-url-changed
-                                  (some-> % .-target .-value)])}]]
-
-     [:fieldset
-      [:label {:for "#map-width"} "columns"]
-      [:input#map-width.pull-right
-       {:type :number
-        :value @(rf/subscribe [:map-width])
-        :min 1
-        :on-change #(rf/dispatch [:map-width-changed
-                                  (some-> % .-target .-value int)])
-        }]]
-
-     [:fieldset
-      [:label {:for "#map-height"} "rows"]
-      [:input#map-height.pull-right
-       {:type :number
-        :min 1
-        :value @(rf/subscribe [:map-height])
-        :on-change #(rf/dispatch [:map-height-changed
-                                  (some-> % .-target .-value int)])
-        }]]
-
-     [:fieldset
-      [:label {:for "#map-height"} "highlight overlay"]
-      [:input#highlight-overlay.pull-right
-       {:type :checkbox
-        :checked   @(rf/subscribe [:highlight-overlay])
-        :on-change #(rf/dispatch [:highlight-overlay-changed
-                                  (some-> % .-target .-checked)]) }]]
-
-     [:fieldset
-      [:label {:for "#is-dm"} "DM"]
-      [:strong.pull-right (if @(rf/subscribe [:dm?]) "yes" "no")]]
-
-     (when @(rf/subscribe [:dm?])
-       [:fieldset
-        [:label {:for "#fog-of-war-mode"
-                 :style {:display "block"}} "Fog of war: "]
-
-        [:div.pull-right
-         [:label {:for "#fog-of-war-mode-reveil"
-                  :style {:margin-right "0.5em"}} "reveil"]
-         [:input#fog-of-war-mode-reveil
-          {:type :radio
-           :name "fog-of-war-mode"
-           :checked (= :reveil @(rf/subscribe [:fog-of-war-mode]))
-           :on-change #(rf/dispatch [:set-fog-of-war-mode :reveil])}]
-
-         [:label {:for "#fog-of-war-mode-obscure"
-                  :style {:margin-right "0.5em"
-                          :margin-left "1em"}} "obscure"]
-         [:input#fog-of-war-mode-obscure
-          {:type :radio
-           :name "obscure"
-           :checked (= :obscure @(rf/subscribe [:fog-of-war-mode]))
-           :on-change #(rf/dispatch [:set-fog-of-war-mode :obscure])}]]])]))
-
 (defn <session-new>
   [{:keys [session-id]}]
   (fn []
@@ -104,14 +36,14 @@
                                 [:query "join-session-id"]
                                 @(rf/subscribe [:session-id])))]
         [:input#player-join-url
-         {:type :text
-          :read-only true
-          :value link
-          :on-click
-          (fn []
-            (.select (js/document.getElementById "player-join-url"))
-            (js/document.execCommand "copy")
-            (js/alert "player link copied"))}])]
+           {:type :text
+            :read-only true
+            :value link
+            :on-click
+            (fn []
+              (.select (js/document.getElementById "player-join-url"))
+              (js/document.execCommand "copy")
+              (js/alert "player link copied"))}])]
      [:div.game.flex-cols
       [<map> {:style {:width "100%"}}
        {:dm?                (rf/subscribe [:dm?])
