@@ -52,7 +52,7 @@
      :players {"neg1"   {:id "neg1"
                          :order 1
                          :name "Negwen"
-                         :img-url "https://drive.google.com/file/d/1980ubKYtNw78HxN_ItomWEB0UThzNFn5/view"
+                         :img-url "https://doc-0g-80-docs.googleusercontent.com/docs/securesc/onogid5pk9rfdtm7mh0o9kbfl2imk2o2/u464oc67p9drrdctu69o6uuhegmqnf61/1559066400000/03754557212492202222/03754557212492202222/1980ubKYtNw78HxN_ItomWEB0UThzNFn5?e=download&nonce=orkfs1svkdb0s&user=03754557212492202222&hash=6rk5cq0sqnq6irf9h8octaul2gn40c2u"
                          :player-visible true
                          :on-map false
                          :position nil
