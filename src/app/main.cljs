@@ -52,7 +52,7 @@
      :players {"neg1"   {:id "neg1"
                          :order 1
                          :name "Negwen"
-                         :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
+                         :img-url "https://drive.google.com/file/d/1980ubKYtNw78HxN_ItomWEB0UThzNFn5/view"
                          :player-visible true
                          :on-map false
                          :position nil
