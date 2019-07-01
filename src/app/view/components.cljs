@@ -22,22 +22,19 @@
 
 
 (defn <token>
-  ([player]
-   (<token> {} player))
-
-  ([attr player]
-   (let [{:keys [id img-url dead]} player]
-     [:div.token
-      (merge
-        {:id id
-         :key (str "player-id-" id)
-         :style {:background-image (str "url(" (if dead dead-icon img-url) ")")}
-         :draggable true
-         :on-drag-start (fn [e]
-                          (-> e
-                              .-dataTransfer
-                              (.setData "player-id" id)))}
-        attr)])))
+  [{:keys [dm?] :as attr} player]
+  (let [{:keys [id img-url dead]} player]
+    [:div.token
+     (merge
+       {:id id
+        :key (str "player-id-" id)
+        :style {:background-image (str "url(" (if dead dead-icon img-url) ")")}
+        :draggable @dm?
+        :on-drag-start (fn [e]
+                         (-> e
+                             .-dataTransfer
+                             (.setData "player-id" id)))}
+       (dissoc attr :dm?))]))
 
 (defn <map>
   [attr
@@ -104,7 +101,8 @@
                                             (fn [p] (= pos (:position p))))
                                           first)]
                       [:div.token-wrapper
-                       [<token> {:class [(when-not (:player-visible p)
+                       [<token> {:dm? dm?
+                                 :class [(when-not (:player-visible p)
                                            (if @dm?
                                              "player-invisible-dm-mode"
                                              "player-invisible"))
@@ -146,7 +144,7 @@
                        (if @dm?
                          "player-invisible-dm-mode"
                          "player-invisible"))]}
-            [<token> p]
+            [<token> {:dm? dm?} p]
             [:div.flex-rows
              [:input {:type "text"
                       :value (:name p)
