@@ -1,6 +1,7 @@
 (ns app.views
   (:require
     [app.browser :as browser]
+    [app.local-storage :as local-storage]
     [reagent.core :as r]
     [re-frame.core :as rf]
     [app.websocket-io :as ws]
@@ -10,22 +11,37 @@
 
 (defn <start>
   []
-  (let [join-session-id (get-in (browser/current-uri) [:query "join-session-id"])]
-    (if-not join-session-id
-      [:div
-       [:h2 (str "create")]
-       [:button.btn
-        {:on-click #(rf/dispatch [:host-session (-> (Math/random)
-                                                    (* 100000000)
-                                                    int
-                                                    str)])}
-        "create session >>"]]
+  (let [new-session-name (r/atom (-> (Math/random)
+                                     (* 100000000)
+                                     int
+                                     str))]
+    (fn []
+      (let [join-session-id (get-in (browser/current-uri) [:query "join-session-id"])]
+        (if-not join-session-id
+          [:div
+           [:h2 (str "start a session")]
+           (doall
+             (for [k (filter :dm? (local-storage/keys))]
+               [:button.btn
+                {:on-click #(rf/dispatch [:state-init (local-storage/get k)])
+                 :style {:display :block}
+                 :key (str "restore_sess_" (:session-id k))}
+                (str "Restore " (:session-id k) " >>")]))
+           [:div
+            [:input
+             {:value @new-session-name
+              :on-change #(reset! new-session-name (some-> % .-target .-value))}]
 
-      [:div
-       [:h2 "join"]
-       [:button.btn
-        {:on-click #(rf/dispatch [:join-session join-session-id])}
-        (str "join session "  join-session-id " >>")]])))
+            [:button.btn
+             {:on-click #(rf/dispatch [:host-session @new-session-name])}
+             "create new session >>"]]
+           ]
+
+          [:div
+           [:h2 "join"]
+           [:button.btn
+            {:on-click #(rf/dispatch [:join-session join-session-id])}
+            (str "join session "  join-session-id " >>")]])))))
 
 (defn <session-new>
   [{:keys [session-id]}]

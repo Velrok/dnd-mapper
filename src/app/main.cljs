@@ -1,9 +1,11 @@
 (ns app.main
   (:require
     [re-frame.core :as rf]
+    [re-frame.db :refer [app-db]]
     [reagent.core :as r]
     [app.message-processing :as msg-process]
     [app.state :as state]
+    [app.local-storage :as local-storage]
     [mount.core :as mount]
     [mount.core :refer-macros [defstate]]
     [app.views :as v]
@@ -11,6 +13,13 @@
     [app.websocket-io :as ws]
     [cljs.core.async :as a :refer [chan >! <! close!]]
     [cljs.core.async :refer-macros [go]]))
+
+(add-watch app-db
+           "persist-app-state"
+           (fn [_key _ref old-v new-v]
+             (some-> new-v
+                     (select-keys [:dm? :session-id])
+                     (local-storage/set! new-v))))
 
 (defstate server-message-processor
   :start (do
