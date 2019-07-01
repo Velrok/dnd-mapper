@@ -1,37 +1,44 @@
 (ns app.local-storage
   (:refer-clojure :exclude [get remove keys])
-  (:require [clojure.edn :as edn]))
+  (:require [clojure.edn :as edn]
+            ["lz-string" :as LZString]))
 
 (def local-storage js/localStorage)
+
+(defn- encode [x]
+  (some->> x pr-str (.compress LZString)))
+
+(defn- decode [x]
+  (some->> x (.decompress LZString) edn/read-string))
 
 (defn remove! [k]
   (-> local-storage
       (.getItem "__keys__")
-      edn/read-string
+      decode
       (disj k)
-      (pr-str)
+      (encode)
       (.setItem "__keys__"))
   (-> local-storage
       (.removeItem k)))
 
 (defn get [k]
   (-> local-storage
-      (.getItem (pr-str k))
-      edn/read-string))
+      (.getItem (encode k))
+      decode))
 
 (defn set! [k v]
   (.setItem local-storage
             "__keys__"
             (-> local-storage
                 (.getItem  "__keys__")
-                edn/read-string
+                decode
                 set
                 (conj k)
-                (pr-str)))
-  (.setItem local-storage (pr-str k) (pr-str v)))
+                (encode)))
+  (.setItem local-storage (encode k) (encode v)))
 
 (defn keys []
   (or
-    (edn/read-string
+    (decode
       (.getItem local-storage "__keys__" ))
     #{}))
