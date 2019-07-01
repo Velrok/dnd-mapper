@@ -111,8 +111,9 @@
                                          (when (and @dm? (:dm-focus p))
                                            "dm-focused")]}
                         p]
-                       [:span.token-map-label
-                        (:name p)]])])))]))]]]]))
+                       (when @dm?
+                         [:span.token-map-label
+                          (:name p)])])])))]))]]]]))
 
 (defn <token-list>
   [attr {:keys [tokens token-count dm?]}]
