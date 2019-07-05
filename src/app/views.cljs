@@ -71,6 +71,10 @@
         :highlighted-cells  (rf/subscribe [:highlighted-cells])
         :highlight-overlay  (rf/subscribe [:highlight-overlay])
         :tokens             (rf/subscribe [:tokens])
+        :map-pad-left       (rf/subscribe [:map-pad-left])
+        :map-pad-right      (rf/subscribe [:map-pad-right])
+        :map-pad-top        (rf/subscribe [:map-pad-top])
+        :map-pad-bottom     (rf/subscribe [:map-pad-bottom])
         :map-height         (rf/subscribe [:map-height])
         :map-width          (rf/subscribe [:map-width])}]
 
@@ -82,6 +86,10 @@
         {:map-img-url       (rf/subscribe [:map-img-url])
          :map-width         (rf/subscribe [:map-width])
          :map-height        (rf/subscribe [:map-height])
+         :map-pad-left      (rf/subscribe [:map-pad-left])
+         :map-pad-right     (rf/subscribe [:map-pad-right])
+         :map-pad-top       (rf/subscribe [:map-pad-top])
+         :map-pad-bottom    (rf/subscribe [:map-pad-bottom])
          :highlight-overlay (rf/subscribe [:highlight-overlay])
          :dm?               (rf/subscribe [:dm?])
          :fog-of-war-mode   (rf/subscribe [:fog-of-war-mode])}]
@@ -108,6 +116,10 @@
       :highlighted-cells  (rf/subscribe [:highlighted-cells])
       :highlight-overlay  (rf/subscribe [:highlight-overlay])
       :tokens             (rf/subscribe [:tokens])
+      :map-pad-left       (rf/subscribe [:map-pad-left])
+      :map-pad-right      (rf/subscribe [:map-pad-right])
+      :map-pad-top        (rf/subscribe [:map-pad-top])
+      :map-pad-bottom     (rf/subscribe [:map-pad-bottom])
       :map-height         (rf/subscribe [:map-height])
       :map-width          (rf/subscribe [:map-width])}]
     [:div.flex-rows

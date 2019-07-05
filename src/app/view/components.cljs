@@ -42,7 +42,12 @@
            reveiled-cells
            highlighted-cells highlight-overlay
            tokens
-           map-height map-width]}]
+           map-height map-width
+           map-pad-left
+           map-pad-right
+           map-pad-top
+           map-pad-bottom
+           ]}]
   (fn []
     [:div#map
      attr
@@ -57,7 +62,10 @@
                      :alt @map-img-alt}]
       [:table.map-table
        [:tbody.map-tbody
-        {:style {:top "0px" :left "0px" :right "0px" :bottom "0px"}}
+        {:style {:top    (str @map-pad-top "px")
+                 :left   (str @map-pad-left "px")
+                 :right  (str @map-pad-right "px")
+                 :bottom (str @map-pad-bottom "px")}}
         (doall
           (for [y (range @map-height)]
             [:tr.map-row {:key (str "m-prev-y" y)}
@@ -200,7 +208,12 @@
              "add"]]]])])))
 
 (defn <map-definition-input>
-  [attr {:keys [map-img-url map-width map-height
+  [attr {:keys [map-img-url
+                map-width map-height
+                map-pad-left
+                map-pad-right
+                map-pad-top
+                map-pad-bottom
                 highlight-overlay dm?
                 fog-of-war-mode]}]
   (fn []
@@ -213,6 +226,42 @@
         :value     @map-img-url
         :on-change #(rf/dispatch [:map-img-url-changed
                                   (some-> % .-target .-value)])}]]
+
+     [:fieldset
+      [:label {:for "#map-pad-left"} "left-padding"]
+      [:input#map-pad-left.pull-right
+       {:type :number
+        :value @map-pad-left
+        :min 0
+        :on-change #(rf/dispatch [:map-pad-left-changed
+                                  (some-> % .-target .-value int)])}]]
+
+     [:fieldset
+      [:label {:for "#map-pad-right"} "right-padding"]
+      [:input#map-pad-right.pull-right
+       {:type :number
+        :value @map-pad-right
+        :min 0
+        :on-change #(rf/dispatch [:map-pad-right-changed
+                                  (some-> % .-target .-value int)])}]]
+
+     [:fieldset
+      [:label {:for "#map-pad-top"} "top-padding"]
+      [:input#map-pad-top.pull-right
+       {:type :number
+        :value @map-pad-top
+        :min 0
+        :on-change #(rf/dispatch [:map-pad-top-changed
+                                  (some-> % .-target .-value int)])}]]
+
+     [:fieldset
+      [:label {:for "#map-pad-bottom"} "bottom-padding"]
+      [:input#map-pad-bottom.pull-right
+       {:type :number
+        :value @map-pad-bottom
+        :min 0
+        :on-change #(rf/dispatch [:map-pad-bottom-changed
+                                  (some-> % .-target .-value int)])}]]
 
      [:fieldset
       [:label {:for "#map-width"} "columns"]
@@ -235,7 +284,7 @@
         }]]
 
      [:fieldset
-      [:label {:for "#map-height"} "highlight overlay"]
+      [:label {:for "#highlight-overlay"} "highlight overlay"]
       [:input#highlight-overlay.pull-right
        {:type :checkbox
         :checked   @highlight-overlay

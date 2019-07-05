@@ -51,6 +51,7 @@
      :highlight-overlay false
      :map {:width 35
            :height 50
+           :padding {:left 0 :right 0 :top 0 :bottom 0}
            :img-url  "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"
            :img-alt  "Created by DLIMedia: https://www.deviantart.com/dlimedia/art/Abandoned-Temple-of-Blackfire-285053467"}
      :dm? true
@@ -175,6 +176,34 @@
   (fn [db [_ h]]
     (-> db
         (assoc-in [:map :height] h))))
+
+(rf/reg-event-db
+  :map-pad-left-changed
+  [broadcast-if-host]
+  (fn [db [_ p]]
+    (-> db
+        (assoc-in [:map :padding :left] p))))
+
+(rf/reg-event-db
+  :map-pad-right-changed
+  [broadcast-if-host]
+  (fn [db [_ p]]
+    (-> db
+        (assoc-in [:map :padding :right] p))))
+
+(rf/reg-event-db
+  :map-pad-top-changed
+  [broadcast-if-host]
+  (fn [db [_ p]]
+    (-> db
+        (assoc-in [:map :padding :top] p))))
+
+(rf/reg-event-db
+  :map-pad-bottom-changed
+  [broadcast-if-host]
+  (fn [db [_ p]]
+    (-> db
+        (assoc-in [:map :padding :bottom] p))))
 
 (rf/reg-event-db
   :token-gain-dm-focus
@@ -308,6 +337,11 @@
   :map-height
   (fn [db _query-vec]
     (some-> db :map :height)))
+
+(rf/reg-sub :map-pad-left   (fn [db _query-vec] (some-> db :map :padding :left)))
+(rf/reg-sub :map-pad-right  (fn [db _query-vec] (some-> db :map :padding :right)))
+(rf/reg-sub :map-pad-top    (fn [db _query-vec] (some-> db :map :padding :top)))
+(rf/reg-sub :map-pad-bottom (fn [db _query-vec] (some-> db :map :padding :bottom)))
 
 (rf/reg-sub
   :map-img-url
