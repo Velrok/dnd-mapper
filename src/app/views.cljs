@@ -22,11 +22,17 @@
            [:h2 (str "start a session")]
            (doall
              (for [k (filter :dm? (local-storage/keys))]
-               [:button.btn
-                {:on-click #(rf/dispatch [:state-init (local-storage/get k)])
-                 :style {:display :block}
-                 :key (str "restore_sess_" (:session-id k))}
-                (str "Restore " (:session-id k) " >>")]))
+               [:div
+                [:button.btn
+                 {:on-click #(local-storage/remove! k)
+                  :style {:display :inline-block}
+                  :key (str "delete_sess_" (:session-id k))}
+                 (str "Delete " (:session-id k) "!")]
+                [:button.btn
+                 {:on-click #(rf/dispatch [:state-init (local-storage/get k)])
+                  :style {:display :inline-block}
+                  :key (str "restore_sess_" (:session-id k))}
+                 (str "Restore " (:session-id k) " >>")]]))
            [:div
             [:input
              {:value @new-session-name

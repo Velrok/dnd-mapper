@@ -12,14 +12,15 @@
   (some->> x (.decompress LZString) edn/read-string))
 
 (defn remove! [k]
-  (-> local-storage
-      (.getItem "__keys__")
-      decode
-      (disj k)
-      (encode)
-      (.setItem "__keys__"))
-  (-> local-storage
-      (.removeItem k)))
+  (.setItem local-storage
+            "__keys__"
+            (-> local-storage
+                (.getItem "__keys__")
+                decode
+                set
+                (disj k)
+                (encode)))
+  (-> local-storage (.removeItem k)))
 
 (defn get [k]
   (-> local-storage
