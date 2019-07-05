@@ -99,11 +99,12 @@
          :highlight-overlay (rf/subscribe [:highlight-overlay])
          :dm?               (rf/subscribe [:dm?])
          :fog-of-war-mode   (rf/subscribe [:fog-of-war-mode])}]
-       [<token-list>
-        {}
-        {:dm?         (rf/subscribe [:dm?])
-         :tokens      (rf/subscribe [:tokens])
-         :token-count (rf/subscribe [:token-count])}]]]
+       (when @(rf/subscribe [:dm?])
+         [<token-list>
+          {}
+          {:dm?         (rf/subscribe [:dm?])
+           :tokens      (rf/subscribe [:tokens])
+           :token-count (rf/subscribe [:token-count])}])]]
      [:pre (str "session id: " @(rf/subscribe [:session-id]))]]))
 
 
@@ -111,8 +112,7 @@
   [{:keys [session-id]}]
   [:div
    [:p "Session " @(rf/subscribe [:session-id])]
-   [:div.flex-cols
-    [<map>
+   [<map>
      {:style {:width "100%"}}
      {:dm?                (rf/subscribe [:dm?])
       :fog-of-war-mode    (rf/subscribe [:fog-of-war-mode])
@@ -127,12 +127,4 @@
       :map-pad-top        (rf/subscribe [:map-pad-top])
       :map-pad-bottom     (rf/subscribe [:map-pad-bottom])
       :map-height         (rf/subscribe [:map-height])
-      :map-width          (rf/subscribe [:map-width])}]
-    [:div.flex-rows
-     {:style {:min-width "13em"
-              :padding-left "7px"}}
-     [<token-list>
-      {}
-      {:dm?         (rf/subscribe [:dm?])
-       :tokens      (rf/subscribe [:tokens])
-       :token-count (rf/subscribe [:token-count])}]]]])
+      :map-width          (rf/subscribe [:map-width])}]])

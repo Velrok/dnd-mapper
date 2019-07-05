@@ -49,11 +49,11 @@
   (fn [_db _event]
     {:active-view-id :start
      :highlight-overlay false
-     :map {:width 35
-           :height 50
-           :padding {:left 0 :right 0 :top 0 :bottom 0}
-           :img-url  "https://img00.deviantart.net/d36a/i/2015/115/3/0/abandoned_temple_of_blackfire_by_dlimedia-d4pponv.jpg"
-           :img-alt  "Created by DLIMedia: https://www.deviantart.com/dlimedia/art/Abandoned-Temple-of-Blackfire-285053467"}
+     :map {:width 12
+           :height 15
+           :padding {:left 9 :right 11 :top 27 :bottom 57}
+           :img-url "https://pre00.deviantart.net/dee0/th/pre/i/2015/116/0/b/the_desecrated_temple_by_theredepic-d4d4x56.jpg"
+           :img-alt "Map art by JaredBlando https://www.deviantart.com/jaredblando"}
      :dm? true
      :fog-of-war-mode :reveil
      :reveiled-cells #{}

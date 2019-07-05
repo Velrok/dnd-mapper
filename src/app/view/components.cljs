@@ -116,10 +116,7 @@
                                              "player-invisible"))
                                          (when (and @dm? (:dm-focus p))
                                            "dm-focused")]}
-                        p]
-                       (when @dm?
-                         [:span.token-map-label
-                          (:name p)])])])))]))]]]]))
+                        p]])])))]))]]]]))
 
 (defn <token-list>
   [attr {:keys [tokens token-count dm?]}]
