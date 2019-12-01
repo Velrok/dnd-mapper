@@ -60,7 +60,7 @@
      :highlighted-cells #{}
      :session-id nil
      :players {"neg1"   {:id "neg1"
-                         :order 1
+                         :initiative 10
                          :name "Negwen"
                          :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
                          :player-visible true
@@ -69,7 +69,7 @@
                          :dm-focus false
                          :dead false}
                "ikara1" {:id "ikara1"
-                         :order 2
+                         :initiative 12
                          :name "Ikara"
                          :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
                          :player-visible true
@@ -78,7 +78,7 @@
                          :dm-focus false
                          :dead false}
                "Udrik"  {:id "Udrik"
-                         :order 3
+                         :initiative 14
                          :name "Udrik"
                          :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
                          :player-visible true
@@ -260,6 +260,13 @@
   [broadcast-if-host]
   (fn [db [_ token-id img-url]]
     (-> db (assoc-in [:players token-id :img-url] img-url))))
+
+(rf/reg-event-db
+  :token-initiative-change
+  [broadcast-if-host]
+  (fn [db [_ token-id initiative]]
+    (prn "ini" (int initiative))
+    (-> db (assoc-in [:players token-id :initiative] (int initiative)))))
 
 (rf/reg-event-db
   :add-token

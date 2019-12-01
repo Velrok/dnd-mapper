@@ -128,25 +128,26 @@
 
 (defn <token-list>
   [attr {:keys [tokens token-count dm?]}]
-  (let [default-name (str "Enemy " @token-count)
-        token-name   (r/atom default-name)
-        default-img  "/images/monster.png"
-        token-img    (r/atom default-img)
-        add-token    #(rf/dispatch [:add-token
-                                    {:id             (str "token-" @token-count)
-                                     :order          @token-count
-                                     :name           @token-name
-                                     :img-url        @token-img
-                                     :player-visible false
-                                     :on-map         false
-                                     :dead           false
-                                     :position       nil}])]
+  (let [default-name     (str "Enemy " @token-count)
+        token-name       (r/atom default-name)
+        default-img      "/images/monster.png"
+        token-img        (r/atom default-img)
+        token-initiative (r/atom 10)
+        add-token        #(rf/dispatch [:add-token
+                                        {:id             (str "token-" @token-count)
+                                         :initiative     @token-initiative
+                                         :name           @token-name
+                                         :img-url        @token-img
+                                         :player-visible false
+                                         :on-map         false
+                                         :dead           false
+                                         :position       nil}])]
     (fn []
       [:ul#characters-list
        (merge {:style {:height "100px"}}
               attr)
        (doall
-         (for [p (sort-by :order (vals @tokens))]
+         (for [p (reverse (sort-by :initiative (vals @tokens)))]
            [:li.flex-cols.character-list-entry
             {:key (str "char-list-" (:id p))
              :on-mouse-over (when @dm?
@@ -169,6 +170,13 @@
                       :on-change #(rf/dispatch [:token-img-url-change
                                                 (:id p)
                                                 (some-> % .-target .-value)])}]
+             [:input {:type "number"
+                      :min 1
+                      :max 100
+                      :value (:initiative p)
+                      :on-change #(rf/dispatch [:token-initiative-change
+                                                (:id p)
+                                                (some-> % .-target .-value int)])}]
              (when @dm?
                [:div.flex-cols
                 [:label "Player visible"]
@@ -208,6 +216,11 @@
             [:input {:type      "text"
                      :value     (or @token-img default-img)
                      :on-change #(reset! token-img (-> % .-target .-value))}]
+            [:input {:type      "number"
+                     :min         1
+                     :max       100
+                     :value     (or @token-initiative 10)
+                     :on-change #(reset! token-initiative (-> % .-target .-value int))}]
             [:button.btn
              {:on-click add-token}
              "add"]]]])])))
