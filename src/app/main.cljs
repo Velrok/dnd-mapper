@@ -152,6 +152,7 @@
 
 (rf/reg-event-db
   :highlight-overlay-changed
+  [broadcast-if-host]
   (fn [db [_ value]]
     (-> db (assoc :highlight-overlay value))))
 
