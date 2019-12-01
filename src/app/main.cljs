@@ -303,9 +303,9 @@
 (rf/reg-sub
   :active-view
   (fn [db _query-vec]
-    (get {:start        v/<start>
-          :session-new  v/<session-new>
-          :session-join v/<session-join>}
+    (get {:start        v/<home>
+          :session-new  v/<dm-view>
+          :session-join v/<player-view>}
          (:active-view-id db))))
 
 (rf/reg-sub
@@ -379,10 +379,8 @@
 
 (defn app
   []
-  [:div
-   [:h1 "D&D Mapper"]
-   (let [active-view @(rf/subscribe [:active-view])]
-     [active-view])])
+  (let [active-view @(rf/subscribe [:active-view])]
+     [active-view]))
 
 
 (defn ^:dev/after-load render

@@ -4,12 +4,10 @@
     [app.local-storage :as local-storage]
     [reagent.core :as r]
     [re-frame.core :as rf]
-    [app.websocket-io :as ws]
-    [app.state :as state]
     [app.view.components :refer [<token-list> <map> <map-definition-input>
                                  <btn> <btn-group>]]))
 
-(defn <start>
+(defn <home>
   []
   (let [new-session-name (r/atom (-> (Math/random)
                                      (* 100000000)
@@ -18,7 +16,8 @@
     (fn []
       (let [join-session-id (get-in (browser/current-uri) [:query "join-session-id"])]
         (if-not join-session-id
-          [:div
+          [:<>
+           [:h1.app--title "D&D Mapper"]
            [:h2 (str "start a session")]
            (doall
              (for [k (filter :dm? (local-storage/keys))]
@@ -43,32 +42,42 @@
              "create new session >>"]]
            ]
 
-          [:div
+          [:<>
+           [:h1.app--title "D&D Mapper"]
            [:h2 "join"]
            [:button.btn
             {:on-click #(rf/dispatch [:join-session join-session-id])}
             (str "join session "  join-session-id " >>")]])))))
 
-(defn <session-new>
-  [{:keys [session-id]}]
+(defn- <player-link>
+  []
+  [:p.player-link "player link: "
+   (let [link (str (assoc-in (browser/current-uri)
+                             [:query "join-session-id"]
+                             @(rf/subscribe [:session-id])))]
+     [:input#player-join-url
+      {:type :text
+       :read-only true
+       :value link
+       :on-click
+       (fn []
+         (.select (js/document.getElementById "player-join-url"))
+         (js/document.execCommand "copy")
+         (js/alert "player link copied"))}])])
+
+(defn- <session-id>
+  []
+  [:pre.session-id (str "session id: " @(rf/subscribe [:session-id]))])
+
+(defn <dm-view>
+  [{:keys []}]
   (fn []
-    [:div#session-new.flex-rows
-     [:p "player link: "
-      (let [link (str (assoc-in (browser/current-uri)
-                                [:query "join-session-id"]
-                                @(rf/subscribe [:session-id])))]
-        [:input#player-join-url
-           {:type :text
-            :read-only true
-            :value link
-            :on-click
-            (fn []
-              (.select (js/document.getElementById "player-join-url"))
-              (js/document.execCommand "copy")
-              (js/alert "player link copied"))}])]
-     [:div.game.flex-cols
+    [:div#dm-view
+     ;[:h1.app--title__mini "D&D Mapper"]
+     [:div.dm-view--map
+      {}
       [<map>
-       {:style {:width "100%"}}
+       {}
        {:dm?                (rf/subscribe [:dm?])
         :fog-of-war-mode    (rf/subscribe [:fog-of-war-mode])
         :map-img-url        (rf/subscribe [:map-img-url])
@@ -82,38 +91,36 @@
         :map-pad-top        (rf/subscribe [:map-pad-top])
         :map-pad-bottom     (rf/subscribe [:map-pad-bottom])
         :map-height         (rf/subscribe [:map-height])
-        :map-width          (rf/subscribe [:map-width])}]
+        :map-width          (rf/subscribe [:map-width])}]]
+     [:div.dm-view--controlls
+      [<player-link>]
+      [<session-id>]
 
-      [:div.flex-rows
-       {:style {:min-width "13em"
-                :padding-left "7px"}}
-       [<map-definition-input>
-        {}
-        {:map-img-url       (rf/subscribe [:map-img-url])
-         :map-width         (rf/subscribe [:map-width])
-         :map-height        (rf/subscribe [:map-height])
-         :map-pad-left      (rf/subscribe [:map-pad-left])
-         :map-pad-right     (rf/subscribe [:map-pad-right])
-         :map-pad-top       (rf/subscribe [:map-pad-top])
-         :map-pad-bottom    (rf/subscribe [:map-pad-bottom])
-         :highlight-overlay (rf/subscribe [:highlight-overlay])
-         :dm?               (rf/subscribe [:dm?])
-         :fog-of-war-mode   (rf/subscribe [:fog-of-war-mode])}]
-       (when @(rf/subscribe [:dm?])
-         [<token-list>
-          {}
-          {:dm?         (rf/subscribe [:dm?])
-           :tokens      (rf/subscribe [:tokens])
-           :token-count (rf/subscribe [:token-count])}])]]
-     [:pre (str "session id: " @(rf/subscribe [:session-id]))]]))
+      [<map-definition-input>
+       {}
+       {:map-img-url       (rf/subscribe [:map-img-url])
+        :map-width         (rf/subscribe [:map-width])
+        :map-height        (rf/subscribe [:map-height])
+        :map-pad-left      (rf/subscribe [:map-pad-left])
+        :map-pad-right     (rf/subscribe [:map-pad-right])
+        :map-pad-top       (rf/subscribe [:map-pad-top])
+        :map-pad-bottom    (rf/subscribe [:map-pad-bottom])
+        :highlight-overlay (rf/subscribe [:highlight-overlay])
+        :dm?               (rf/subscribe [:dm?])
+        :fog-of-war-mode   (rf/subscribe [:fog-of-war-mode])}]
+      (when @(rf/subscribe [:dm?])
+        [<token-list>
+         {}
+         {:dm?         (rf/subscribe [:dm?])
+          :tokens      (rf/subscribe [:tokens])
+          :token-count (rf/subscribe [:token-count])}])]]))
 
 
-(defn <session-join>
-  [{:keys [session-id]}]
-  [:div
-   [:p "Session " @(rf/subscribe [:session-id])]
+(defn <player-view>
+  [{:keys []}]
+  [:div#player-view
    [<map>
-     {:style {:width "100%"}}
+     {}
      {:dm?                (rf/subscribe [:dm?])
       :fog-of-war-mode    (rf/subscribe [:fog-of-war-mode])
       :map-img-url        (rf/subscribe [:map-img-url])
@@ -127,4 +134,5 @@
       :map-pad-top        (rf/subscribe [:map-pad-top])
       :map-pad-bottom     (rf/subscribe [:map-pad-bottom])
       :map-height         (rf/subscribe [:map-height])
-      :map-width          (rf/subscribe [:map-width])}]])
+      :map-width          (rf/subscribe [:map-width])}]
+   [:p "Session " @(rf/subscribe [:session-id])]])
