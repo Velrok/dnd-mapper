@@ -389,13 +389,18 @@
   (let [active-view @(rf/subscribe [:active-view])]
      [active-view]))
 
-
 (defn ^:dev/after-load render
   []
   (r/render [app] (js/document.getElementById "app")))
 
+(defn- start-heroku-keep-alive!
+  []
+  (js/window.setInterval
+    #(js/fetch "/keep-alive") 5000))
+
 (defn ^:export  main
   []
+  (start-heroku-keep-alive!)
   (rf/dispatch-sync [:initialize])
   (ws/connect!)
   (render))
