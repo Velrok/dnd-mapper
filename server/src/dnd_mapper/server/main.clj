@@ -79,10 +79,11 @@
                                          (map #(dissoc % :ch)))
                                     {:key-fn #(-> % name (string/replace #"-" "_"))})})
 
-  (GET "/keep-alive" []
+  (GET "/keep-alive"
+       []
        {:status 200
         :headers {"Content-Type" "application/json"}
-        :body (json/generate-string {:status :ok})
+        :body (json/generate-string {:status :ok} "")})
 
   (ANY "/ws" {:keys [ws-channel] :as req}
        (a/go-loop
