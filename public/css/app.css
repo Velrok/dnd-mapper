@@ -252,3 +252,22 @@ a {
   padding: 5px;
   overflow: scroll;
 }
+
+.collapsable--container {
+  background-color: lightgray;
+  border: 1px solid gray;
+  margin-bottom: 7px;
+}
+
+.collapsable--container--header {
+  padding: 5px;
+  background-color: darkgray;
+}
+
+.collapsable--container--body {
+  padding: 5px;
+}
+
+.collapsable--container--body__hidden {
+  display: none;
+}

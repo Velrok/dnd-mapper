@@ -335,3 +335,20 @@
            :name "obscure"
            :checked (= :obscure @fog-of-war-mode)
            :on-change #(rf/dispatch [:set-fog-of-war-mode :obscure])}]]])]))
+
+(defn <collapsable>
+  [{:keys [title visible]
+    :or {visible true}} & children]
+  (let [collapsed? (r/atom (not visible))]
+    (fn []
+      [:div.collapsable--container
+       [:div.collapsable--container--header
+        {:on-click (fn [e]
+                     (prn e)
+                     (swap! collapsed? not))}
+        [:span.collapsable--container--header--title title]]
+       [:div.collapsable--container--body
+        {:class (if @collapsed?
+                  "collapsable--container--body__hidden"
+                  "collapsable--container--body__visible")}
+        children]])))
