@@ -238,58 +238,24 @@
     [:div#map-definition-input
      attr
      [:fieldset
+      [:label {:for "#is-dm"} "DM"]
+      [:strong.pull-right (if @dm? "yes" "no")]]
+
+     [:fieldset
+      [:label {:for "#highlight-overlay"} "show grid"]
+      [:input#highlight-overlay.pull-right
+       {:type :checkbox
+        :checked   @highlight-overlay
+        :on-change #(rf/dispatch [:highlight-overlay-changed
+                                  (some-> % .-target .-checked)]) }]]
+
+     [:fieldset
       [:label {:for "#map-url"} "url"]
       [:input#map-url.pull-right
        {:type      :url
         :value     @map-img-url
         :on-change #(rf/dispatch [:map-img-url-changed
                                   (some-> % .-target .-value)])}]]
-
-     [:fieldset
-      [:label {:for "#map-pad-left"} "left-padding"]
-      [:input#map-pad-left.pull-right
-       {:type :number
-        :value @map-pad-left
-        :min 0
-        :on-change #(rf/dispatch [:map-pad-left-changed
-                                  (some-> % .-target .-value int)])}]]
-
-     [:fieldset
-      [:label {:for "#map-pad-right"} "right-padding"]
-      [:input#map-pad-right.pull-right
-       {:type :number
-        :value @map-pad-right
-        :min 0
-        :on-change #(rf/dispatch [:map-pad-right-changed
-                                  (some-> % .-target .-value int)])}]]
-
-     [:fieldset
-      [:label {:for "#map-pad-top"} "top-padding"]
-      [:input#map-pad-top.pull-right
-       {:type :number
-        :value @map-pad-top
-        :min 0
-        :on-change #(rf/dispatch [:map-pad-top-changed
-                                  (some-> % .-target .-value int)])}]]
-
-     [:fieldset
-      [:label {:for "#map-pad-bottom"} "bottom-padding"]
-      [:input#map-pad-bottom.pull-right
-       {:type :number
-        :value @map-pad-bottom
-        :min 0
-        :on-change #(rf/dispatch [:map-pad-bottom-changed
-                                  (some-> % .-target .-value int)])}]]
-
-     [:fieldset
-      [:label {:for "#map-width"} "columns"]
-      [:input#map-width.pull-right
-       {:type :number
-        :value @map-width
-        :min 1
-        :on-change #(rf/dispatch [:map-width-changed
-                                  (some-> % .-target .-value int)])
-        }]]
 
      [:fieldset
       [:label {:for "#map-height"} "rows"]
@@ -302,16 +268,50 @@
         }]]
 
      [:fieldset
-      [:label {:for "#highlight-overlay"} "highlight overlay"]
-      [:input#highlight-overlay.pull-right
-       {:type :checkbox
-        :checked   @highlight-overlay
-        :on-change #(rf/dispatch [:highlight-overlay-changed
-                                  (some-> % .-target .-checked)]) }]]
+      [:label {:for "#map-width"} "columns"]
+      [:input#map-width.pull-right
+       {:type :number
+        :value @map-width
+        :min 1
+        :on-change #(rf/dispatch [:map-width-changed
+                                  (some-> % .-target .-value int)])
+        }]]
 
      [:fieldset
-      [:label {:for "#is-dm"} "DM"]
-      [:strong.pull-right (if @dm? "yes" "no")]]
+      [:label {:for "#map-pad-left"} "left"]
+      [:input#map-pad-left.pull-right
+       {:type :number
+        :value @map-pad-left
+        :min 0
+        :on-change #(rf/dispatch [:map-pad-left-changed
+                                  (some-> % .-target .-value int)])}]]
+
+     [:fieldset
+      [:label {:for "#map-pad-right"} "right"]
+      [:input#map-pad-right.pull-right
+       {:type :number
+        :value @map-pad-right
+        :min 0
+        :on-change #(rf/dispatch [:map-pad-right-changed
+                                  (some-> % .-target .-value int)])}]]
+
+     [:fieldset
+      [:label {:for "#map-pad-top"} "top"]
+      [:input#map-pad-top.pull-right
+       {:type :number
+        :value @map-pad-top
+        :min 0
+        :on-change #(rf/dispatch [:map-pad-top-changed
+                                  (some-> % .-target .-value int)])}]]
+
+     [:fieldset
+      [:label {:for "#map-pad-bottom"} "bottom"]
+      [:input#map-pad-bottom.pull-right
+       {:type :number
+        :value @map-pad-bottom
+        :min 0
+        :on-change #(rf/dispatch [:map-pad-bottom-changed
+                                  (some-> % .-target .-value int)])}]]
 
      (when @dm?
        [:fieldset
