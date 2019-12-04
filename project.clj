@@ -14,5 +14,6 @@
    [org.clojure/tools.logging "0.4.1"]
    [org.clojure/core.async "0.4.490"]
    [compojure "1.6.1"]
+   [com.novemberain/monger "3.1.0"]
    [mount "0.1.16"]
    [jarohen/chord "0.8.1"]])
