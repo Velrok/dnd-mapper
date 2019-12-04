@@ -1,7 +1,5 @@
 (ns app.message-processing
   (:require
-    [app.websocket-io :as ws]
-    [app.state :as state]
     [re-frame.core :as rf]
     [app.browser :as browser]))
 
@@ -9,7 +7,7 @@
   [{:keys [message]}]
   (when (browser/debug?)
     (println (str "[" (-> message :data :type) "] < "
-                  (prn-str message))))
+                  (pr-str message))))
   (rf/dispatch [(keyword
                  (str "server-msg-" (or (some-> message :data :type)
                                         "no-type")))
