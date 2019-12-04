@@ -4,7 +4,9 @@
     [app.local-storage :as local-storage]
     [reagent.core :as r]
     [re-frame.core :as rf]
-    [app.view.components :refer [<token-list> <map> <map-definition-input>
+    [app.view.components :refer [<token-list> <map>
+                                 <map-definition-input>
+                                 <collapsable>
                                  <btn> <btn-group>]]))
 
 (defn <home>
@@ -93,21 +95,22 @@
         :map-height         (rf/subscribe [:map-height])
         :map-width          (rf/subscribe [:map-width])}]]
      [:div.dm-view--controlls
-      [<player-link>]
-      [<session-id>]
 
-      [<map-definition-input>
-       {}
-       {:map-img-url       (rf/subscribe [:map-img-url])
-        :map-width         (rf/subscribe [:map-width])
-        :map-height        (rf/subscribe [:map-height])
-        :map-pad-left      (rf/subscribe [:map-pad-left])
-        :map-pad-right     (rf/subscribe [:map-pad-right])
-        :map-pad-top       (rf/subscribe [:map-pad-top])
-        :map-pad-bottom    (rf/subscribe [:map-pad-bottom])
-        :highlight-overlay (rf/subscribe [:highlight-overlay])
-        :dm?               (rf/subscribe [:dm?])
-        :fog-of-war-mode   (rf/subscribe [:fog-of-war-mode])}]
+      [<collapsable> {:title "setup"}
+       [<player-link>]
+       [<session-id>]
+       [<map-definition-input>
+        {}
+        {:map-img-url       (rf/subscribe [:map-img-url])
+         :map-width         (rf/subscribe [:map-width])
+         :map-height        (rf/subscribe [:map-height])
+         :map-pad-left      (rf/subscribe [:map-pad-left])
+         :map-pad-right     (rf/subscribe [:map-pad-right])
+         :map-pad-top       (rf/subscribe [:map-pad-top])
+         :map-pad-bottom    (rf/subscribe [:map-pad-bottom])
+         :highlight-overlay (rf/subscribe [:highlight-overlay])
+         :dm?               (rf/subscribe [:dm?])
+         :fog-of-war-mode   (rf/subscribe [:fog-of-war-mode])}]]
       (when @(rf/subscribe [:dm?])
         [<token-list>
          {}
