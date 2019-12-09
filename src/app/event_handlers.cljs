@@ -187,7 +187,6 @@
   :token-initiative-change
   [broadcast-if-host]
   (fn [db [_ token-id initiative]]
-    (prn "ini" (int initiative))
     (-> db (assoc-in [:players token-id :initiative] (int initiative)))))
 
 (rf/reg-event-db
