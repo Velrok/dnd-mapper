@@ -190,6 +190,12 @@
     (-> db (assoc-in [:players token-id :initiative] (int initiative)))))
 
 (rf/reg-event-db
+  :token-hp-change
+  [broadcast-if-host]
+  (fn [db [_ token-id hp]]
+    (-> db (assoc-in [:players token-id :hp] (int hp)))))
+
+(rf/reg-event-db
   :add-token
   [broadcast-if-host]
   (fn [db [_ token]]

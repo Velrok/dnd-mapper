@@ -26,12 +26,12 @@
 
 (defn <token>
   [{:keys [dm?] :as attr} player]
-  (let [{:keys [id img-url dead]} player]
+  (let [{:keys [id img-url hp]} player]
     [:div.token
      (merge
        {:id id
         :key (str "player-id-" id)
-        :style {:background-image (str "url(" (if dead dead-icon img-url) ")")}
+        :style {:background-image (str "url(" (if (< hp 0) dead-icon img-url) ")")}
         :draggable @dm?
         :on-drag-start (fn [e]
                          (.stopPropagation e)
@@ -133,19 +133,19 @@
         default-img      "/images/monster.png"
         token-img        (r/atom default-img)
         token-initiative (r/atom 10)
+        token-hp         (r/atom 7)
         add-token        #(rf/dispatch [:add-token
                                         {:id             (str "token-" @token-count)
                                          :initiative     @token-initiative
+                                         :hp             @token-hp
                                          :name           @token-name
                                          :img-url        @token-img
                                          :player-visible false
                                          :on-map         false
-                                         :dead           false
                                          :position       nil}])]
     (fn []
       [:ul#characters-list
-       (merge {:style {:height "100px"}}
-              attr)
+       (merge {:style {:height "100px"}} attr)
        (doall
          (for [p (reverse (sort-by :initiative (vals @tokens)))]
            [:li.flex-cols.character-list-entry
@@ -177,6 +177,17 @@
                       :on-change #(rf/dispatch [:token-initiative-change
                                                 (:id p)
                                                 (some-> % .-target .-value int)])}]
+
+             (when @dm?
+               [:div.flex-cols
+                [:label "HP"]
+                [:input {:type "number"
+                         :min -1
+                         :max 99999
+                         :value (:hp p)
+                         :on-change #(rf/dispatch [:token-hp-change
+                                                   (:id p)
+                                                   (some-> % .-target .-value int)])}]])
              (when @dm?
                [:div.flex-cols
                 [:label "Player visible"]
@@ -185,14 +196,6 @@
                                                    (:id p)
                                                    (some-> % .-target .-checked)])
                          :checked (:player-visible p)}]])
-             (when @dm?
-               [:div.flex-cols
-                [:label "Dead?"]
-                [:input {:type :checkbox
-                         :on-change #(rf/dispatch [:token-dead-change
-                                                   (:id p)
-                                                   (some-> % .-target .-checked)])
-                         :checked (:dead p)}]])
              (when @dm?
                [:div.flex-cols
                 [:button.btn
@@ -221,6 +224,11 @@
                      :max       100
                      :value     (or @token-initiative 10)
                      :on-change #(reset! token-initiative (-> % .-target .-value int))}]
+            [:input {:type      "number"
+                     :min         0
+                     :max       99999
+                     :value     (or @token-hp 7)
+                     :on-change #(reset! token-hp (-> % .-target .-value int))}]
             [:button.btn
              {:on-click add-token}
              "add"]]]])])))
