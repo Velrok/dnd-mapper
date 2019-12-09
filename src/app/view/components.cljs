@@ -360,3 +360,12 @@
                   "collapsable--container--body__hidden"
                   "collapsable--container--body__visible")}
         children]])))
+
+(defn <initiative-list>
+  [{:keys [tokens dm?]}]
+  [:div
+   (doall
+     (for [t (reverse (sort-by :initiative (vals @tokens)))]
+       [<token> {:key (str "<initiative-list>-" (:id t))
+                 :dm? dm?}
+        t]))])

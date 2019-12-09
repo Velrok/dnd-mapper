@@ -271,3 +271,7 @@ a {
 .collapsable--container--body__hidden {
   display: none;
 }
+
+.dm-view--title {
+  font-size: 2em;
+}

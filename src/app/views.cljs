@@ -6,6 +6,7 @@
     [re-frame.core :as rf]
     [app.view.components :refer [<token-list> <map>
                                  <map-definition-input>
+                                 <initiative-list>
                                  <collapsable>
                                  <btn> <btn-group>]]))
 
@@ -74,49 +75,54 @@
 (defn <dm-view>
   [{:keys []}]
   (fn []
-    [:div#dm-view
-     ;[:h1.app--title__mini "D&D Mapper"]
-     [:div.dm-view--map
-      {}
-      [<map>
+    [:<>
+     [:div.flex-cols
+      [:h1.dm-view--title "D&D Mapper"]
+      [<initiative-list> {:dm?    (rf/subscribe [:dm?])
+                          :tokens (rf/subscribe [:tokens])}]]
+     [:div#dm-view
+      ;[:h1.app--title__mini "D&D Mapper"]
+      [:div.dm-view--map
        {}
-       {:dm?                (rf/subscribe [:dm?])
-        :fog-of-war-mode    (rf/subscribe [:fog-of-war-mode])
-        :map-img-url        (rf/subscribe [:map-img-url])
-        :map-img-alt        (rf/subscribe [:map-img-alt])
-        :reveiled-cells     (rf/subscribe [:reveiled-cells])
-        :highlighted-cells  (rf/subscribe [:highlighted-cells])
-        :highlight-overlay  (rf/subscribe [:highlight-overlay])
-        :tokens             (rf/subscribe [:tokens])
-        :map-pad-left       (rf/subscribe [:map-pad-left])
-        :map-pad-right      (rf/subscribe [:map-pad-right])
-        :map-pad-top        (rf/subscribe [:map-pad-top])
-        :map-pad-bottom     (rf/subscribe [:map-pad-bottom])
-        :map-height         (rf/subscribe [:map-height])
-        :map-width          (rf/subscribe [:map-width])}]]
-     [:div.dm-view--controlls
-
-      [<collapsable> {:title "setup"}
-       [<player-link>]
-       [<session-id>]
-       [<map-definition-input>
+       [<map>
         {}
-        {:map-img-url       (rf/subscribe [:map-img-url])
-         :map-width         (rf/subscribe [:map-width])
-         :map-height        (rf/subscribe [:map-height])
-         :map-pad-left      (rf/subscribe [:map-pad-left])
-         :map-pad-right     (rf/subscribe [:map-pad-right])
-         :map-pad-top       (rf/subscribe [:map-pad-top])
-         :map-pad-bottom    (rf/subscribe [:map-pad-bottom])
-         :highlight-overlay (rf/subscribe [:highlight-overlay])
-         :dm?               (rf/subscribe [:dm?])
-         :fog-of-war-mode   (rf/subscribe [:fog-of-war-mode])}]]
-      (when @(rf/subscribe [:dm?])
-        [<token-list>
+        {:dm?                (rf/subscribe [:dm?])
+         :fog-of-war-mode    (rf/subscribe [:fog-of-war-mode])
+         :map-img-url        (rf/subscribe [:map-img-url])
+         :map-img-alt        (rf/subscribe [:map-img-alt])
+         :reveiled-cells     (rf/subscribe [:reveiled-cells])
+         :highlighted-cells  (rf/subscribe [:highlighted-cells])
+         :highlight-overlay  (rf/subscribe [:highlight-overlay])
+         :tokens             (rf/subscribe [:tokens])
+         :map-pad-left       (rf/subscribe [:map-pad-left])
+         :map-pad-right      (rf/subscribe [:map-pad-right])
+         :map-pad-top        (rf/subscribe [:map-pad-top])
+         :map-pad-bottom     (rf/subscribe [:map-pad-bottom])
+         :map-height         (rf/subscribe [:map-height])
+         :map-width          (rf/subscribe [:map-width])}]]
+      [:div.dm-view--controlls
+
+       [<collapsable> {:title "setup"}
+        [<player-link>]
+        [<session-id>]
+        [<map-definition-input>
          {}
-         {:dm?         (rf/subscribe [:dm?])
-          :tokens      (rf/subscribe [:tokens])
-          :token-count (rf/subscribe [:token-count])}])]]))
+         {:map-img-url       (rf/subscribe [:map-img-url])
+          :map-width         (rf/subscribe [:map-width])
+          :map-height        (rf/subscribe [:map-height])
+          :map-pad-left      (rf/subscribe [:map-pad-left])
+          :map-pad-right     (rf/subscribe [:map-pad-right])
+          :map-pad-top       (rf/subscribe [:map-pad-top])
+          :map-pad-bottom    (rf/subscribe [:map-pad-bottom])
+          :highlight-overlay (rf/subscribe [:highlight-overlay])
+          :dm?               (rf/subscribe [:dm?])
+          :fog-of-war-mode   (rf/subscribe [:fog-of-war-mode])}]]
+       (when @(rf/subscribe [:dm?])
+         [<token-list>
+          {}
+          {:dm?         (rf/subscribe [:dm?])
+           :tokens      (rf/subscribe [:tokens])
+           :token-count (rf/subscribe [:token-count])}])]]]))
 
 
 (defn <player-view>
