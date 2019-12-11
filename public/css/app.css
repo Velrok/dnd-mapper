@@ -275,3 +275,15 @@ a {
 .dm-view--title {
   font-size: 2em;
 }
+
+#player-view {
+  margin-top: 62px;
+}
+
+.player-view--header {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 1;
+  background-color: white;
+}

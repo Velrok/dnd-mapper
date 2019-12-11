@@ -76,10 +76,8 @@
   [{:keys []}]
   (fn []
     [:<>
-     [:div.flex-cols
-      [:h1.dm-view--title "D&D Mapper"]
-      [<initiative-list> {:dm?    (rf/subscribe [:dm?])
-                          :tokens (rf/subscribe [:tokens])}]]
+     
+     [:h1.dm-view--title "D&D Mapper"]
      [:div#dm-view
       ;[:h1.app--title__mini "D&D Mapper"]
       [:div.dm-view--map
@@ -127,8 +125,12 @@
 
 (defn <player-view>
   [{:keys []}]
-  [:div#player-view
-   [<map>
+  [:<>
+   [:div.player-view--header
+   [<initiative-list> {:dm?    (rf/subscribe [:dm?])
+                       :tokens (rf/subscribe [:tokens])}]]
+   [:div#player-view
+    [<map>
      {}
      {:dm?                (rf/subscribe [:dm?])
       :fog-of-war-mode    (rf/subscribe [:fog-of-war-mode])
@@ -144,4 +146,4 @@
       :map-pad-bottom     (rf/subscribe [:map-pad-bottom])
       :map-height         (rf/subscribe [:map-height])
       :map-width          (rf/subscribe [:map-width])}]
-   [:p "Session " @(rf/subscribe [:session-id])]])
+    [:p "Session " @(rf/subscribe [:session-id])]]])

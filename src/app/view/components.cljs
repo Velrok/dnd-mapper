@@ -30,6 +30,12 @@
     [:div.token
      (merge
        {:id id
+        :class [(when-not (:player-visible player)
+                  (if @dm?
+                    "player-invisible-dm-mode"
+                    "player-invisible"))
+                (when (and @dm? (:dm-focus player))
+                  "dm-focused")]
         :key (str "player-id-" id)
         :style {:background-image (str "url(" (if (< hp 0) dead-icon img-url) ")")}
         :draggable @dm?
@@ -117,13 +123,7 @@
                                             (fn [p] (= pos (:position p))))
                                           first)]
                       [:div.token-wrapper
-                       [<token> {:dm? dm?
-                                 :class [(when-not (:player-visible p)
-                                           (if @dm?
-                                             "player-invisible-dm-mode"
-                                             "player-invisible"))
-                                         (when (and @dm? (:dm-focus p))
-                                           "dm-focused")]}
+                       [<token> {:dm? dm?}
                         p]])])))]))]]]]))
 
 (defn <token-list>
