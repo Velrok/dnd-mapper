@@ -40,7 +40,8 @@
          (let [timeout-ch (a/timeout (* 1000 60 60 8))]
            (a/alt!
              timeout-ch (do
-                          (log/info "Closing channel " ws-ch)
+                          (log/info (format "Closing channel %s"
+                                            (pr-str ws-ch)))
                           (swap! ws-connections dissoc ws-ch)
                           (close! ws-ch))
              ws-ch ([{:keys [message]}]
@@ -53,7 +54,8 @@
                                 :ch          ws-ch
                                 :host        host
                                 :instance-id instance-id})
-                        (log/debug "Message received:" message)
+                        (log/debug (format "Message received: %s"
+                                           (pr-str message)))
                         (messages/process-message! message
                                                    ws-ch
                                                    @ws-connections)
