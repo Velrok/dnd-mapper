@@ -79,4 +79,9 @@
   (fn [db _query-vec]
     (some-> db :highlighted-cells)))
 
+(rf/reg-sub
+  :last-pong
+  (fn [db _query-vec]
+    (some-> db :last-pong)))
+
 

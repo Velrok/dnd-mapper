@@ -1,4 +1,5 @@
 (ns app.views
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
     [app.browser :as browser]
     [app.local-storage :as local-storage]
@@ -10,9 +11,41 @@
                                  <collapsable>
                                  <btn> <btn-group>]]))
 
+(defn <host-pinger>
+  []
+  (let [timer (atom nil) ]
+    (r/create-class
+      {:display-name "host-pinger"
+
+       :component-did-mount
+       (fn [this]
+         (prn ::component-did-mount)
+         (reset! timer
+                 (js/window.setInterval
+                   #(rf/dispatch
+                      [:ping-host {:request-ts-ms (.now js/Date)}])
+                   5000)))
+
+       :component-will-unmount
+       (fn [this]
+         (prn ::component-will-unmount)
+         (swap! timer
+                (fn [timer-id]
+                  (js/window.clearInterval timer-id))))
+
+       :reagent-render
+       (fn [] )})))
+
+(defn <ping>
+  []
+  (let [dt-ms (- (.now js/Date)
+                 (or (:timestamp-ms @(rf/subscribe [:last-pong]))
+                     0))]
+    [:div.host-ping dt-ms ]))
+
 (defn <home>
   []
-  (let [new-session-name (r/atom (-> (Math/random)
+  (let [new-session-id (r/atom (-> (Math/random)
                                      (* 100000000)
                                      int
                                      str))]
@@ -25,23 +58,26 @@
            (doall
              (for [k (filter :dm? (local-storage/keys))]
                [:div
+                [:p (:session-id k)]
                 [:button.btn
                  {:on-click #(local-storage/remove! k)
                   :style {:display :inline-block}
                   :key (str "delete_sess_" (:session-id k))}
-                 (str "Delete " (:session-id k) "!")]
+                 (str "Delete!")]
                 [:button.btn
-                 {:on-click #(rf/dispatch [:state-init (local-storage/get k)])
+                 {:on-click #(go
+                               (rf/dispatch [:host-session (:session-id k)])
+                               (rf/dispatch [:state-init (local-storage/get k)]))
                   :style {:display :inline-block}
                   :key (str "restore_sess_" (:session-id k))}
-                 (str "Restore " (:session-id k) " >>")]]))
+                 (str "Restore >>")]]))
            [:div
             [:input
-             {:value @new-session-name
-              :on-change #(reset! new-session-name (some-> % .-target .-value))}]
+             {:value @new-session-id
+              :on-change #(reset! new-session-id (some-> % .-target .-value))}]
 
             [:button.btn
-             {:on-click #(rf/dispatch [:host-session @new-session-name])}
+             {:on-click #(rf/dispatch [:host-session @new-session-id])}
              "create new session >>"]]
            ]
 
@@ -54,7 +90,9 @@
 
 (defn- <player-link>
   []
-  [:p.player-link "player link: "
+  [:p.player-link
+   {:key (str "player-link")}
+   "player link: "
    (let [link (str (assoc-in (browser/current-uri)
                              [:query "join-session-id"]
                              @(rf/subscribe [:session-id])))]
@@ -129,6 +167,8 @@
    [:div.player-view--header
    [<initiative-list> {:dm?    (rf/subscribe [:dm?])
                        :tokens (rf/subscribe [:tokens])}]]
+   [<host-pinger>]
+   [<ping>]
    [:div#player-view
     [<map>
      {}

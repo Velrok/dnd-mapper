@@ -3,15 +3,11 @@
     [re-frame.core :as rf]
     [re-frame.db :refer [app-db]]
     [reagent.core :as r]
-    [app.message-processing :as msg-process]
-    [app.event-handlers]
+    [app.event-handlers] ;; load for side effects of registering handlers
     [app.subscriptions]
-    [app.state :as state]
+    [app.message-processing :as msg-process]
     [app.local-storage :as local-storage]
-    [mount.core :as mount]
     [mount.core :refer-macros [defstate]]
-    ;[app.views :as v]
-    ;[app.browser :as browser]
     [app.websocket-io :as ws]
     [cljs.core.async :as a :refer [chan >! <! close!]]
     [cljs.core.async :refer-macros [go]]))
@@ -44,8 +40,26 @@
            (prn [::server-message-processor "stop"])
            (a/close! @server-message-processor)))
 
+(defstate heroku-keep-alive
+  :start (do
+           (prn [::heroku-keep-alive "start"])
+           (js/window.setInterval
+             #(js/fetch "/keep-alive")
+             10000))
+  :stop  (do
+           (prn [::heroku-keep-alive "stop"])
+           (js/window.clearInterval @heroku-keep-alive)))
 
-; View Functions
+(defstate ticker
+  :start (do
+           (prn [::ticker "start"])
+           (js/window.setInterval
+            #(rf/dispatch [:ts-ms (.now js/Date)])
+            1000))
+  :stop  (do
+           (prn [::ticker "stop"])
+           (js/window.clearInterval @ticker)))
+
 
 (defn app
   []
@@ -56,14 +70,11 @@
   []
   (r/render [app] (js/document.getElementById "app")))
 
-(defn- start-heroku-keep-alive!
-  []
-  (js/window.setInterval
-    #(js/fetch "/keep-alive") 5000))
-
 (defn ^:export  main
   []
-  (start-heroku-keep-alive!)
+  @ticker
+  @heroku-keep-alive
+  @server-message-processor
   (rf/dispatch-sync [:initialize])
   (ws/connect!)
   (render))

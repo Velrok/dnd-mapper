@@ -63,13 +63,33 @@
     (if (-> context :db :dm?)
       {:dispatch [:state-init (-> context
                                   :db
-                                  (select-keys [:map :reveiled-cells :players]))]})))
+                                  (select-keys [:highlight-overlay :map :reveiled-cells :players]))]})))
+
+(rf/reg-event-db
+  :set-active-session
+  (fn [db [_ session-id]]
+    (assoc db
+           :session-id     session-id
+           :active-view-id :session-new)))
 
 (rf/reg-event-db
   :state-init
   [broadcast-if-host]
   (fn [db [_ dm-state]]
     (merge db dm-state)))
+
+(rf/reg-event-fx
+  :ping-host
+  [broadcast-if-guest]
+  (fn [context event]
+    (if (-> context :db :dm?)
+      {:dispatch [:pong-guests {:timestamp-ms (.now js/Date)}]})))
+
+(rf/reg-event-db
+  :pong-guests
+  [broadcast-if-host]
+  (fn [db [_ value]]
+    (assoc db :last-pong value)))
 
 (rf/reg-event-db
   :highlight-overlay-changed
@@ -212,11 +232,6 @@
   (fn [db [_ mode]]
     (-> db (assoc-in [:fog-of-war-mode] mode))))
 
-(rf/reg-event-db
-  :heart-beat
-  (fn [db [_ ts latency]]
-    (-> db (assoc-in [:last-heart-beat] (js/Date. ts)))))
-
 (rf/reg-event-fx
   :request-cell-highlight
   [broadcast-if-guest]
@@ -231,3 +246,9 @@
   :turnoff-cell-highlight
   (fn [db [_ pos]]
     (update-in db [:highlighted-cells] disj pos)))
+
+(rf/reg-event-db
+  :ts-ms
+  (fn [db [_ now-ts]]
+    (-> db
+        (assoc :now-ts now-ts))))
