@@ -248,7 +248,7 @@
     (update-in db [:highlighted-cells] disj pos)))
 
 (rf/reg-event-db
-  :ts-ms
+  :now-ts-ms
   (fn [db [_ now-ts]]
     (-> db
-        (assoc :now-ts now-ts))))
+        (assoc :now-ts-ms now-ts))))

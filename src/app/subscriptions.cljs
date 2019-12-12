@@ -84,4 +84,7 @@
   (fn [db _query-vec]
     (some-> db :last-pong)))
 
-
+(rf/reg-sub
+  :now-ts-ms
+  (fn [db _query-vec]
+    (some-> db :now-ts-ms)))

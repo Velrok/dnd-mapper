@@ -293,3 +293,17 @@ a {
   right: 0;
   top: 0;
 }
+
+.host-ping--ok {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-color: green;
+}
+
+.host-ping--issue {
+  display: inline-block;
+  background-color: red;
+  color: white;
+  padding: 1em;
+}

@@ -54,7 +54,7 @@
   :start (do
            (prn [::ticker "start"])
            (js/window.setInterval
-            #(rf/dispatch [:ts-ms (.now js/Date)])
+            #(rf/dispatch [:now-ts-ms (.now js/Date)])
             1000))
   :stop  (do
            (prn [::ticker "stop"])

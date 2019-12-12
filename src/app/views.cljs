@@ -38,10 +38,18 @@
 
 (defn <ping>
   []
-  (let [dt-ms (- (.now js/Date)
-                 (or (:timestamp-ms @(rf/subscribe [:last-pong]))
-                     0))]
-    [:div.host-ping dt-ms ]))
+  (let [now @(rf/subscribe [:now-ts-ms])
+        last-pong @(rf/subscribe [:last-pong])
+        dt  (- now
+               (or (:timestamp-ms last-pong) 0))
+        ok? (< dt 10000)]
+    [:div.host-ping
+     (if ok?
+       [:span.host-ping--ok
+        " "]
+       [:span.host-ping--issue
+        (str "no response from DM for " (int (/ dt 1000)) " seconds")]
+       )]))
 
 (defn <home>
   []
