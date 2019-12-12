@@ -54,6 +54,8 @@
         :or {audience :others
              host false}}]
   (go
+    (when (empty? session-id)
+      (.error js/console "called send! without session-id"))
     (when (browser/debug?)
       (println (str (if host "!" ".")
                     (pr-str msg)
@@ -67,19 +69,6 @@
            :audience    audience
            :data        msg
            :ts          (-> (js/Date.) (.getTime))}))))
-
-(defstate heart-beat
-  :start (do
-           (prn (str "starting: heart-beat"))
-           (js/window.setInterval #(when-let [s-id @(rf/subscribe [:session-id])]
-                                     (send! {:type :heart-beat}
-                                            {:audience :server
-                                             :host @(rf/subscribe [:dm?])
-                                             :session-id s-id}))
-                                  5000))
-  :stop (do
-          (prn (str "stopping: heart-beat"))
-          (js/window.clearInterval @heart-beat)))
 
 (defstate ^{:on-reload :noop} server-message-dispatch
   :start
@@ -107,7 +96,6 @@
   []
   (prn ::connect!)
   @connection
-  @heart-beat
   @server-message-dispatch)
 
 
