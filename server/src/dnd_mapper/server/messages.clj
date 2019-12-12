@@ -16,17 +16,13 @@
 (defmulti process-message! (fn [msg _ch _connections]
                             (:audience msg)))
 
-(defmethod process-message! :server
-  [msg ch _connections]
-  (go
-    (let [now (System/currentTimeMillis)]
-    (>! ch {:data [:heart-beat now (- now (:ts msg))]}))))
-
 (defmethod process-message! :others
   [{:keys [session-id] :as msg} ch connections]
   (let [targets (disj (set (map :ch (session-connections session-id connections)))
                       ch)]
-    (log/info (format "[%s] Forwarding messge to %d targets." session-id (count targets)))
+    (log/info (format "[%s] Forwarding messge to %d targets."
+                      session-id
+                      (count targets)))
     (doseq [c targets]
       (go (>! c msg)))))
 
@@ -37,7 +33,9 @@
                            (map :ch)
                            set)
                       ch)]
-    (log/info (format "[%s] Forwarding messge to %d guests." session-id (count targets)))
+    (log/info (format "[%s] Forwarding messge to %d guests."
+                      session-id
+                      (count targets)))
     (doseq [c targets]
       (go (>! c msg)))))
 
@@ -48,7 +46,9 @@
                            (map :ch)
                            set)
                       ch)]
-    (log/info (format "[%s] Forwarding messge to %d host" session-id (count targets)))
+    (log/info (format "[%s] Forwarding messge to %d host"
+                      session-id
+                      (count targets)))
     (doseq [c targets]
       (go (>! c msg)))))
 
