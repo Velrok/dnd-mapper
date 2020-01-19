@@ -18,7 +18,7 @@
            :output-dir "public/js"
            :asset-path "/js"
            :modules {:main    {:entries [app.main]}}}
-  :app-v2 {:target :browser
+  :app_v2 {:target :browser
            :output-dir "public/js"
            :asset-path "/js"
-           :modules {:main-v2 {:entries [app.main.v2]}}}}}
+           :modules {:main {:entries [app.v2.main]}}}}}
