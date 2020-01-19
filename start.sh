@@ -1,1 +1,1 @@
-shadow-cljs watch --debug app
+shadow-cljs watch --debug app-v2
