@@ -126,6 +126,51 @@
                        [<token> {:dm? dm?}
                         p]])])))]))]]]]))
 
+(defn <map-svg>
+  [attr
+   {:keys [dm? fog-of-war-mode map-img-url map-img-alt
+           reveiled-cells
+           highlighted-cells highlight-overlay
+           tokens
+           map-height map-width
+           map-pad-left
+           map-pad-right
+           map-pad-top
+           map-pad-bottom
+           ]}]
+  (let [cell-width 100
+        cell-height 100]
+    [:div.map-svg
+     [:img.map-svg__image {:src @map-img-url}]
+     [:svg.map-svg__svg
+      {:width "100%"
+       :height "100%"}
+      (doall
+        (for [y (range @map-height)
+              x (range @map-width)]
+          [:rect.map-svg__cell
+           {:key (str "cell-" x "-" y)
+            :visibility (if (contains? @reveiled-cells {:x x :y y})
+                          "hidden"
+                          "visible")
+            :x (* x cell-width)
+            :y (* y cell-height)
+            ; :on-click (fn [e] (.log js/console e (.-screenX e)))
+            :on-mouse-enter (fn [e]
+                              (let [x (.-screenX e)
+                                    y (.-screenY e)
+                                    cell-x (Math/floor (/ x cell-width))
+                                    cell-y (Math/floor (/ y cell-height))]
+                                (rf/dispatch [:reveil-cells [{:x cell-x :y cell-y}]])
+                                (.log js/console
+                                      ;e
+                                      x y
+                                      cell-x cell-y
+                                      (.-altKey e)
+                                      )))
+            :width cell-width
+            :height cell-height}]))]]))
+
 (defn <token-list>
   [attr {:keys [tokens token-count dm?]}]
   (let [default-name     (str "Enemy " @token-count)

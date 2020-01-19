@@ -307,3 +307,19 @@ a {
   color: white;
   padding: 1em;
 }
+
+.map-svg {
+  position: relative;
+}
+
+.map-svg__image {
+  width: 100%;
+}
+
+.map-svg__svg {
+  width 100%;
+  height 100%;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}

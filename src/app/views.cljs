@@ -6,6 +6,7 @@
     [reagent.core :as r]
     [re-frame.core :as rf]
     [app.view.components :refer [<token-list> <map>
+                                 <map-svg>
                                  <map-definition-input>
                                  <initiative-list>
                                  <collapsable>
@@ -128,7 +129,7 @@
       ;[:h1.app--title__mini "D&D Mapper"]
       [:div.dm-view--map
        {}
-       [<map>
+       [<map-svg>
         {}
         {:dm?                (rf/subscribe [:dm?])
          :fog-of-war-mode    (rf/subscribe [:fog-of-war-mode])
