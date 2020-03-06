@@ -7,18 +7,19 @@
 body {
   font-size: 18px;
   font-family: 'Open Sans', sans-serif;
-  padding: 1em;
+  padding: 0px;
 }
 
 h1, h2, h3, h4, h5 {
   font-family: 'Cinzel Decorative', cursive;
   margin-bottom: 0.5em;
+  margin-left: 12px;
+  margin-top: 8px;
 }
 
 input {
   font-family: 'Open Sans Condensed', sans-serif;
   font-size: 0.9rem;
-
 }
 
 h1 {
@@ -45,6 +46,11 @@ fieldset {
 
 fieldset label {
   margin-right: 1em;
+}
+
+#app {
+  height: 100vh;
+  width: 100vw;
 }
 
 .map-wrapper {
@@ -157,10 +163,6 @@ fieldset label {
   background-color: #326D9A70;
 }
 
-#session-new {
-  display: flex;
-}
-
 .flex-rows {
   display: flex;
   flex-flow: column;
@@ -221,4 +223,87 @@ a {
   text-shadow: black 0 0 4px;
   font-weigth: 900;
   color: white;
+}
+
+#dm-view {
+  display: grid;
+  grid-template-rows: 100%;
+  grid-template-columns: auto 12em;
+  grid-template-areas:
+  "map controlls";
+}
+
+.app--title__mini {
+ grid-row: 1;
+ grid-column: 1;
+ z-index: 1;
+ font-size: 36px;
+ font-weight: 900;
+ font-style: normal;
+}
+
+.dm-view--map {
+  grid-area: map;
+}
+
+.dm-view--controlls {
+  grid-area: controlls;
+  height: 100%;
+  padding: 5px;
+  overflow: scroll;
+}
+
+.collapsable--container {
+  background-color: lightgray;
+  border: 1px solid gray;
+  margin-bottom: 7px;
+}
+
+.collapsable--container--header {
+  padding: 5px;
+  background-color: darkgray;
+}
+
+.collapsable--container--body {
+  padding: 5px;
+}
+
+.collapsable--container--body__hidden {
+  display: none;
+}
+
+.dm-view--title {
+  font-size: 2em;
+}
+
+#player-view {
+  margin-top: 62px;
+}
+
+.player-view--header {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 1;
+  background-color: white;
+}
+
+.host-ping {
+  position: fixed;
+  right: 0;
+  top: 0;
+}
+
+.host-ping--ok {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-color: green;
+}
+
+.host-ping--issue {
+  display: inline-block;
+  background-color: red;
+  color: white;
+  padding: 1em;
 }
