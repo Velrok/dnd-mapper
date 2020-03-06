@@ -150,7 +150,7 @@
          (for [p (reverse (sort-by :initiative (vals @tokens)))]
            [:li.flex-cols.character-list-entry
             {:key (str "char-list-" (:id p))
-             :on-mouse-over (when @dm?
+             :on-mouse-enter (when @dm?
                               #(rf/dispatch [:token-gain-dm-focus (:id p)]))
              :on-mouse-leave (when @dm?
                                #(rf/dispatch [:token-loose-dm-focus (:id p)]))
