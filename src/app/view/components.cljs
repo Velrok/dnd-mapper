@@ -219,11 +219,13 @@
             [:input {:type      "text"
                      :value     (or @token-img default-img)
                      :on-change #(reset! token-img (-> % .-target .-value))}]
+            [:span "initiative"]
             [:input {:type      "number"
                      :min         1
                      :max       100
                      :value     (or @token-initiative 10)
                      :on-change #(reset! token-initiative (-> % .-target .-value int))}]
+            [:span "HP"]
             [:input {:type      "number"
                      :min         0
                      :max       99999
