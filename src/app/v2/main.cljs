@@ -38,6 +38,6 @@
 
 (defn ^:export  main
   []
-  ;@ws/websocket
+  @ws/websocket
   (render))
 
