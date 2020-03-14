@@ -1,6 +1,11 @@
 (ns app.browser
   (:require
-    [cemerick.uri :refer [uri]]))
+    ["history" :refer [createBrowserHistory]]
+    [cemerick.uri :refer [uri map->query]]))
+
+(def history
+  (delay (createBrowserHistory)))
+
 
 (defn current-uri
   []
@@ -18,3 +23,13 @@
               (get "debug"))
     true
     false))
+
+(defn goto!
+  [url params]
+  (let [target (str url "?" (map->query params))]
+    (tap> [::goto {:target target
+                   :url url
+                   :params params}])
+    (.push @history
+           target
+           (clj->js params))))
