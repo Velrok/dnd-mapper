@@ -33,3 +33,8 @@
     (.push @history
            target
            (clj->js params))))
+
+(defn log!
+  [& args]
+  (apply (.-log js/console)
+         (map clj->js args)))
