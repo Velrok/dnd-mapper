@@ -16,6 +16,7 @@
   "license": "Apache License 2.0",
   "dependencies": {
     "create-react-class": "^15.6.3",
+    "history": "^4.10.1",
     "lz-string": "^1.4.4",
     "mini.css": "^3.0.1",
     "react": "^16.8.6",
