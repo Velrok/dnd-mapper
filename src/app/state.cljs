@@ -1,4 +1,6 @@
-(ns app.state)
+(ns app.state
+  (:require
+    [reagent.core :as r]))
 
 (def initial-app-value
   {:active-view-id :start
@@ -53,3 +55,9 @@
                          :position nil
                          :dm-focus false
                          :dead false}}})
+
+(defn <loading>
+  [props]
+  [:p "Loading"])
+
+(def current-view (r/atom <loading>))

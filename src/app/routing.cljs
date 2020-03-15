@@ -1,19 +1,24 @@
 (ns app.routing
-  (:require [app.browser :refer [log!]]))
+  (:require
+    [app.state :as state]
+    ;;[app.view.layout :refer [<app>]]
+    [app.view.comp-lib :refer [<comp-lib-view>]]
+    [app.views :refer [<player-view> <dm-view> <home>]]
+    [app.browser :refer [log!]]))
 
-(defmulti handle-location-change
-  (fn [[event-type {:keys [url params]}]]
-    (if (= event-type :app.browser/goto)
-      [url params]
-      ::skipp)))
+(def routes
+  {"/" <home>
+   "/comp-lib" <comp-lib-view>
+   "/join" <player-view>
+   "/dm" <dm-view>})
 
-(defmethod handle-location-change :default
-  [[_ {:keys [url]}]]
-  (log! (str "No handler for " url)))
-
-(defmethod handle-location-change ::skipp
-  [& more]
-  (log! ::skipp more))
+(defn handle-location-change
+  [[event-type {:keys [url]}]]
+  (if (= event-type :app.browser/goto)
+    (when-let [c (get routes url nil)]
+      (log! "setting view" c)
+      (reset! state/current-view c))
+    ::skipp))
 
 (def router
   (delay

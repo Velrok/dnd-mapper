@@ -5,9 +5,12 @@
     [reagent.core :as r]
     [app.event-handlers] ;; load for side effects of registering handlers
     [app.subscriptions]
+    [app.routing :refer [router]]
     [app.message-processing :as msg-process]
     [app.local-storage :as local-storage]
+    [app.browser :as browser]
     [mount.core :refer-macros [defstate]]
+    [app.state :as state]
     [app.websocket-io :as ws]
     [cljs.core.async :as a :refer [chan >! <! close!]]
     [cljs.core.async :refer-macros [go]]))
@@ -63,18 +66,35 @@
 
 (defn app
   []
-  (let [active-view @(rf/subscribe [:active-view])]
+  [:<>
+   [:h1 "hi"]
+   [:button {:on-click #(browser/goto! "/" {:page 2})}
+    "next page"]]
+  #_(let [active-view @(rf/subscribe [:active-view])]
      [active-view]))
+
+(defn <container>
+  []
+  [@state/current-view {}])
 
 (defn ^:dev/after-load render
   []
-  (r/render [app] (js/document.getElementById "app")))
+  (tap> [::render])
+  (r/render
+    [<container>]
+    (js/document.getElementById "app")))
 
 (defn ^:export  main
   []
-  @ticker
-  @heroku-keep-alive
-  @server-message-processor
-  (rf/dispatch-sync [:initialize])
-  (ws/connect!)
+  (browser/log! )
+  (let [uri (browser/current-uri)]
+    (browser/goto! (:path uri)
+                   (:query uri)))
+  (add-tap #(browser/log! "tap message" (clj->js %)))
+  @router
+  ; @ticker
+  ; @heroku-keep-alive
+  ; @server-message-processor
+  ; (rf/dispatch-sync [:initialize])
+  ;(ws/connect!)
   (render))

@@ -73,9 +73,11 @@
                   :key (str "delete_sess_" (:session-id k))}
                  (str "Delete!")]
                 [:button.btn
-                 {:on-click #(go
-                               (rf/dispatch [:host-session (:session-id k)])
-                               (rf/dispatch [:state-init (local-storage/get k)]))
+                 {:on-click #(do
+                               (go
+                                 (rf/dispatch [:host-session (:session-id k)])
+                                 (rf/dispatch [:state-init (local-storage/get k)]))
+                               (browser/goto! "/dm" {:session (:session-id k)}))
                   :style {:display :inline-block}
                   :key (str "restore_sess_" (:session-id k))}
                  (str "Restore >>")]]))
@@ -85,7 +87,10 @@
               :on-change #(reset! new-session-id (some-> % .-target .-value))}]
 
             [:button.btn
-             {:on-click #(rf/dispatch [:host-session @new-session-id])}
+             {:on-click #(do
+                           (browser/log! "HI!!!!!!!!")
+                           (go (rf/dispatch [:host-session @new-session-id]))
+                           (browser/goto! "/dm" {:session @new-session-id}))}
              "create new session >>"]]
            ]
 
