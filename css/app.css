@@ -307,3 +307,20 @@ a {
   color: white;
   padding: 1em;
 }
+
+.mapper-link {
+  background: inherit;
+  margin: inherit;
+  padding: inherit;
+  font: inherit;
+  font-size: inherit;
+}
+
+.mapper-link:hover {
+  background: inherit;
+  margin: inherit;
+  padding: inherit;
+  font: inherit;
+  font-size: inherit;
+  text-decoration: underline;
+}
