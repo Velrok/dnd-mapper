@@ -16,10 +16,7 @@
 (defonce ws-connections (atom {}))
 
 (defroutes api
-  (GET "/" []
-       {:status 200
-        :body (-> "public/index.html"
-                  slurp)})
+  
 
   (GET "/clients" []
        {:status 200
@@ -62,7 +59,13 @@
                         ;(>! ws-ch "Hello client from server!")
                         (recur ws-ch)))))))
        {:status 200})
-  (route/files "/"))
+
+  (route/files "/assets")
+
+  (GET "/*" []
+       {:status 200
+        :body (-> "public/index.html"
+                  slurp)}))
 
 (defstate http-server
   :start (do (log/info (format "Starting web server on http://localhost:%d" port))

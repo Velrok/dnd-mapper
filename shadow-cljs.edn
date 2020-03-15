@@ -17,5 +17,5 @@
  :builds
  {:app {:target :browser
         :output-dir "public/js"
-        :asset-path "/js"
+        :asset-path "/assets/js"
         :modules {:main {:entries [app.main]}}}}}
