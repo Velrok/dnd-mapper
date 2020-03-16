@@ -104,7 +104,6 @@
 (defn- <player-link>
   []
   [:p.player-link
-   {:key (str "player-link")}
    "player link: "
    (let [link (str (assoc-in (browser/current-uri)
                              [:query "join-session-id"]
@@ -127,7 +126,6 @@
   [{:keys []}]
   (fn []
     [:<>
-     
      [:h1.dm-view--title "D&D Mapper"]
      [:div#dm-view
       ;[:h1.app--title__mini "D&D Mapper"]
@@ -152,10 +150,10 @@
       [:div.dm-view--controlls
 
        [<collapsable> {:title "setup"}
-        [<player-link>]
-        [<session-id>]
+        [<player-link> {:key (gensym "player-link")}]
+        [<session-id> {:key (gensym "session-id")}]
         [<map-definition-input>
-         {}
+         {:key (gensym "map-def-input")}
          {:map-img-url       (rf/subscribe [:map-img-url])
           :map-width         (rf/subscribe [:map-width])
           :map-height        (rf/subscribe [:map-height])
