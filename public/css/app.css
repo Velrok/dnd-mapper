@@ -4,49 +4,53 @@
  * font-family: 'Open Sans', sans-serif;
 */
 
-body {
-  font-size: 18px;
-  font-family: 'Open Sans', sans-serif;
-  padding: 0px;
-}
+/* body { */
+/*   font-size: 18px; */
+/*   font-family: 'Open Sans', sans-serif; */
+/*   padding: 0px; */
+/* } */
 
-h1, h2, h3, h4, h5 {
-  font-family: 'Cinzel Decorative', cursive;
-  margin-bottom: 0.5em;
-  margin-left: 12px;
-  margin-top: 8px;
-}
+/* h1, h2, h3, h4, h5 { */
+/*   font-family: 'Cinzel Decorative', cursive; */
+/*   margin-bottom: 0.5em; */
+/*   margin-left: 12px; */
+/*   margin-top: 8px; */
+/* } */
 
-input {
-  font-family: 'Open Sans Condensed', sans-serif;
-  font-size: 0.9rem;
-}
+/* input { */
+/*   font-family: 'Open Sans Condensed', sans-serif; */
+/*   font-size: 0.9rem; */
+/* } */
 
-h1 {
-  font-size: 4rem;
-}
+/* h1 { */
+/*   font-size: 4rem; */
+/* } */
 
-h2 {
-  font-size: 2rem;
-}
+/* h2 { */
+/*   font-size: 2rem; */
+/* } */
 
-nav li {
-  display: inline;
-  margin-right: 2em;
-  text-decoration: underline;
-}
+/* nav li { */
+/*   display: inline; */
+/*   margin-right: 2em; */
+/*   text-decoration: underline; */
+/* } */
 
-nav ul {
-  margin: 1em 0;
-}
+/* nav ul { */
+/*   margin: 1em 0; */
+/* } */
 
-fieldset {
-  margin-bottom: 5px;
-}
+/* fieldset { */
+/*   margin-bottom: 5px; */
+/* } */
 
-fieldset label {
-  margin-right: 1em;
-}
+/* fieldset label { */
+/*   margin-right: 1em; */
+/* } */
+
+/* a { */
+/*   color: #743B24; */
+/* } */
 
 #app {
   height: 100vh;
@@ -200,10 +204,6 @@ fieldset label {
 
 .game {
   margin: 5px 0px;
-}
-
-a {
-  color: #743B24;
 }
 
 .pull-right {
