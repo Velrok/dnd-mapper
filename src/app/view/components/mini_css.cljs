@@ -75,9 +75,35 @@
 (defn <section>
   [props & children]
   [:div.section
+   props
    children])
 
 (defn <card>
   [props & children]
   [:div.card
    children])
+
+(defn <player-card>
+  [{:keys [player]}]
+  (let [{:keys [initiative name img-url hp player-visible]} player]
+    [:div.player-card
+     [<card> {}
+
+      [<section> {:class "player-card__header"}
+       [:div.flex-cols
+        [:img.rounded {:src img-url
+                       :style {:max-height "3em"}}]
+        [:h3 {} name]
+        [:span.player-card__initiative-mark [:mark initiative]]]
+       [:div.flex-cols
+        [:progress.inline {:value hp :max hp}]
+        [:span hp " / " hp]]]
+
+      [<section> {}
+       [:div.flex-cols
+        [:span "Player visible"]
+        [<switch> {:options [{:id true :label "yes"}
+                             {:id false :label "no"}]
+                   :selected player-visible}]]]
+
+      ]]))
