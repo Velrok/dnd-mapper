@@ -1,5 +1,6 @@
 (ns app.view.components.mini-css
   (:require
+    [reagent.core :as r]
     [app.browser :as browser]))
 
 
@@ -17,6 +18,32 @@
                     passdown-props)
      children]))
 
+(defn <button-group>
+  [props & children]
+  [:div.button-group
+   children])
+
+(defn <switch>
+  [props & children]
+  (let [{:keys [options selected on-click]} props
+        selection (r/atom selected)]
+    (prn "on-c" on-click)
+    (fn []
+      [:div.button-group
+       (doall
+         (for [{:keys [id label]} options]
+           [<button>
+            {:key (gensym)
+             :on-click #(do
+                          (reset! selection id)
+                          (when on-click (on-click id)))
+             :color (if (= id @selection)
+                      "inverse"
+                      "default")}
+            label]))])))
+
+
+
 (defn <link>
   [props & children]
   [:button (merge {:on-click #(browser/goto! (:href props "#")
@@ -31,7 +58,7 @@
     [:<>
      [:input {:type "radio"
               :id id
-              :checked (:checked props false)
+              :default-checked (:checked props false)
               :aria-hidden "true"
               :name "accordion"}]
      [:label {:for id
@@ -45,8 +72,12 @@
   [:div.collapse
    children])
 
-  ;<input type="radio" id="accordion-section1" checked aria-hidden="true" name="accordion">
-  ;<label for="accordion-section1" aria-hidden="true">Accordion section 1</label>
-  ;<div>
-  ;  <p>This is the first section of the accordion</p>
-  ;</div>
+(defn <section>
+  [props & children]
+  [:div.section
+   children])
+
+(defn <card>
+  [props & children]
+  [:div.card
+   children])
