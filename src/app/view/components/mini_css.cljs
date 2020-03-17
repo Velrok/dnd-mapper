@@ -80,24 +80,39 @@
 
 (defn <card>
   [props & children]
-  [:div.card
-   children])
+  (let [{:keys [modifier color]} props]
+    [:div.card
+     {:class (str "shadowed " modifier " " color)}
+     children]))
+
+(defn <progress>
+  [{:keys [value max color inline?]}]
+  [:progress.inline {:class (str color " " (when inline? "inline"))
+                     :value value
+                     :max max}])
 
 (defn <player-card>
   [{:keys [player]}]
-  (let [{:keys [initiative name img-url hp player-visible]} player]
+  (let [{:keys [initiative name img-url hp max-hp player-visible]} player]
     [:div.player-card
-     [<card> {}
+     [<card> {:modifier "small"}
 
       [<section> {:class "player-card__header"}
        [:div.flex-cols
-        [:img.rounded {:src img-url
+        [:img.rounded.bordered {:src img-url
                        :style {:max-height "3em"}}]
         [:h3 {} name]
         [:span.player-card__initiative-mark [:mark initiative]]]
        [:div.flex-cols
-        [:progress.inline {:value hp :max hp}]
-        [:span hp " / " hp]]]
+        [<progress> {:inline? true
+                     :value hp
+                     :max max-hp
+                     :color (let [rel (/ hp max-hp)]
+                              (cond
+                                (< (/ 2 3) rel) "default"
+                                (< (/ 1 3) rel) "primary"
+                                :otherwise "secondary"))}]
+        [:span hp " / " max-hp]]]
 
       [<section> {}
        [:div.flex-cols

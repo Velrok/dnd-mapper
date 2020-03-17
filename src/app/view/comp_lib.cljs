@@ -18,7 +18,8 @@
   (let [player {:id "player"
                 :name "Udrik"
                 :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
-                :hp 100
+                :hp 60
+                :max-hp 100
                 :player-visible true
                 :initiative 23
                 :dm-focus true}]
