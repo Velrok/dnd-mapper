@@ -324,3 +324,13 @@
   font-size: inherit;
   text-decoration: underline;
 }
+
+.player-card__initiative-mark {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.player-card__header {
+  position: relative;
+}
