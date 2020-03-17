@@ -371,3 +371,90 @@
        [<token> {:key (str "<initiative-list>-" (:id t))
                  :dm? dm?}
         t]))])
+
+(defn <token-svg>
+  [{:keys [img-url
+           x y
+           size]
+    :or {x 0
+         y 0
+         size :medium}}]
+  (let [ss (get {:small 1
+                 :medium 1
+                 :large 2
+                 :huge 4
+                 :gargantuan 8} size)
+        dimensions {:x x
+                    :y y
+                    :width ss
+                    :height ss}]
+    [:g {}
+     [:image (merge {:href img-url}
+                    dimensions)]
+     [:rect (merge {;:rx 1
+                    ;:ry 1
+                    :filter (str "url(#token-shadow)")
+                    :fill-opacity 0
+                    :stroke "#AAAAAA"
+                    :stroke-width "0.5%"}
+                   dimensions)]]))
+
+(defn <map-svg>
+  [{:keys [img-url w h
+           on-cell-click
+           overlay-opacity
+           overlay-color
+           scale
+           tokens]
+    :or {scale 20
+         overlay-opacity 0.5
+         overlay-color "#FFFFFF"
+         tokens []}}]
+  (let [reveiled-cells (r/atom #{})
+        toggle-cell (fn [cell]
+                      (if (contains? @reveiled-cells cell)
+                        (swap! reveiled-cells disj cell)
+                        (swap! reveiled-cells conj cell)))]
+    (fn []
+      [:svg {:view-box (str "0 0 " w " " h)
+             :width "100%"
+             :xmlns "http://www.w3.org/2000/svg"}
+       [:defs
+        [:filter {:id "token-shadow"
+                  :x 0
+                  :y 0
+                  :width "200%"
+                  :height "200%"}
+         [:feOffset {:reslt "offOut" :in "SourceAlpha" :dx 20 :dy 20}]
+         [:feGaussianBlur {:reslt "blurOut" :in "offOut" :std-deviation 10}]
+         [:feBlend {:reslt "SourceGraphic" :in2 "blurOut" :mode "normal"}]
+         ]]
+       [:g
+        [:image {:href img-url
+                 ;:x 0
+                 ;:y 0
+                 :width w
+                 :height h
+                 ;:preserve-aspect-ratio "xMinYMin meet"
+                 }]
+        [:g
+         (doall
+           (for [t tokens]
+             t))]
+        [:g {:fill overlay-color}
+         (doall
+           (for [y (range h)]
+             (doall
+               (for [x (range w)]
+                 (let [cell    {:x x, :y y}
+                       shown? (contains? @reveiled-cells cell)]
+                   [:rect {:x x
+                           :y y
+                           :fill-opacity (if shown? 0 overlay-opacity)
+                           :key (str "map-rect-" x "-" y)
+                           :on-click #(do
+                                        (toggle-cell cell)
+                                        (when on-cell-click
+                                          (on-cell-click cell)))
+                           :width 1
+                           :height 1}])))))]]])))

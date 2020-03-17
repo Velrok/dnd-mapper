@@ -1,7 +1,7 @@
 (ns app.view.comp-lib
   (:require
     [app.browser :refer [log!]]
-    [app.view.components :refer [<token>]]
+    [app.view.components :refer [<token> <map-svg> <token-svg>]]
     [app.view.components.mini-css
      :refer [<button>
              <button-group>
@@ -69,5 +69,16 @@
 
      [:h2 "Token"]
      [<token> {:dm? (delay true)} player]
+
+     [:h2 "Map"]
+     [<map-svg>
+      {:img-url "https://i.imgur.com/xjnVCUk.jpg"
+       :w 30
+       :h 30
+       :overlay-opacity 0.5
+       :tokens [[<token-svg> {:img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}]
+                [<token-svg> {:x 3 :size :large :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}]]
+       ;:on-cell-click #(prn "cell click " %)
+       }]
 
      ]))
