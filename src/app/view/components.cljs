@@ -399,12 +399,18 @@
                     :stroke-width "0.5%"}
                    dimensions)]]))
 
+; (defn mouse-position
+;   [CTM evt]
+;   {:x (/ (- (.clientX evt) (.e CTM)) (.a CTM))
+;    :y (/ (- (.clientY evt) (.f CTM)) (.d CTM))})
+
 (defn <map-svg>
   [{:keys [img-url w h
            on-cell-click
            overlay-opacity
            overlay-color
-           scale
+           on-cell-reveil
+           on-cell-hide
            tokens]
     :or {scale 20
          overlay-opacity 0.5
@@ -431,12 +437,8 @@
          ]]
        [:g
         [:image {:href img-url
-                 ;:x 0
-                 ;:y 0
                  :width w
-                 :height h
-                 ;:preserve-aspect-ratio "xMinYMin meet"
-                 }]
+                 :height h}]
         [:g
          (doall
            (for [t tokens]
@@ -450,6 +452,16 @@
                        shown? (contains? @reveiled-cells cell)]
                    [:rect {:x x
                            :y y
+                           :on-mouse-enter #(do
+                                              (.preventDefault %)
+                                              (case (.-buttons %)
+                                                1 (do
+                                                    (swap! reveiled-cells conj cell)
+                                                    (when on-cell-reveil (on-cell-reveil cell)))
+                                                2 (do
+                                                    (swap! reveiled-cells disj cell)
+                                                    (when on-cell-hide (on-cell-hide cell)))
+                                                identity))
                            :fill-opacity (if shown? 0 overlay-opacity)
                            :key (str "map-rect-" x "-" y)
                            :on-click #(do
