@@ -11,10 +11,13 @@
 
 (defn <btn>
   [attr & content]
-  [:button.nes-btn
-   (merge {:type "button"}
-          attr)
-   content])
+  (let [{:keys [color]} attr]
+    [:button.nes-btn
+     (merge {:type "button"}
+            (when color
+              {:class (str "is-" color)})
+            (dissoc attr :color))
+     content]))
 
 (defn <btn-group>
   [attr & buttons]
@@ -23,6 +26,45 @@
    (for [btn buttons]
      ^{:key (gensym "btn-group-btn-")}
      btn)])
+
+(defn <switch>
+  [props & children]
+  (let [{:keys [options selected on-click]} props
+        selection (r/atom selected)]
+    (fn []
+      [:div.button-group
+       (doall
+         (for [{:keys [id label]} options]
+           [<btn>
+            {:key (gensym)
+             :on-click #(do
+                          (reset! selection id)
+                          (when on-click (on-click id)))
+             :color (if (= id @selection)
+                      nil
+                      "disabled")}
+            label]))])))
+
+(defn <input>
+  [attr & content]
+  (let [field-id        (gensym "field-id-")
+        {:keys [on-change value label inline?]} attr
+        current-value (r/atom (some-> value str))]
+    (fn []
+      [:div.nes-field
+       {:class (when inline? "is-inline")}
+       (when label
+         [:label {:for field-id} label])
+       [:input.nes-input
+        (merge
+          {:id field-id
+           :value @current-value
+           :type "text"
+           :on-change (fn [e]
+                        (let [v (-> e .-target .-value)]
+                          (reset! current-value v)
+                          (when on-change (on-change v))))}
+          (dissoc attr :label :inline? :on-change :value))]])))
 
 
 (defn <token>
@@ -347,6 +389,14 @@
            :checked (= :obscure @fog-of-war-mode)
            :on-change #(rf/dispatch [:set-fog-of-war-mode :obscure])}]]])]))
 
+(defn <progress>
+  [attr & content]
+  (let [{:keys [color]} attr]
+  [:progress.nes-progress
+   (merge {:class  (when color (str "is-" color))}
+          (dissoc attr :color))
+   content]))
+
 (defn <collapsable>
   [{:keys [title visible]
     :or {visible true}} & children]
@@ -363,6 +413,68 @@
                   "collapsable--container--body__hidden"
                   "collapsable--container--body__visible")}
         children]])))
+
+(defn <container>
+  [attr & content]
+  (let [{:keys [rounded? title centered?]} attr]
+    [:div.nes-container
+     (merge {:class (str
+                      (when rounded? " is-rounded ")
+                      (when title " with-title ")
+                      (when centered? " is-centered "))})
+     (when title
+       [:p.title title])
+     content]))
+
+(defn <avatar>
+  [attr & content]
+  (let [{:keys [rounded? size]
+         :or {size "medium"}} attr]
+  [:img.nes-avatar
+   (merge {:style {:image-rendering "pixelated"}
+           :class (str
+                    (when rounded? " is-rounded ")
+                    (when size (str " is-" size " ")))}
+          (dissoc attr :rounded? :size))]))
+
+(defn <player-card>
+  [{:keys [player on-change]}]
+  (let [hp-diff (r/atom 0)]
+    (fn []
+      (let [{:keys [initiative name img-url hp max-hp player-visible]} @player]
+        [<container>
+         {:title name
+          :rounded? true}
+         [:div.flex-cols
+          [<avatar> {:src img-url :size "large"}]
+          [:div.flex-rows
+           [:p
+            (str hp "/" max-hp)]
+           [<progress> {:value hp
+                        :max max-hp
+                        :color (let [rel (/ hp max-hp)]
+                                 (cond
+                                   (< rel (/ 1 3)) "error"
+                                   (< rel (/ 2 3)) "warning"
+                                   :otherwise "default"))}]
+
+           [<container>
+            {:title "attributes"}
+            [<input> {:label "init"   :on-change #(when on-change (on-change (assoc @player :initiative (int %)))) :inline? true :type "number" :value initiative}]
+            ;[<input> {:label "hp"     :on-change #(when on-change (on-change (assoc @player :hp (int %)))) :inline? true :type "number" :value hp :min -1 :max max-hp}]
+            [:div.flex-cols
+             [<input> {:type "number" :value @hp-diff :on-change #(reset! hp-diff (int %))}]
+             [<btn> {:on-click #(when on-change
+                                  (on-change (update-in @player [:hp] - @hp-diff)))
+                     :color "error"} "damage"]
+             [<btn> {:on-click #(when on-change
+                                  (on-change (update-in @player [:hp] + @hp-diff)))
+                     :color "success"} "heal"]]
+            ;[<input> {:label "hp max" :on-change #(when on-change (on-change (assoc @player :max-hp (int %)))) :inline? true :type "number" :value max-hp}]
+            [<switch> {:options [{:id true :label "visible"}
+                                 {:id false :label "hidden"}]
+                       :on-click #(when on-change (on-change (assoc @player :player-visible %)))
+                       :selected player-visible}]]]]]))))
 
 (defn <initiative-list>
   [{:keys [tokens dm?]}]
