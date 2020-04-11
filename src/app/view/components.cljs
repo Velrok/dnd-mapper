@@ -461,6 +461,8 @@
 
            [<container>
             {:title "attributes"}
+            [<input> {:label "name"   :on-change #(when on-change (on-change (assoc @player :name %))) :inline? true :value name}]
+            [<input> {:label "image"  :on-change #(when on-change (on-change (assoc @player :image-url %))) :inline? true :value img-url}]
             [<input> {:label "init"   :on-change #(when on-change (on-change (assoc @player :initiative (int %)))) :inline? true :type "number" :value initiative}]
             ;[<input> {:label "hp"     :on-change #(when on-change (on-change (assoc @player :hp (int %)))) :inline? true :type "number" :value hp :min -1 :max max-hp}]
             [:div.flex-cols
