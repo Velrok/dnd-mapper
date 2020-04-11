@@ -67,18 +67,17 @@
              (for [k (filter :dm? (local-storage/keys))]
                [:div
                 [:p (:session-id k)]
-                [:button.btn
+                [<btn>
                  {:on-click #(local-storage/remove! k)
-                  :style {:display :inline-block}
+                  :class "is-warning"
                   :key (str "delete_sess_" (:session-id k))}
                  (str "Delete!")]
-                [:button.btn
+                [<btn>
                  {:on-click #(do
                                (go
                                  (rf/dispatch [:host-session (:session-id k)])
                                  (rf/dispatch [:state-init (local-storage/get k)]))
                                (browser/goto! "/dm" {:session (:session-id k)}))
-                  :style {:display :inline-block}
                   :key (str "restore_sess_" (:session-id k))}
                  (str "Restore >>")]]))
            [:div
@@ -86,7 +85,7 @@
              {:value @new-session-id
               :on-change #(reset! new-session-id (some-> % .-target .-value))}]
 
-            [:button.btn
+            [<btn>
              {:on-click #(do
                            (browser/log! "HI!!!!!!!!")
                            (go (rf/dispatch [:host-session @new-session-id]))
@@ -97,7 +96,7 @@
           [:<>
            [:h1.app--title "D&D Mapper"]
            [:h2 "join"]
-           [:button.btn
+           [<btn>
             {:on-click #(rf/dispatch [:join-session join-session-id])}
             (str "join session "  join-session-id " >>")]])))))
 
