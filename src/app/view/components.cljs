@@ -438,11 +438,11 @@
                     (when size (str " is-" size " ")))}
           (dissoc attr :rounded? :size))]))
 
-(defn <player-card>
-  [{:keys [player on-change]}]
+(defn <token-card>
+  [{:keys [token on-change]}]
   (let [hp-diff (r/atom 0)]
     (fn []
-      (let [{:keys [initiative name img-url hp max-hp player-visible]} @player]
+      (let [{:keys [initiative name img-url hp max-hp player-visible]} @token]
         [<container>
          {:title name
           :rounded? true}
@@ -461,22 +461,22 @@
 
            [<container>
             {:title "attributes"}
-            [<input> {:label "name"   :on-change #(when on-change (on-change (assoc @player :name %))) :inline? true :value name}]
-            [<input> {:label "image"  :on-change #(when on-change (on-change (assoc @player :image-url %))) :inline? true :value img-url}]
-            [<input> {:label "init"   :on-change #(when on-change (on-change (assoc @player :initiative (int %)))) :inline? true :type "number" :value initiative}]
-            ;[<input> {:label "hp"     :on-change #(when on-change (on-change (assoc @player :hp (int %)))) :inline? true :type "number" :value hp :min -1 :max max-hp}]
+            [<input> {:label "name"   :on-change #(when on-change (on-change (assoc @token :name %))) :inline? true :value name}]
+            [<input> {:label "image"  :on-change #(when on-change (on-change (assoc @token :image-url %))) :inline? true :value img-url}]
+            [<input> {:label "init"   :on-change #(when on-change (on-change (assoc @token :initiative (int %)))) :inline? true :type "number" :value initiative}]
+            ;[<input> {:label "hp"     :on-change #(when on-change (on-change (assoc @token :hp (int %)))) :inline? true :type "number" :value hp :min -1 :max max-hp}]
             [:div.flex-cols
              [<input> {:type "number" :value @hp-diff :on-change #(reset! hp-diff (int %))}]
              [<btn> {:on-click #(when on-change
-                                  (on-change (update-in @player [:hp] - @hp-diff)))
+                                  (on-change (update-in @token [:hp] - @hp-diff)))
                      :color "error"} "damage"]
              [<btn> {:on-click #(when on-change
-                                  (on-change (update-in @player [:hp] + @hp-diff)))
+                                  (on-change (update-in @token [:hp] + @hp-diff)))
                      :color "success"} "heal"]]
-            ;[<input> {:label "hp max" :on-change #(when on-change (on-change (assoc @player :max-hp (int %)))) :inline? true :type "number" :value max-hp}]
+            ;[<input> {:label "hp max" :on-change #(when on-change (on-change (assoc @token :max-hp (int %)))) :inline? true :type "number" :value max-hp}]
             [<switch> {:options [{:id true :label "visible"}
                                  {:id false :label "hidden"}]
-                       :on-click #(when on-change (on-change (assoc @player :player-visible %)))
+                       :on-click #(when on-change (on-change (assoc @token :player-visible %)))
                        :selected player-visible}]]]]]))))
 
 (defn <initiative-list>

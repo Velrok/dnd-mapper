@@ -8,7 +8,7 @@
                                  <container>
                                  <input>
                                  <progress>
-                                 <player-card>
+                                 <token-card>
                                  <map-svg>
                                  <token-svg>
                                  <switch>]]))
@@ -65,10 +65,10 @@
                  :on-change prn}]
 
 
-       [:h2 "Player card"]
-       [<player-card> {:player player
-                       :on-change #(do (prn %)
-                                       (reset! player %))}]
+       [:h2 "Token card"]
+       [<token-card> {:token player
+                      :on-change #(do (prn %)
+                                      (reset! player %))}]
 
        [:h2 "Token"]
        [<token> {:dm? (delay true)} player]
