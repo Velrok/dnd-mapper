@@ -81,8 +81,11 @@
          :on-cells-reveil #(prn "reveil" %)
          :on-cells-hide #(prn "hide" %)
          :overlay-opacity 0.5
-         :tokens [[<token-svg> {:img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}]
-                  [<token-svg> {:x 3 :size :large :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}]]
+         :tokens [{:id (gensym "token-")
+                   :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}
+                  {:id (gensym "token-")
+                   :size :large
+                   :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}]
          ;:on-cell-click #(prn "cell click " %)
          }]
 

@@ -540,6 +540,7 @@
          tokens []}}]
   (let [reveiled-cells (r/atom #{})
         mode           (r/atom "move")
+        token-state    (r/atom {})
         toggle-cell (fn [cell]
                       (if (contains? @reveiled-cells cell)
                         (swap! reveiled-cells disj cell)
@@ -568,10 +569,6 @@
          [:image {:href img-url
                   :width w
                   :height h}]
-         [:g
-          (doall
-            (for [t tokens]
-              t))]
          [:g {:fill overlay-color}
           (doall
             (for [y (range h)]
@@ -599,4 +596,14 @@
                                          (when on-cell-click
                                            (on-cell-click cell)))
                             :width 1
-                            :height 1}])))))]]]])))
+                            :height 1}])))))]
+         ;; drag & dro in SVG http://www.petercollingridge.co.uk/tutorials/svg/interactive/dragging/
+         [:g
+          (doall
+            (for [t tokens]
+              [:g
+               {:key (:id t)
+                :on-click prn}
+               [<token-svg> (merge {:x 0 :y 0}
+                                   t
+                                   (get @token-state (:id t)))]]))]]]])))
