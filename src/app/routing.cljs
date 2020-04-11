@@ -7,10 +7,10 @@
     [app.browser :refer [log!]]))
 
 (def routes
-  {"/" <home>
+  {"/"         <home>
    "/comp-lib" <comp-lib-view>
-   "/join" <player-view>
-   "/dm" <dm-view>})
+   "/join"     <player-view>
+   "/dm"       <dm-view>})
 
 (defn handle-location-change
   [[event-type {:keys [url]}]]
