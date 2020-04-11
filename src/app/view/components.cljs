@@ -11,8 +11,9 @@
 
 (defn <btn>
   [attr & content]
-  [:button.btn
-   attr
+  [:button.nes-btn
+   (merge {:type "button"}
+          attr)
    content])
 
 (defn <btn-group>
