@@ -1,5 +1,6 @@
 (ns app.view.components
   (:require
+    [clojure.set :refer [union difference]]
     [reagent.core :as r]
     [re-frame.core :as rf]))
 
@@ -517,69 +518,85 @@
 ;   {:x (/ (- (.clientX evt) (.e CTM)) (.a CTM))
 ;    :y (/ (- (.clientY evt) (.f CTM)) (.d CTM))})
 
+(defn- neighborhood
+  [{:keys [x y]}]
+  (into #{}
+        (for [dy (range -1 2)
+              dx (range -1 2)]
+          {:x (+ x dx)
+           :y (+ y dy)})))
+
 (defn <map-svg>
   [{:keys [img-url w h
            on-cell-click
            overlay-opacity
            overlay-color
-           on-cell-reveil
-           on-cell-hide
+           on-cells-reveil
+           on-cells-hide
            tokens]
     :or {scale 20
          overlay-opacity 0.5
          overlay-color "#FFFFFF"
          tokens []}}]
   (let [reveiled-cells (r/atom #{})
+        mode           (r/atom "move")
         toggle-cell (fn [cell]
                       (if (contains? @reveiled-cells cell)
                         (swap! reveiled-cells disj cell)
                         (swap! reveiled-cells conj cell)))]
     (fn []
-      [:svg {:view-box (str "0 0 " w " " h)
-             :width "100%"
-             :xmlns "http://www.w3.org/2000/svg"}
-       [:defs
-        [:filter {:id "token-shadow"
-                  :x 0
-                  :y 0
-                  :width "200%"
-                  :height "200%"}
-         [:feOffset {:reslt "offOut" :in "SourceAlpha" :dx 20 :dy 20}]
-         [:feGaussianBlur {:reslt "blurOut" :in "offOut" :std-deviation 10}]
-         [:feBlend {:reslt "SourceGraphic" :in2 "blurOut" :mode "normal"}]
-         ]]
-       [:g
-        [:image {:href img-url
-                 :width w
-                 :height h}]
+      [:div.flex-rows
+       [<switch> {:options [{:id "move" :label "move"}
+                            {:id "reveil" :label "reveil"}
+                            {:id "hide" :label "hide"}]
+                  :selected @mode
+                  :on-click #(reset! mode %)}]
+       [:svg {:view-box (str "0 0 " w " " h)
+              :width "100%"
+              :xmlns "http://www.w3.org/2000/svg"}
+        [:defs
+         [:filter {:id "token-shadow"
+                   :x 0
+                   :y 0
+                   :width "200%"
+                   :height "200%"}
+          [:feOffset {:reslt "offOut" :in "SourceAlpha" :dx 20 :dy 20}]
+          [:feGaussianBlur {:reslt "blurOut" :in "offOut" :std-deviation 10}]
+          [:feBlend {:reslt "SourceGraphic" :in2 "blurOut" :mode "normal"}]
+          ]]
         [:g
-         (doall
-           (for [t tokens]
-             t))]
-        [:g {:fill overlay-color}
-         (doall
-           (for [y (range h)]
-             (doall
-               (for [x (range w)]
-                 (let [cell    {:x x, :y y}
-                       shown? (contains? @reveiled-cells cell)]
-                   [:rect {:x x
-                           :y y
-                           :on-mouse-enter #(do
-                                              (.preventDefault %)
-                                              (case (.-buttons %)
-                                                1 (do
-                                                    (swap! reveiled-cells conj cell)
-                                                    (when on-cell-reveil (on-cell-reveil cell)))
-                                                2 (do
-                                                    (swap! reveiled-cells disj cell)
-                                                    (when on-cell-hide (on-cell-hide cell)))
-                                                identity))
-                           :fill-opacity (if shown? 0 overlay-opacity)
-                           :key (str "map-rect-" x "-" y)
-                           :on-click #(do
-                                        (toggle-cell cell)
-                                        (when on-cell-click
-                                          (on-cell-click cell)))
-                           :width 1
-                           :height 1}])))))]]])))
+         [:image {:href img-url
+                  :width w
+                  :height h}]
+         [:g
+          (doall
+            (for [t tokens]
+              t))]
+         [:g {:fill overlay-color}
+          (doall
+            (for [y (range h)]
+              (doall
+                (for [x (range w)]
+                  (let [cell    {:x x, :y y}
+                        shown? (contains? @reveiled-cells cell)]
+                    [:rect {:x x
+                            :y y
+                            :on-mouse-enter #(do
+                                               (.preventDefault %)
+                                               (when (< 0 (.-buttons %)) ;;button down
+                                                 (case @mode
+                                                   "reveil" (do
+                                                              (swap! reveiled-cells union (neighborhood cell))
+                                                              (when on-cells-reveil (on-cells-reveil (neighborhood cell))))
+                                                   "hide" (do
+                                                            (swap! reveiled-cells difference (neighborhood cell))
+                                                            (when on-cells-hide (on-cells-hide (neighborhood cell))))
+                                                   identity)))
+                            :fill-opacity (if shown? 0 overlay-opacity)
+                            :key (str "map-rect-" x "-" y)
+                            :on-click #(do
+                                         (toggle-cell cell)
+                                         (when on-cell-click
+                                           (on-cell-click cell)))
+                            :width 1
+                            :height 1}])))))]]]])))

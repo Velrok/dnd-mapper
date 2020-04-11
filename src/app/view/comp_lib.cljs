@@ -78,8 +78,8 @@
         {:img-url "https://i.imgur.com/xjnVCUk.jpg"
          :w 30
          :h 30
-         :on-cell-reveil #(prn "reveil" %)
-         :on-cell-hide #(prn "hide" %)
+         :on-cells-reveil #(prn "reveil" %)
+         :on-cells-hide #(prn "hide" %)
          :overlay-opacity 0.5
          :tokens [[<token-svg> {:img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}]
                   [<token-svg> {:x 3 :size :large :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}]]
