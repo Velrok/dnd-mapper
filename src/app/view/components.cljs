@@ -520,6 +520,34 @@
 ;   {:x (/ (- (.clientX evt) (.e CTM)) (.a CTM))
 ;    :y (/ (- (.clientY evt) (.f CTM)) (.d CTM))})
 
+(defn <dragable-svg>
+  [{:keys [svg-id rows columns]} & content]
+  (let [dragging (r/atom false)
+        origin   (r/atom {:x 0 :y 0})
+        coord    (r/atom {:x 0 :y 0})]
+    (fn []
+      [:g
+       {:transform (str "translate(" (:x @coord) "," (:y @coord) ")")
+        :on-mouse-down #(do (prn :down)
+                            (reset! origin {:x (.-clientX %) :y (.-clientY %)})
+                            (reset! dragging true))
+        ;; TODO fix regragg issues
+        :on-mouse-move #(when @dragging
+                          (let [dx-px (- (.-clientX %) (:x @origin))
+                                dy-px (- (.-clientY %) (:y @origin))
+                                svg-w (some-> js/document (.getElementById svg-id) .-width .-baseVal .-value)
+                                svg-h (some-> js/document (.getElementById svg-id) .-height .-baseVal .-value)
+                                dx-coord (Math/round (/ dx-px (/ svg-w columns)))
+                                dy-coord (Math/round (/ dy-px (/ svg-h rows)))
+                                ]
+                            (.log js/console "x" (:x @origin) dx-px svg-w columns dx-coord)
+                            ;(.log js/console "y" (:y @origin) dy-px svg-h rows dy-coord)
+                            (reset! coord {:x dx-coord
+                                           :y dy-coord})))
+        :on-mouse-up    #(reset! dragging false)
+        :on-mouse-leave #(reset! dragging false)}
+       content])))
+
 (defn- neighborhood
   [{:keys [x y]}]
   (into #{}
@@ -530,6 +558,7 @@
 
 (defn <map-svg>
   [{:keys [img-url w h
+           id
            on-cell-click
            overlay-opacity
            overlay-color
@@ -537,6 +566,7 @@
            on-cells-hide
            tokens]
     :or {scale 20
+         id (gensym "map-svg-")
          overlay-opacity 0.5
          overlay-color "#FFFFFF"
          tokens []}}]
@@ -554,7 +584,9 @@
                             {:id "hide" :label "hide"}]
                   :selected @mode
                   :on-click #(reset! mode %)}]
-       [:svg {:view-box (str "0 0 " w " " h)
+       [:svg {:id id
+              :view-box (str "0 0 " w " " h)
+              :on-resize (.log js/console "resize!")
               :width "100%"
               :xmlns "http://www.w3.org/2000/svg"}
         [:defs
@@ -606,6 +638,9 @@
               [:g
                {:key (:id t)
                 :on-click prn}
-               [<token-svg> (merge {:x 0 :y 0}
-                                   t
-                                   (get @token-state (:id t)))]]))]]]])))
+               [<dragable-svg>
+                {:svg-id id :rows h :columns w}
+                [<token-svg>
+                 (merge {:x 0 :y 0}
+                        t
+                        (get @token-state (:id t)))]]]))]]]])))
