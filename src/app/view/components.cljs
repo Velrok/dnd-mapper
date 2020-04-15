@@ -520,38 +520,52 @@
 ;   {:x (/ (- (.clientX evt) (.e CTM)) (.a CTM))
 ;    :y (/ (- (.clientY evt) (.f CTM)) (.d CTM))})
 
+(defn add-2d
+  [p1 p2]
+  {:x (+ (:x p1) (:x p2))
+   :y (+ (:y p1) (:y p2))})
+
+(def el-by-id
+  (memoize
+    (fn [html-id]
+      (-> js/document (.getElementById html-id)))))
+
+(defn px-to-svg-coords
+  [svg-id rows columns {:keys [x y]}]
+  (let [el (el-by-id svg-id)
+        w (some-> el .-width .-baseVal .-value)
+        h (some-> el .-height .-baseVal .-value)]
+    {:x (/ x (/ w columns))
+     :y (/ y (/ h rows))}))
+
 (defn <dragable-svg>
   [{:keys [svg-id rows columns]} & content]
   (let [dragging (r/atom false)
         origin   (r/atom {:x 0 :y 0})
         coord    (r/atom {:x 0 :y 0})
+        start-coord (r/atom {:x 0 :y 0})
+        svg-coord   (partial px-to-svg-coords svg-id rows columns)
+        start!      (fn [e]
+                      (reset! origin {:x (.-clientX e) :y (.-clientY e)})
+                      (reset! start-coord @coord)
+                      (reset! dragging true))
         finish-up! (fn []
-                    (reset! dragging false)
-                    (swap! coord (fn [{:keys [x y]}]
-                                   {:x (Math/round x)
-                                    :y (Math/round y)}))
-                    )]
+                     (reset! dragging false)
+                     (swap! coord (fn [{:keys [x y]}]
+                                    {:x (Math/round x)
+                                     :y (Math/round y)}))
+                     )]
     (fn []
       [:g
        {:transform (str "translate(" (:x @coord) "," (:y @coord) ")")
-        :on-mouse-down #(do (prn :down)
-                            (reset! origin {:x (.-clientX %) :y (.-clientY %)})
-                            (reset! dragging true))
-        ;; TODO fix regragg issues
+        :on-mouse-down start!
         :on-mouse-move #(when @dragging
                           (let [dx-px (- (.-clientX %) (:x @origin))
-                                dy-px (- (.-clientY %) (:y @origin))
-                                svg-w (some-> js/document (.getElementById svg-id) .-width .-baseVal .-value)
-                                svg-h (some-> js/document (.getElementById svg-id) .-height .-baseVal .-value)
-                                dx-coord (/ dx-px (/ svg-w columns))
-                                dy-coord (/ dy-px (/ svg-h rows))
-                                ]
-                            (.log js/console "x" (:x @origin) dx-px svg-w columns dx-coord)
-                            ;(.log js/console "y" (:y @origin) dy-px svg-h rows dy-coord)
-                            (reset! coord {:x dx-coord
-                                           :y dy-coord})))
+                                dy-px (- (.-clientY %) (:y @origin))]
+                            (reset! coord (add-2d @start-coord
+                                                  (svg-coord {:x dx-px :y dy-px})))))
         :on-mouse-up    finish-up!
-        ;:on-mouse-leave finish-up!
+        :on-mouse-leave finish-up!
         }
        content])))
 
@@ -643,11 +657,14 @@
           (doall
             (for [t tokens]
               [:g
-               {:key (:id t)
-                :on-click prn}
+               {:key (:id t)}
                [<dragable-svg>
-                {:svg-id id :rows h :columns w}
+                {:svg-id id
+                 :rows h
+                 :columns w
+                 :key (:id t)}
                 [<token-svg>
-                 (merge {:x 0 :y 0}
+                 (merge {:x 0 :y 0
+                         :key (:id t)}
                         t
                         (get @token-state (:id t)))]]]))]]]])))
