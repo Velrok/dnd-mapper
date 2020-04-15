@@ -406,7 +406,6 @@
       [:div.collapsable--container
        [:div.collapsable--container--header
         {:on-click (fn [e]
-                     (prn e)
                      (swap! collapsed? not))}
         [:span.collapsable--container--header--title title]]
        [:div.collapsable--container--body
