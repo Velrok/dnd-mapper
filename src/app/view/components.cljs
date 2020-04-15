@@ -441,7 +441,10 @@
   [{:keys [token on-change]}]
   (let [hp-diff (r/atom 0)]
     (fn []
-      (let [{:keys [initiative name img-url hp max-hp player-visible]} @token]
+      (let [t (if (map? token)
+                token
+                @token)
+            {:keys [initiative name img-url hp max-hp player-visible]} t]
         [<container>
          {:title name
           :rounded? true}
@@ -460,22 +463,20 @@
 
            [<container>
             {:title "attributes"}
-            [<input> {:label "name"   :on-change #(when on-change (on-change (assoc @token :name %))) :inline? true :value name}]
-            [<input> {:label "image"  :on-change #(when on-change (on-change (assoc @token :image-url %))) :inline? true :value img-url}]
-            [<input> {:label "init"   :on-change #(when on-change (on-change (assoc @token :initiative (int %)))) :inline? true :type "number" :value initiative}]
-            ;[<input> {:label "hp"     :on-change #(when on-change (on-change (assoc @token :hp (int %)))) :inline? true :type "number" :value hp :min -1 :max max-hp}]
+            [<input> {:label "name"   :on-change #(when on-change (on-change (assoc t :name %))) :inline? true :value name}]
+            [<input> {:label "image"  :on-change #(when on-change (on-change (assoc t :image-url %))) :inline? true :value img-url}]
+            [<input> {:label "init"   :on-change #(when on-change (on-change (assoc t :initiative (int %)))) :inline? true :type "number" :value initiative}]
             [:div.flex-cols
              [<input> {:type "number" :value @hp-diff :on-change #(reset! hp-diff (int %))}]
              [<btn> {:on-click #(when on-change
-                                  (on-change (update-in @token [:hp] - @hp-diff)))
+                                  (on-change (update-in t [:hp] - @hp-diff)))
                      :color "error"} "damage"]
              [<btn> {:on-click #(when on-change
-                                  (on-change (update-in @token [:hp] + @hp-diff)))
+                                  (on-change (update-in t [:hp] + @hp-diff)))
                      :color "success"} "heal"]]
-            ;[<input> {:label "hp max" :on-change #(when on-change (on-change (assoc @token :max-hp (int %)))) :inline? true :type "number" :value max-hp}]
             [<switch> {:options [{:id true :label "visible"}
                                  {:id false :label "hidden"}]
-                       :on-click #(when on-change (on-change (assoc @token :player-visible %)))
+                       :on-click #(when on-change (on-change (assoc t :player-visible %)))
                        :selected player-visible}]]]]]))))
 
 (defn <initiative-list>
@@ -667,3 +668,26 @@
                          :key (:id t)}
                         t
                         (get @token-state (:id t)))]]]))]]]])))
+
+(defn <side-draw>
+  [attr & content]
+  (let [drawn-out (r/atom false)
+        width "40em"]
+    (fn []
+      [:div.side-draw
+       (merge attr {:style (if @drawn-out
+                             {:right "0px"
+                              :width width}
+                             {:right (str "-" width)
+                              :width width})})
+       [:div.side-draw---button
+        [<btn> {:on-click #(swap! drawn-out not)}
+         (if @drawn-out
+           ">>"
+           "<<")]]
+       [:div.side-draw---content
+        content]])))
+
+(defn <app-title>
+  []
+  [:h1.app--title "D&D Mapper"])

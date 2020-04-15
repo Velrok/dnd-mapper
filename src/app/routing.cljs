@@ -2,8 +2,9 @@
   (:require
     [app.state :as state]
     ;;[app.view.layout :refer [<app>]]
+    [app.view.dm :refer [<dm-view>]]
     [app.view.comp-lib :refer [<comp-lib-view>]]
-    [app.views :refer [<player-view> <dm-view> <home>]]
+    [app.views :refer [<player-view> <home>]]
     [app.browser :refer [log!]]))
 
 (def routes

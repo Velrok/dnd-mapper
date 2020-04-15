@@ -6,6 +6,7 @@
     [reagent.core :as r]
     [re-frame.core :as rf]
     [app.view.components :refer [<token-list> <map>
+                                 <app-title>
                                  <map-definition-input>
                                  <initiative-list>
                                  <collapsable>
@@ -125,7 +126,7 @@
   [{:keys []}]
   (fn []
     [:<>
-     [:h1.dm-view--title "D&D Mapper"]
+     [<app-title>]
      [:div#dm-view
       ;[:h1.app--title__mini "D&D Mapper"]
       [:div.dm-view--map
