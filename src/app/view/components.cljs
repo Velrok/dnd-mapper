@@ -524,7 +524,13 @@
   [{:keys [svg-id rows columns]} & content]
   (let [dragging (r/atom false)
         origin   (r/atom {:x 0 :y 0})
-        coord    (r/atom {:x 0 :y 0})]
+        coord    (r/atom {:x 0 :y 0})
+        finish-up! (fn []
+                    (reset! dragging false)
+                    (swap! coord (fn [{:keys [x y]}]
+                                   {:x (Math/round x)
+                                    :y (Math/round y)}))
+                    )]
     (fn []
       [:g
        {:transform (str "translate(" (:x @coord) "," (:y @coord) ")")
@@ -537,15 +543,16 @@
                                 dy-px (- (.-clientY %) (:y @origin))
                                 svg-w (some-> js/document (.getElementById svg-id) .-width .-baseVal .-value)
                                 svg-h (some-> js/document (.getElementById svg-id) .-height .-baseVal .-value)
-                                dx-coord (Math/round (/ dx-px (/ svg-w columns)))
-                                dy-coord (Math/round (/ dy-px (/ svg-h rows)))
+                                dx-coord (/ dx-px (/ svg-w columns))
+                                dy-coord (/ dy-px (/ svg-h rows))
                                 ]
                             (.log js/console "x" (:x @origin) dx-px svg-w columns dx-coord)
                             ;(.log js/console "y" (:y @origin) dy-px svg-h rows dy-coord)
                             (reset! coord {:x dx-coord
                                            :y dy-coord})))
-        :on-mouse-up    #(reset! dragging false)
-        :on-mouse-leave #(reset! dragging false)}
+        :on-mouse-up    finish-up!
+        ;:on-mouse-leave finish-up!
+        }
        content])))
 
 (defn- neighborhood
