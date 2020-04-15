@@ -233,6 +233,10 @@
   "map controlls";
 }
 
+.app--title {
+  font-size: 2em;
+}
+
 .app--title__mini {
  grid-row: 1;
  grid-column: 1;
@@ -270,10 +274,6 @@
 
 .collapsable--container--body__hidden {
   display: none;
-}
-
-.dm-view--title {
-  font-size: 2em;
 }
 
 #player-view {
@@ -333,4 +333,27 @@
 
 .player-card__header {
   position: relative;
+}
+
+.side-draw {
+  display: block;
+  position: fixed;
+  padding: 1em;
+  background: white;
+  right: 0px;
+  top: 0px;
+  height: 100vh;
+  transition: right,left 0.5s;
+  z-index: 100;
+}
+
+.side-draw---button {
+  position: absolute;
+  left: -44px;
+  transition: left 0.5s;
+}
+
+.side-draw---content {
+  overflow-y: scroll;
+  height: 100%;
 }
