@@ -93,8 +93,9 @@
   (add-tap #(browser/log! "tap message" (clj->js %)))
   @router
   @ticker
-  @heroku-keep-alive
-  @server-message-processor
+  ;@heroku-keep-alive
+  ;@server-message-processor
   (rf/dispatch-sync [:initialize])
-  (ws/connect!)
+  ;(ws/connect!)
+  @ws/socket
   (render))
