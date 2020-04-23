@@ -691,3 +691,26 @@
 (defn <app-title>
   []
   [:h1.app--title "D&D Mapper"])
+
+(defn <websocket-status>
+  [{:keys [ready-state on-click] :as attr}]
+  (let [connecting 0
+        open 1
+        closing 2
+        closed 3]
+    [:div.websocket-status
+     (merge {:on-click on-click}
+            (dissoc attr :ready-state :on-click))
+     [:span.websocket-status.__description (get {connecting "Connecting"
+                                                 open "Ready"
+                                                 closing "Closing"
+                                                 closed "Closed"}
+                                                ready-state
+                                                "Unknown")]
+     [:i.websocket-status__icon.nes-icon.is-smal.heart
+      {:class (get {connecting "is-transparent" ; connecting
+                    open ""
+                    closing "is-half"
+                    closed "is-empty"}
+                   ready-state
+                   "is-empty")}]]))

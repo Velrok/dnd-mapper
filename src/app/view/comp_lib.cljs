@@ -3,6 +3,7 @@
     [app.browser :refer [log!]]
     [reagent.core :as r]
     [app.view.components :refer [<btn>
+                                 <websocket-status>
                                  <btn-group>
                                  <token>
                                  <container>
@@ -63,6 +64,18 @@
        [<input> {:value "23"
                  :type "number"
                  :on-change prn}]
+
+       [:h2 "Websocket status"]
+       (doall
+         (for [[label value] [["CONNECTING" 0]
+                              ["OPEN" 1] 
+                              ["CLOSING" 2]
+                              ["CLOSED" 3]]]
+           [:<>
+            [:p label]
+            [<websocket-status>
+             {:ready-state value}]]))
+
 
 
        [:h2 "Token card"]
