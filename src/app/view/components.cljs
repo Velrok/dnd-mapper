@@ -416,10 +416,10 @@
 
 (defn <container>
   [attr & content]
-  (let [{:keys [rounded? title centered?]} attr]
+  (let [{:keys [title centered?]} attr]
     [:div.nes-container
      (merge {:class (str
-                      (when rounded? " is-rounded ")
+                      ;(when rounded? " is-rounded ")
                       (when title " with-title ")
                       (when centered? " is-centered "))})
      (when title
@@ -446,8 +446,7 @@
                 @token)
             {:keys [initiative name img-url hp max-hp player-visible]} t]
         [<container>
-         {:title name
-          :rounded? true}
+         {:title name}
          [:div.flex-cols
           [<avatar> {:src img-url :size "large"}]
           [:div.flex-rows
