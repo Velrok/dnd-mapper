@@ -447,6 +447,7 @@
             {:keys [initiative name img-url hp max-hp player-visible]} t]
         [<container>
          {:title name}
+         ^{:key (gensym "token-card-item-")}
          [:div.flex-cols
           [<avatar> {:src img-url :size "large"}]
           [:div.flex-rows
@@ -462,21 +463,21 @@
 
            [<container>
             {:title "attributes"}
-            [<input> {:label "name"   :on-change #(when on-change (on-change (assoc t :name %))) :inline? true :value name}]
-            [<input> {:label "image"  :on-change #(when on-change (on-change (assoc t :image-url %))) :inline? true :value img-url}]
-            [<input> {:label "init"   :on-change #(when on-change (on-change (assoc t :initiative (int %)))) :inline? true :type "number" :value initiative}]
-            [:div.flex-cols
-             [<input> {:type "number" :value @hp-diff :on-change #(reset! hp-diff (int %))}]
-             [<btn> {:on-click #(when on-change
-                                  (on-change (update-in t [:hp] - @hp-diff)))
-                     :color "error"} "damage"]
-             [<btn> {:on-click #(when on-change
-                                  (on-change (update-in t [:hp] + @hp-diff)))
-                     :color "success"} "heal"]]
-            [<switch> {:options [{:id true :label "visible"}
-                                 {:id false :label "hidden"}]
-                       :on-click #(when on-change (on-change (assoc t :player-visible %)))
-                       :selected player-visible}]]]]]))))
+            ^{:key (gensym "token-card-item-")}[<input> {:label "name"   :on-change #(when on-change (on-change (assoc t :name %))) :inline? true :value name}]
+            ^{:key (gensym "token-card-item-")}[<input> {:label "image"  :on-change #(when on-change (on-change (assoc t :image-url %))) :inline? true :value img-url}]
+            ^{:key (gensym "token-card-item-")}[<input> {:label "init"   :on-change #(when on-change (on-change (assoc t :initiative (int %)))) :inline? true :type "number" :value initiative}]
+            ^{:key (gensym "token-card-item-")}[:div.flex-cols
+                                                [<input> {:type "number" :value @hp-diff :on-change #(reset! hp-diff (int %))}]
+                                                [<btn> {:on-click #(when on-change
+                                                                     (on-change (update-in t [:hp] - @hp-diff)))
+                                                        :color "error"} "damage"]
+                                                [<btn> {:on-click #(when on-change
+                                                                     (on-change (update-in t [:hp] + @hp-diff)))
+                                                        :color "success"} "heal"]]
+            ^{:key (gensym "token-card-item-")}[<switch> {:options [{:id true :label "visible"}
+                                                                    {:id false :label "hidden"}]
+                                                          :on-click #(when on-change (on-change (assoc t :player-visible %)))
+                                                          :selected player-visible}]]]]]))))
 
 (defn <initiative-list>
   [{:keys [tokens dm?]}]
@@ -606,7 +607,7 @@
                   :on-click #(reset! mode %)}]
        [:svg {:id id
               :view-box (str "0 0 " w " " h)
-              :on-resize (.log js/console "resize!")
+              ;:on-resize (.log js/console "resize!")
               :width "100%"
               :xmlns "http://www.w3.org/2000/svg"}
         [:defs
