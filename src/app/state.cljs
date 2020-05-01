@@ -76,7 +76,7 @@
                         (.log js/console (clj->js ["strictly-old" strictly-old
                                                    "strictly-new" strictly-new]))
                         (ws/send! {:state-diff [strictly-old strictly-new]}
-                                  {:session-id })))))
+                                  {:session-id "asdf"})))))
   :stop (do
           (.log js/console "STOP report-state-diffs")
           (remove-watch state :differ)))
