@@ -1,5 +1,8 @@
 (ns app.state
   (:require
+    [app.websocket-io :as ws]
+    [clojure.data :refer [diff]]
+    [mount.core :refer-macros [defstate]]
     [reagent.core :as r]))
 
 (def initial-app-value
@@ -63,3 +66,18 @@
 (def current-view (r/atom <loading>))
 
 (def state (r/atom initial-app-value))
+
+(defstate report-state-diffs
+  :start (do
+           (.log js/console "START report-state-diffs")
+           (add-watch state :differ
+                    (fn [_key _atom old-state new-state]
+                      (let [[strictly-old strictly-new _both] (diff old-state new-state)]
+                        (.log js/console (clj->js ["strictly-old" strictly-old
+                                                   "strictly-new" strictly-new]))
+                        (ws/send! {:state-diff [strictly-old strictly-new]}
+                                  {:session-id })))))
+  :stop (do
+          (.log js/console "STOP report-state-diffs")
+          (remove-watch state :differ)))
+

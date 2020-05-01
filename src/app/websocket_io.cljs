@@ -164,6 +164,10 @@
                 :data        msg
                 :ts          (-> (js/Date.) (.getTime))})))))
 
+(defn ping!
+  []
+  (send! "ping" {:audience :server}))
+
 
 ;(defn disconnect!
 ;  []

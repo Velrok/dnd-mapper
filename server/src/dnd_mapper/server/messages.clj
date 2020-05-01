@@ -52,6 +52,16 @@
     (doseq [c targets]
       (go (>! c msg)))))
 
+(defmethod process-message! :server
+  [{:keys [session-id]} ch connections]
+  (go
+    (>! ch {:session-id  (str session-id)
+            ;:host        host
+            :instance-id :server
+            :audience    :server
+            :data        {}
+            :ts          (int (-> (System/currentTimeMillis) (/ 1000)))})))
+
 (defmethod process-message! :default
   [message & _others]
   (log/warn (format "No handler for message audience %s" (:audience message))))
