@@ -24,7 +24,8 @@
       (let [columns     (r/cursor state/shared [:map :width])
             rows        (r/cursor state/shared [:map :height])
             map-url     (r/cursor state/shared [:map :img-url])
-            tokens      (vals (:players @state/shared))
+            tokens      (r/track #(some-> @state/shared :players vals))
+            selected-token (r/cursor state/local [:selected-token])
             session-id  (r/track browser/session-id)
             ws-state    @ws/ready-state]
         [:<>
@@ -61,9 +62,9 @@
           [<container>
            {:title "tokens"}
            (doall
-             (for [t tokens]
+             (for [t @tokens]
                ^{:key (str t)}
-               [<token-card> {:token t
+               [<token-card> {:token (delay t)
                               :on-change prn}]))]]
          [<app-title>]
          [:<>
@@ -80,4 +81,6 @@
            :on-cells-reveil #(prn "reveil" %)
            :on-cells-hide #(prn "hide" %)
            :overlay-opacity 0.5
-           :tokens tokens}]]))))
+           :on-token-click #(reset! selected-token %)
+           :tokens tokens}]
+         [<token-card> {:token selected-token}]]))))

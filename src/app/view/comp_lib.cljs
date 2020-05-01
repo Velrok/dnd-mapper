@@ -23,7 +23,13 @@
                         :max-hp 100
                         :player-visible true
                         :initiative 23
-                        :dm-focus true})]
+                        :dm-focus true})
+        tokens (r/atom [{:id (gensym "token-")
+                         :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}
+                        {:id (gensym "token-")
+                         :size :large
+                         :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}])
+        selected-token (r/atom nil)]
     (fn []
       [:<>
        [:h1 "Components library"]
@@ -91,14 +97,12 @@
         {:img-url (delay "https://i.imgur.com/xjnVCUk.jpg")
          :w (delay 30)
          :h (delay 30)
+         ;:highlighted-tokens highlighted-tokens
          :on-cells-reveil #(prn "reveil" %)
          :on-cells-hide #(prn "hide" %)
          :overlay-opacity 0.5
-         :tokens [{:id (gensym "token-")
-                   :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}
-                  {:id (gensym "token-")
-                   :size :large
-                   :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"}]
+         :tokens tokens
+         :on-token-click #(reset! selected-token %)
          ;:on-cell-click #(prn "cell click " %)
          }]
 

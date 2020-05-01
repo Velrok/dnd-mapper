@@ -441,9 +441,7 @@
   [{:keys [token on-change]}]
   (let [hp-diff (r/atom 0)]
     (fn []
-      (let [t (if (map? token)
-                token
-                @token)
+      (let [t @token
             {:keys [initiative name img-url hp max-hp player-visible]} t]
         [<container>
          {:title name}
@@ -539,7 +537,7 @@
      :y (/ y (/ h rows))}))
 
 (defn <dragable-svg>
-  [{:keys [svg-id rows columns]} & content]
+  [{:keys [svg-id rows columns on-coord-changed] :as attr} & content]
   (let [dragging (r/atom false)
         origin   (r/atom {:x 0 :y 0})
         coord    (r/atom {:x 0 :y 0})
@@ -554,9 +552,11 @@
                      (swap! coord (fn [{:keys [x y]}]
                                     {:x (Math/round x)
                                      :y (Math/round y)}))
-                     )]
+                     (when on-coord-changed
+                       (on-coord-changed @coord)))]
     (fn []
       [:g
+       (merge
        {:transform (str "translate(" (:x @coord) "," (:y @coord) ")")
         :on-mouse-down start!
         :on-mouse-move #(when @dragging
@@ -565,8 +565,8 @@
                             (reset! coord (add-2d @start-coord
                                                   (svg-coord {:x dx-px :y dy-px})))))
         :on-mouse-up    finish-up!
-        :on-mouse-leave finish-up!
-        }
+        :on-mouse-leave finish-up!}
+       (dissoc attr :svg-id :rows :columns))
        content])))
 
 (defn- neighborhood
@@ -585,15 +585,15 @@
            overlay-color
            on-cells-reveil
            on-cells-hide
+           on-token-click
            tokens]
     :or {scale 20
          id (gensym "map-svg-")
          overlay-opacity 0.5
          overlay-color "#FFFFFF"
-         tokens []}}]
+         tokens (delay [])}}]
   (let [reveiled-cells (r/atom #{})
         mode           (r/atom "move")
-        token-state    (r/atom {})
         toggle-cell (fn [cell]
                       (if (contains? @reveiled-cells cell)
                         (swap! reveiled-cells disj cell)
@@ -652,22 +652,34 @@
                                            (on-cell-click cell)))
                             :width 1
                             :height 1}])))))]
+         [:g {:style {:stroke "rgba(0, 0, 0, 0.2)"
+                      :stroke-width "0.03"}}
+          (doall
+            (for [y (range @h)]
+              [:line {:x1 0 :y1 y
+                      :x2 @w :y2 y}]))
+          (doall
+            (for [x (range @w)]
+              [:line {:x1 x :y1 0
+                      :x2 x :y2 @h}]))]
          ;; drag & dro in SVG http://www.petercollingridge.co.uk/tutorials/svg/interactive/dragging/
          [:g
           (doall
-            (for [t tokens]
+            (for [t @tokens]
               [:g
                {:key (:id t)}
                [<dragable-svg>
                 {:svg-id id
                  :rows @h
                  :columns @w
-                 :key (:id t)}
+                 :key (:id t)
+                 :on-click #(when on-token-click
+                              (on-token-click t))}
                 [<token-svg>
                  (merge {:x 0 :y 0
                          :key (:id t)}
-                        t
-                        (get @token-state (:id t)))]]]))]]]])))
+                        t)]
+                ]]))]]]])))
 
 (defn <side-draw>
   [attr & content]
