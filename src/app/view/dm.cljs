@@ -2,6 +2,7 @@
   (:require
     [reagent.core :as r]
     [app.browser :as browser]
+    [app.local-storage :as local-storage]
     [app.websocket-io :as ws]
     [app.state :as state]
     [app.view.components :refer [<app-title>
@@ -16,10 +17,13 @@
   []
   (do
     @state/report-state-diffs
+    @state/persist-state-changes
+    (reset! state/shared (local-storage/get {:dm? true :session-id (browser/session-id)}))
+    (swap! state/local assoc :dm? true)
     (fn []
-      (let [dungeon-map (:map @state/shared)
-            columns     (r/cursor state/shared [:map :width])
+      (let [columns     (r/cursor state/shared [:map :width])
             rows        (r/cursor state/shared [:map :height])
+            map-url     (r/cursor state/shared [:map :img-url])
             tokens      (vals (:players @state/shared))
             session-id  (r/track browser/session-id)
             ws-state    @ws/ready-state]
@@ -50,8 +54,8 @@
 
            ^{:key (gensym "map-settings-item-")}
            [<input> {:label "map url"
-                     :type :number
-                     :value (:img-url dungeon-map)}]]
+                     :value @map-url
+                     :on-change #(reset! map-url %)}]]
 
           ^{:key (gensym "side-draw")}
           [<container>
@@ -70,9 +74,9 @@
                     :bottom "0.5rem"}
             :on-click ws/ping!}]]
          [<map-svg>
-          {:img-url (:img-url dungeon-map)
-           :w (:width dungeon-map)
-           :h (:height dungeon-map)
+          {:img-url map-url
+           :w columns
+           :h rows
            :on-cells-reveil #(prn "reveil" %)
            :on-cells-hide #(prn "hide" %)
            :overlay-opacity 0.5

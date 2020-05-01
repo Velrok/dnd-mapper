@@ -17,7 +17,6 @@
   [[event-type {:keys [url]}]]
   (if (= event-type :app.browser/goto)
     (when-let [c (get routes url nil)]
-      (log! "setting view" c)
       (reset! state/current-view c))
     ::skipp))
 

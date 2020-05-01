@@ -88,9 +88,9 @@
 
        [:h2 "Map"]
        [<map-svg>
-        {:img-url "https://i.imgur.com/xjnVCUk.jpg"
-         :w 30
-         :h 30
+        {:img-url (delay "https://i.imgur.com/xjnVCUk.jpg")
+         :w (delay 30)
+         :h (delay 30)
          :on-cells-reveil #(prn "reveil" %)
          :on-cells-hide #(prn "hide" %)
          :overlay-opacity 0.5

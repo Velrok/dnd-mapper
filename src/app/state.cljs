@@ -1,6 +1,7 @@
 (ns app.state
   (:require
     [app.browser :as browser]
+    [app.local-storage :as local-storage]
     [app.websocket-io :as ws]
     [clojure.data :refer [diff]]
     [mount.core :refer-macros [defstate]]
@@ -83,3 +84,15 @@
           (.log js/console "STOP report-state-diffs")
           (remove-watch shared :differ)))
 
+(defstate persist-state-changes
+  :start (do
+           (.log js/console "START persist-state-changes")
+           (add-watch shared :persist-state-changesj
+                    (fn [_key _atom old-state new-state]
+                      (when-let [s-id (browser/session-id)]
+                        (local-storage/set! {:dm? (:dm? @local)
+                                             :session-id s-id}
+                                            new-state)))))
+  :stop (do
+          (.log js/console "STOP persist-state-changes")
+          (remove-watch shared :persist-state-changes)))

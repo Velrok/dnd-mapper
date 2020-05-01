@@ -606,7 +606,7 @@
                   :selected @mode
                   :on-click #(reset! mode %)}]
        [:svg {:id id
-              :view-box (str "0 0 " w " " h)
+              :view-box (str "0 0 " @w " " @h)
               ;:on-resize (.log js/console "resize!")
               :width "100%"
               :xmlns "http://www.w3.org/2000/svg"}
@@ -621,14 +621,14 @@
           [:feBlend {:reslt "SourceGraphic" :in2 "blurOut" :mode "normal"}]
           ]]
         [:g
-         [:image {:href img-url
-                  :width w
-                  :height h}]
+         [:image {:href @img-url
+                  :width @w
+                  :height @h}]
          [:g {:fill overlay-color}
           (doall
-            (for [y (range h)]
+            (for [y (range @h)]
               (doall
-                (for [x (range w)]
+                (for [x (range @w)]
                   (let [cell    {:x x, :y y}
                         shown? (contains? @reveiled-cells cell)]
                     [:rect {:x x
@@ -660,8 +660,8 @@
                {:key (:id t)}
                [<dragable-svg>
                 {:svg-id id
-                 :rows h
-                 :columns w
+                 :rows @h
+                 :columns @w
                  :key (:id t)}
                 [<token-svg>
                  (merge {:x 0 :y 0
