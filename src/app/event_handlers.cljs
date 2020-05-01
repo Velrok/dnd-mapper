@@ -32,7 +32,7 @@
 (rf/reg-event-db
   :initialize
   (fn [_db _event]
-    state/initial-app-value))
+    {}))
 
 (rf/reg-event-db
   :change-active-view
