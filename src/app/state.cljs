@@ -1,5 +1,6 @@
 (ns app.state
   (:require
+    [app.browser :as browser]
     [app.websocket-io :as ws]
     [clojure.data :refer [diff]]
     [mount.core :refer-macros [defstate]]
@@ -15,8 +16,7 @@
   (r/atom
     {:highlight-overlay true
      :dm?               false
-     :fog-of-war-mode   :reveil
-     :session-id        nil}))
+     :fog-of-war-mode   :reveil}))
 
 (def shared
   (r/atom
@@ -73,7 +73,7 @@
            (.log js/console "START report-state-diffs")
            (add-watch shared :differ
                     (fn [_key _atom old-state new-state]
-                      (when-let [s-id (:session-id @local)]
+                      (when-let [s-id (browser/session-id)]
                         (let [[strictly-old strictly-new _both] (diff old-state new-state)]
                           (.log js/console (clj->js ["strictly-old" strictly-old
                                                      "strictly-new" strictly-new]))

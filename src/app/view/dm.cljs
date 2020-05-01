@@ -21,7 +21,7 @@
             columns     (r/cursor state/shared [:map :width])
             rows        (r/cursor state/shared [:map :height])
             tokens      (vals (:players @state/shared))
-            session-id  (r/track #(some-> (browser/current-uri) :query (get "session")))
+            session-id  (r/track browser/session-id)
             ws-state    @ws/ready-state]
         [:<>
          [<side-draw>
@@ -32,7 +32,7 @@
 
            ^{:key (gensym "map-settings-item-")}
            [<input> {:label "player link"
-                     :value (str "./join?s=" session-id)}]
+                     :value (str "./join?session=" session-id)}]
 
            ^{:key (gensym "map-settings-item-")}
            [<input> {:label "columns"

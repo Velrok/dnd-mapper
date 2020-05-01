@@ -59,47 +59,40 @@
                                      int
                                      str))]
     (fn []
-      (let [join-session-id (get-in (browser/current-uri) [:query "join-session-id"])]
-        (if-not join-session-id
-          [:<>
-           [:h1.app--title "D&D Mapper"]
-           [:h2 (str "start a session")]
-           (doall
-             (for [k (filter :dm? (local-storage/keys))]
-               [:div
-                [:p (:session-id k)]
-                [<btn>
-                 {:on-click #(local-storage/remove! k)
-                  :class "is-warning"
-                  :key (str "delete_sess_" (:session-id k))}
-                 (str "Delete!")]
-                [<btn>
-                 {:on-click #(do
-                               (go
-                                 (rf/dispatch [:host-session (:session-id k)])
-                                 (rf/dispatch [:state-init (local-storage/get k)]))
-                               (browser/goto! "/dm" {:session (:session-id k)}))
-                  :key (str "restore_sess_" (:session-id k))}
-                 (str "Restore >>")]]))
+      [:<>
+       [:h1.app--title "D&D Mapper"]
+       [:h2 (str "start a session")]
+       (doall
+         (for [k (filter :dm? (local-storage/keys))
+               :when (not (empty? (:session-id k)))]
            [:div
-            [:input
-             {:value @new-session-id
-              :on-change #(reset! new-session-id (some-> % .-target .-value))}]
-
+            [<btn>
+             {:on-click #(local-storage/remove! k)
+              :class "is-warning"
+              :key (str "delete_sess_" (:session-id k))}
+             (str "Delete!")]
             [<btn>
              {:on-click #(do
-                           (browser/log! "HI!!!!!!!!")
-                           (go (rf/dispatch [:host-session @new-session-id]))
-                           (browser/goto! "/dm" {:session @new-session-id}))}
-             "create new session >>"]]
-           ]
+                           (go
+                             (rf/dispatch [:host-session (:session-id k)])
+                             (rf/dispatch [:state-init (local-storage/get k)]))
+                           (browser/goto! "/dm" {:session (:session-id k)}))
+              :key (str "restore_sess_" (:session-id k))}
+             (str "Restore " (:session-id k) " >>")]]))
+       [:div
+        [:input
+         {:value @new-session-id
+          :on-change #(reset! new-session-id (some-> % .-target .-value))}]
 
-          [:<>
-           [:h1.app--title "D&D Mapper"]
-           [:h2 "join"]
-           [<btn>
-            {:on-click #(rf/dispatch [:join-session join-session-id])}
-            (str "join session "  join-session-id " >>")]])))))
+        [<btn>
+         {:on-click #(do
+                       (browser/log! "HI!!!!!!!!")
+                       (go (rf/dispatch [:host-session @new-session-id]))
+                       (browser/goto! "/dm" {:session @new-session-id}))}
+         "create new session >>"]]
+       ]
+
+      )))
 
 (defn- <player-link>
   []

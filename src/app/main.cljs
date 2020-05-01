@@ -86,7 +86,6 @@
 
 (defn ^:export  main
   []
-  (browser/log! )
   (let [uri (browser/current-uri)]
     (browser/goto! (:path uri)
                    (:query uri)))

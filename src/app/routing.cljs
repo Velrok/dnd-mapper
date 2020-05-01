@@ -5,7 +5,7 @@
     [app.view.dm :refer [<dm-view>]]
     [app.view.comp-lib :refer [<comp-lib-view>]]
     [app.views :refer [<player-view> <home>]]
-    [app.browser :refer [log!]]))
+    [app.browser :refer [log!] :as browser]))
 
 (def routes
   {"/"         <home>
@@ -23,5 +23,11 @@
 
 (def router
   (delay
+    (.addEventListener js/window
+                       "popstate"
+                       #(let [uri (browser/current-uri)]
+                          (tap> [::browser/goto {:target (str uri)
+                                                 :url    (:path uri)
+                                                 :params (:query uri)}])))
     (add-tap handle-location-change)))
 

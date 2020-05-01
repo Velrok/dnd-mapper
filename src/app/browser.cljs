@@ -38,3 +38,7 @@
   [& args]
   (apply (.-log js/console)
          (map clj->js args)))
+
+(defn session-id
+  []
+  (some-> (current-uri) :query (get "session")))
