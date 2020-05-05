@@ -8,7 +8,7 @@
            :padding {:left 9 :right 11 :top 27 :bottom 57}
            :img-url "https://pre00.deviantart.net/dee0/th/pre/i/2015/116/0/b/the_desecrated_temple_by_theredepic-d4d4x56.jpg"
            :img-alt "Map art by JaredBlando https://www.deviantart.com/jaredblando"}
-     :dm? true
+     :dm? false
      :fog-of-war-mode :reveil
      :reveiled-cells #{}
      :highlighted-cells #{}
