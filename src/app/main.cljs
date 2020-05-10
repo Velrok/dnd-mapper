@@ -1,26 +1,14 @@
 (ns app.main
   (:require
-    [re-frame.core :as rf]
-    [re-frame.db :refer [app-db]]
     [reagent.core :as r]
-    [app.event-handlers] ;; load for side effects of registering handlers
-    [app.subscriptions]
     [app.routing :refer [router]]
     [app.message-processing :as msg-process]
-    [app.local-storage :as local-storage]
     [app.browser :as browser]
     [mount.core :refer-macros [defstate]]
     [app.state :as state]
     [app.websocket-io :as ws]
     [cljs.core.async :as a :refer [chan >! <! close!]]
     [cljs.core.async :refer-macros [go]]))
-
-(add-watch app-db
-           "persist-app-state"
-           (fn [_key _ref old-v new-v]
-             (some-> new-v
-                     (select-keys [:dm? :session-id])
-                     (local-storage/set! new-v))))
 
 (defstate server-message-processor
   :start (do
@@ -53,25 +41,13 @@
            (prn [::heroku-keep-alive "stop"])
            (js/window.clearInterval @heroku-keep-alive)))
 
-(defstate ticker
-  :start (do
-           (prn [::ticker "start"])
-           (js/window.setInterval
-            #(rf/dispatch [:now-ts-ms (.now js/Date)])
-            1000))
-  :stop  (do
-           (prn [::ticker "stop"])
-           (js/window.clearInterval @ticker)))
-
 
 (defn app
   []
   [:<>
    [:h1 "hi"]
    [:button {:on-click #(browser/goto! "/" {:page 2})}
-    "next page"]]
-  #_(let [active-view @(rf/subscribe [:active-view])]
-     [active-view]))
+    "next page"]])
 
 (defn <container>
   []
@@ -91,10 +67,5 @@
                    (:query uri)))
   (add-tap #(browser/log! "tap message" (clj->js %)))
   @router
-  ;@ticker
-  ;@heroku-keep-alive
-  ;@server-message-processor
-  (rf/dispatch-sync [:initialize])
-  ;(ws/connect!)
   @ws/socket
   (render))

@@ -28,50 +28,50 @@
            :img-alt "Map art by JaredBlando https://www.deviantart.com/jaredblando"}
      :reveiled-cells #{}
      :highlighted-cells #{}
-     :players {"neg1"   {:id "neg1"
-                         :initiative 10
-                         :hp 100
-                         :max-hp 100
-                         :name "Negwen"
-                         :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
-                         :player-visible true
-                         :on-map false
-                         :position nil
-                         :dm-focus false
-                         :dead false}
-               "ikara1" {:id "ikara1"
-                         :initiative 12
-                         :hp 100
-                         :max-hp 100
-                         :name "Ikara"
-                         :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
-                         :player-visible true
-                         :on-map false
-                         :position nil
-                         :dm-focus false
-                         :dead false}
-               "Udrik"  {:id "Udrik"
-                         :initiative 14
-                         :hp 100
-                         :max-hp 100
-                         :name "Udrik"
-                         :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
-                         :player-visible true
-                         :on-map false
-                         :position nil
-                         :dm-focus false
-                         :dead false}
-               "goblin" {:id "goblin"
-                         :initiative 8
-                         :hp 7
-                         :max-hp 7
-                         :name "Goblin 1"
-                         :img-url "https://i.imgur.com/kCysnYk.png"
-                         :player-visible true
-                         :on-map false
-                         :position nil
-                         :dm-focus false
-                         :dead false}}}))
+     :tokens {"neg1"   {:id "neg1"
+                        :initiative 10
+                        :hp 100
+                        :max-hp 100
+                        :name "Negwen"
+                        :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
+                        :player-visible true
+                        :on-map false
+                        :position nil
+                        :dm-focus false
+                        :dead false}
+              "ikara1" {:id "ikara1"
+                        :initiative 12
+                        :hp 100
+                        :max-hp 100
+                        :name "Ikara"
+                        :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
+                        :player-visible true
+                        :on-map false
+                        :position nil
+                        :dm-focus false
+                        :dead false}
+              "Udrik"  {:id "Udrik"
+                        :initiative 14
+                        :hp 100
+                        :max-hp 100
+                        :name "Udrik"
+                        :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
+                        :player-visible true
+                        :on-map false
+                        :position nil
+                        :dm-focus false
+                        :dead false}
+              "goblin" {:id "goblin"
+                        :initiative 8
+                        :hp 7
+                        :max-hp 7
+                        :name "Goblin 1"
+                        :img-url "https://i.imgur.com/kCysnYk.png"
+                        :player-visible true
+                        :on-map false
+                        :position nil
+                        :dm-focus false
+                        :dead false}}}))
 
 (defstate report-state-diffs
   :start (do
@@ -91,12 +91,16 @@
 (defstate persist-state-changes
   :start (do
            (.log js/console "START persist-state-changes")
-           (add-watch shared :persist-state-changesj
-                    (fn [_key _atom old-state new-state]
-                      (when-let [s-id (browser/session-id)]
-                        (local-storage/set! {:dm? (:dm? @local)
-                                             :session-id s-id}
-                                            new-state)))))
+           (add-watch shared :persist-state-changes
+                      (fn [_key _atom old-state new-state]
+                        (prn "persist-state-changes>>>>>>>>>>")
+                        (browser/log! new-state)
+                        (when-let [s-id (browser/session-id)]
+                          (browser/log! {:dm? (:dm? @local)
+                                         :session-id s-id})
+                          (local-storage/set! {:dm? (:dm? @local)
+                                               :session-id s-id}
+                                              new-state)))))
   :stop (do
           (.log js/console "STOP persist-state-changes")
           (remove-watch shared :persist-state-changes)))

@@ -16,19 +16,31 @@
 
 (defn <dm-view>
   []
-  (do
+  (let [selected-token-id (r/atom nil)
+        selected-token    #_(r/cursor state/shared
+                                    [:tokens @selected-token-id])
+        (r/track #(some-> @state/shared :tokens (get @selected-token-id)))]
     @state/report-state-diffs
     @state/persist-state-changes
-    (reset! state/shared (local-storage/get {:dm? true :session-id (browser/session-id)}))
     (swap! state/local assoc :dm? true)
+    (when-let [local-init (local-storage/get
+                            {:dm? (:dm? @state/local)
+                             :session-id (browser/session-id)})]
+      (reset! state/shared local-init))
     (fn []
       (let [columns     (r/cursor state/shared [:map :width])
             rows        (r/cursor state/shared [:map :height])
             map-url     (r/cursor state/shared [:map :img-url])
-            tokens      (r/track #(some-> @state/shared :players vals))
-            selected-token (r/cursor state/local [:selected-token])
+            tokens      (r/track #(some-> @state/shared :tokens vals))
+            _ @selected-token-id
             session-id  (r/track browser/session-id)
-            ws-state    @ws/ready-state]
+            ws-state    @ws/ready-state
+            reset-token! #(do
+                            (prn [::reset-token! %])
+                            (swap! state/shared
+                                 assoc-in
+                                 [:tokens (:id %)]
+                                 %))]
         [:<>
          [<side-draw>
           {}
@@ -64,9 +76,8 @@
            {:title "tokens"}
            (doall
              (for [t @tokens]
-               ^{:key (str t)}
                [<token-card> {:token (delay t)
-                              :on-change prn}]))]]
+                              :on-change reset-token!}]))]]
          [<app-title>]
          [:<>
           [<websocket-status>
@@ -82,6 +93,10 @@
            :on-cells-reveil #(prn "reveil" %)
            :on-cells-hide #(prn "hide" %)
            :overlay-opacity 0.5
-           :on-token-click #(reset! selected-token %)
+           :on-token-change reset-token!
+           :on-token-click #(do
+                              (reset! selected-token-id (:id %))
+                              (prn [::selected-token-id @selected-token-id]))
            :tokens tokens}]
-         [<token-card-mini> {:token selected-token}]]))))
+         [<token-card-mini> {:token selected-token
+                             :on-change reset-token!}]]))))

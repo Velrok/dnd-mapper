@@ -482,7 +482,9 @@
             [<input> {:label "image"  :on-change #(when on-change (on-change (assoc t :image-url %))) :inline? true :value img-url}]]]]]))))
 
 (defn <token-card-mini>
-  [{:keys [token on-change on-close]}]
+  [{:keys [token on-change on-close]
+    :or {on-change
+         #(reset! token %)}}]
   (let [hp-diff (r/atom 0)]
     (fn []
       (let [t @token
@@ -515,7 +517,10 @@
                                   (on-change (update-in t [:hp] - @hp-diff)))
                      :color "error"} "damage"]
              [<btn> {:on-click #(when on-change
-                                  (on-change (update-in t [:hp] + @hp-diff)))
+                                  (on-change (update-in t
+                                                        [:hp]
+                                                        (fn [hp]
+                                                          (min max-hp (+ hp @hp-diff))))))
                      :color "success"} "heal"]]
             [<switch> {:options [{:id true :label "visible"}
                                  {:id false :label "hidden"}]
@@ -593,12 +598,12 @@
                       (reset! start-coord @coord)
                       (reset! dragging true))
         finish-up! (fn []
-                     (reset! dragging false)
                      (swap! coord (fn [{:keys [x y]}]
                                     {:x (Math/round x)
                                      :y (Math/round y)}))
-                     (when on-coord-changed
-                       (on-coord-changed @coord)))]
+                     (when (and on-coord-changed @dragging)
+                       (on-coord-changed @coord))
+                     (reset! dragging false))]
     (fn []
       [:g
        (merge
@@ -611,7 +616,7 @@
                                                   (svg-coord {:x dx-px :y dy-px})))))
         :on-mouse-up    finish-up!
         :on-mouse-leave finish-up!}
-       (dissoc attr :svg-id :rows :columns))
+       (dissoc attr :svg-id :rows :columns :on-coord-changed))
        content])))
 
 (defn- neighborhood
@@ -631,6 +636,7 @@
            on-cells-reveil
            on-cells-hide
            on-token-click
+           on-token-change
            tokens]
     :or {scale 20
          id (gensym "map-svg-")
@@ -717,11 +723,16 @@
                  :rows @h
                  :columns @w
                  :key (:id t)
+                 :on-coord-changed #(when on-token-change
+                                      (on-token-change
+                                        (assoc t :position %)))
                  :on-click #(when on-token-click
                               (on-token-click t))}
                 [<token-svg>
                  (merge {:x 0 :y 0
                          :key (:id t)}
+                        (when-let [p (some-> t :position)]
+                          (select-keys p [:x :y]))
                         t)]
                 ]]))]]]])))
 
