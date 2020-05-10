@@ -652,7 +652,6 @@
                   :on-click #(reset! mode %)}]
        [:svg {:id id
               :view-box (str "0 0 " @w " " @h)
-              ;:on-resize (.log js/console "resize!")
               :width "100%"
               :xmlns "http://www.w3.org/2000/svg"}
         [:defs
