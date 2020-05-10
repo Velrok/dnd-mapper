@@ -23,9 +23,9 @@
   (-> local-storage (.removeItem k)))
 
 (defn get [k]
-  (-> local-storage
-      (.getItem (encode k))
-      decode))
+  (some-> local-storage
+          (.getItem (encode k))
+          decode))
 
 (defn set! [k v]
   (.setItem local-storage
