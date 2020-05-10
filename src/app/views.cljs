@@ -86,7 +86,6 @@
 
         [<btn>
          {:on-click #(do
-                       (browser/log! "HI!!!!!!!!")
                        (go (rf/dispatch [:host-session @new-session-id]))
                        (browser/goto! "/dm" {:session @new-session-id}))}
          "create new session >>"]]
