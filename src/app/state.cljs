@@ -31,6 +31,7 @@
      :players {"neg1"   {:id "neg1"
                          :initiative 10
                          :hp 100
+                         :max-hp 100
                          :name "Negwen"
                          :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
                          :player-visible true
@@ -41,6 +42,7 @@
                "ikara1" {:id "ikara1"
                          :initiative 12
                          :hp 100
+                         :max-hp 100
                          :name "Ikara"
                          :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
                          :player-visible true
@@ -51,6 +53,7 @@
                "Udrik"  {:id "Udrik"
                          :initiative 14
                          :hp 100
+                         :max-hp 100
                          :name "Udrik"
                          :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/10/71/150/150/636339380148524382.png"
                          :player-visible true
@@ -61,6 +64,7 @@
                "goblin" {:id "goblin"
                          :initiative 8
                          :hp 7
+                         :max-hp 7
                          :name "Goblin 1"
                          :img-url "https://i.imgur.com/kCysnYk.png"
                          :player-visible true
