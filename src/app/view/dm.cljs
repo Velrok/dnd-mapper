@@ -9,6 +9,7 @@
                                  <side-draw>
                                  <websocket-status>
                                  <token-card>
+                                 <token-card-mini>
                                  <input>
                                  <container>
                                  <map-svg>]]))
@@ -83,4 +84,4 @@
            :overlay-opacity 0.5
            :on-token-click #(reset! selected-token %)
            :tokens tokens}]
-         [<token-card> {:token selected-token}]]))))
+         [<token-card-mini> {:token selected-token}]]))))
