@@ -421,7 +421,8 @@
      (merge {:class (str
                       ;(when rounded? " is-rounded ")
                       (when title " with-title ")
-                      (when centered? " is-centered "))})
+                      (when centered? " is-centered "))}
+            (dissoc attr :title :centered?))
      (when title
        [:p.title title])
      content]))
@@ -444,38 +445,82 @@
       (let [t @token
             {:keys [initiative name img-url hp max-hp player-visible]} t]
         [<container>
-         {:title name}
+         {:title name
+          :style {:max-width "41rem"}}
          ^{:key (gensym "token-card-item-")}
-         [:div.flex-cols
-          [<avatar> {:src img-url :size "large"}]
-          [:div.flex-rows
-           [:p
-            (str hp "/" max-hp)]
+         [:div.flex-rows
+          [:div.flex-cols
+           [<avatar> {:src img-url :size "large" :style {:margin-right "0.5rem"}}]
            [<progress> {:value hp
                         :max max-hp
+                        :style {:margin-right "1rem"}
                         :color (let [rel (/ hp max-hp)]
                                  (cond
                                    (< rel (/ 1 3)) "error"
                                    (< rel (/ 2 3)) "warning"
                                    :otherwise "default"))}]
+           [:p (str hp "/" max-hp)]]
+          [:div.flex-cols
+           [:div.flex-rows
+            {}
+            [:div.flex-cols
+             [<input> {:type "number" :value @hp-diff :on-change #(reset! hp-diff (int %))}]
+             [<btn> {:on-click #(when on-change
+                                  (on-change (update-in t [:hp] - @hp-diff)))
+                     :color "error"} "damage"]
+             [<btn> {:on-click #(when on-change
+                                  (on-change (update-in t [:hp] + @hp-diff)))
+                     :color "success"} "heal"]]
+            [<switch> {:options [{:id true :label "visible"}
+                                 {:id false :label "hidden"}]
+                       :on-click #(when on-change (on-change (assoc t :player-visible %)))
+                       :selected player-visible}]
+            [<input> {:label "init"   :on-change #(when on-change (on-change (assoc t :initiative (int %)))) :inline? true :type "number" :value initiative}]
+            [<input> {:label "name"   :on-change #(when on-change (on-change (assoc t :name %))) :inline? true :value name}]
+            [<input> {:label "hp"     :on-change #(when on-change (on-change (assoc t :hp %))) :inline? true :value hp :type "number"}]
+            [<input> {:label "hp max" :on-change #(when on-change (on-change (assoc t :max-hp %))) :inline? true :value max-hp :type "number" :min 0}]
+            [<input> {:label "image"  :on-change #(when on-change (on-change (assoc t :image-url %))) :inline? true :value img-url}]]]]]))))
 
-           [<container>
-            {:title "attributes"}
-            ^{:key (gensym "token-card-item-")}[<input> {:label "name"   :on-change #(when on-change (on-change (assoc t :name %))) :inline? true :value name}]
-            ^{:key (gensym "token-card-item-")}[<input> {:label "image"  :on-change #(when on-change (on-change (assoc t :image-url %))) :inline? true :value img-url}]
-            ^{:key (gensym "token-card-item-")}[<input> {:label "init"   :on-change #(when on-change (on-change (assoc t :initiative (int %)))) :inline? true :type "number" :value initiative}]
-            ^{:key (gensym "token-card-item-")}[:div.flex-cols
-                                                [<input> {:type "number" :value @hp-diff :on-change #(reset! hp-diff (int %))}]
-                                                [<btn> {:on-click #(when on-change
-                                                                     (on-change (update-in t [:hp] - @hp-diff)))
-                                                        :color "error"} "damage"]
-                                                [<btn> {:on-click #(when on-change
-                                                                     (on-change (update-in t [:hp] + @hp-diff)))
-                                                        :color "success"} "heal"]]
-            ^{:key (gensym "token-card-item-")}[<switch> {:options [{:id true :label "visible"}
-                                                                    {:id false :label "hidden"}]
-                                                          :on-click #(when on-change (on-change (assoc t :player-visible %)))
-                                                          :selected player-visible}]]]]]))))
+(defn <token-card-mini>
+  [{:keys [token on-change on-close]}]
+  (let [hp-diff (r/atom 0)]
+    (fn []
+      (let [t @token
+            {:keys [initiative name img-url hp max-hp player-visible]} t]
+        [<container>
+         {:title name
+          :style {:max-width "41rem"}}
+         ^{:key (gensym "token-card-item-")}
+         [:div.flex-rows
+          [:div.flex-cols
+           [<avatar> {:src img-url :size "large" :style {:margin-right "0.5rem"}}]
+           [<progress> {:value hp
+                        :max max-hp
+                        :style {:margin-right "1rem"}
+                        :color (let [rel (/ hp max-hp)]
+                                 (cond
+                                   (< rel (/ 1 3)) "error"
+                                   (< rel (/ 2 3)) "warning"
+                                   :otherwise "default"))}]
+           [:p {} (str hp "/" max-hp)]
+           (when on-close
+             [<btn> {:style {:margin-left "1rem"}
+                     :on-click #(on-close t)} "X"])]
+          [:div.flex-cols
+           [:div.flex-rows
+            {}
+            [:div.flex-cols
+             [<input> {:type "number" :value @hp-diff :on-change #(reset! hp-diff (int %))}]
+             [<btn> {:on-click #(when on-change
+                                  (on-change (update-in t [:hp] - @hp-diff)))
+                     :color "error"} "damage"]
+             [<btn> {:on-click #(when on-change
+                                  (on-change (update-in t [:hp] + @hp-diff)))
+                     :color "success"} "heal"]]
+            [<switch> {:options [{:id true :label "visible"}
+                                 {:id false :label "hidden"}]
+                       :on-click #(when on-change (on-change (assoc t :player-visible %)))
+                       :selected player-visible}]]]]]))))
 
 (defn <initiative-list>
   [{:keys [tokens dm?]}]

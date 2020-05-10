@@ -10,6 +10,7 @@
                                  <input>
                                  <progress>
                                  <token-card>
+                                 <token-card-mini>
                                  <map-svg>
                                  <token-svg>
                                  <switch>]]))
@@ -88,6 +89,11 @@
        [<token-card> {:token player
                       :on-change #(do (prn %)
                                       (reset! player %))}]
+       [<token-card-mini> {:token player
+                           :on-change #(do (prn %)
+                                           (reset! player %))
+                           :on-close #(do (prn %)
+                                          (reset! player %))}]
 
        [:h2 "Token"]
        [<token> {:dm? (delay true)} player]
