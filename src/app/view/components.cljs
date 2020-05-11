@@ -611,12 +611,11 @@
                            :width ss
                            :height ss}]
            [:g {}
-            [:image (merge {:href img-url} dimensions)]
-            [:rect (merge {:filter (str "url(#token-shadow)")
-                           :fill-opacity 0
-                           :stroke "#AAAAAA"
-                           :stroke-width "1%"}
-                          dimensions)]])]))))
+            [:rect (merge {:style
+                           {:filter (str "url(#token-shadow)")
+                            :fill-opacity 1}}
+                          dimensions)]
+            [:image (merge {:href img-url} dimensions)]])]))))
 
 (defn- neighborhood
   [{:keys [x y]}]
@@ -654,15 +653,8 @@
                 :width "100%"
                 :xmlns "http://www.w3.org/2000/svg"}
           [:defs
-           [:filter {:id "token-shadow"
-                     :x 0
-                     :y 0
-                     :width "200%"
-                     :height "200%"}
-            [:feOffset {:reslt "offOut" :in "SourceAlpha" :dx 20 :dy 20}]
-            [:feGaussianBlur {:reslt "blurOut" :in "offOut" :std-deviation 10}]
-            [:feBlend {:reslt "SourceGraphic" :in2 "blurOut" :mode "normal"}]
-            ]]
+           [:filter {:id "token-shadow"}
+            [:feDropShadow {:dx 0 :dy 0 :stdDeviation "0.05" :flood-color "black"}]]]
           [:g
            [:image {:href img-url
                     :width columns
