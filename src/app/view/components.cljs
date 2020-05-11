@@ -536,27 +536,6 @@
                  :dm? dm?}
         t]))])
 
-(defn <token-svg>
-  [{:keys [id]}]
-  (let [{:keys [size img-url]
-         :or {size :medium}} @(cursors/token id)
-        ss (get {:small 1
-                 :medium 1
-                 :large 2
-                 :huge 4
-                 :gargantuan 8} size)
-        dimensions {:x 0 :y 0
-                    :width ss
-                    :height ss}]
-    [:g {}
-     [:image (merge {:href img-url}
-                    dimensions)]
-     [:rect (merge {:filter (str "url(#token-shadow)")
-                    :fill-opacity 0
-                    :stroke "#AAAAAA"
-                    :stroke-width "0.5%"}
-                   dimensions)]]))
-
 (defn add-2d
   [p1 p2]
   {:x (+ (:x p1) (:x p2))
@@ -580,50 +559,37 @@
     {:x (/ x (/ w columns))
      :y (/ y (/ h rows))}))
 
-(defn <dragable-svg>
+(defn <token-svg>
   [{:keys [token-id svg-id rows columns on-token-click] :as attr
     :or {}} & content]
-  (let [dragging (r/atom false)
-        origin   (r/atom {:x 0 :y 0})
-        diff     (r/atom {:x 0 :y 0})
-        position (cursors/token-position token-id)
+  (let [dragging    (r/atom false)
+        origin      (r/atom {:x 0 :y 0})
+        diff        (r/atom {:x 0 :y 0})
+        position    (cursors/token-position token-id)
         svg-coord   (partial px-to-svg-coords svg-id rows columns)
-        debug-print! (fn [_key _atom _old _new]
-                       (when-not (= _old _new)
-                         (prn [_key _new])))]
-    ;(add-watch dragging ::dragging debug-print!)
-    ;(add-watch origin   ::origin debug-print!)
-    ;(add-watch position ::position debug-print!)
-    ;(add-watch start    ::start debug-print!)
-    ;(add-watch diff     ::diff debug-print!)
+
+        start!      (fn [e]
+                      (reset! origin {:x (.-clientX e) :y (.-clientY e)})
+                      (reset! dragging true))
+        move!       (fn [e]
+                      (when @dragging
+                        (reset! diff
+                                (svg-coord
+                                  {:x (- (.-clientX e) (:x @origin))
+                                   :y (- (.-clientY e) (:y @origin))}))))
+        finish-up!  (fn []
+                      (when @dragging
+                        (let [pos' (-> (add-2d @position @diff)
+                                       round-2d)]
+                          (reset! position pos')
+                          (reset! diff {:x 0 :y 0})))
+                      (reset! dragging false))]
     (fn []
-      (let [;start    (r/atom @position)
-            start!      (fn [e]
-                          (reset! origin {:x (.-clientX e) :y (.-clientY e)})
-                          ;(reset! start (svg-coord @origin))
-                          (reset! dragging true))
-            move!       (fn [e]
-                          (when @dragging
-                            (reset! diff
-                                    (svg-coord
-                                      {:x (- (.-clientX e) (:x @origin))
-                                       :y (- (.-clientY e) (:y @origin))}))))
-            finish-up!  (fn []
-                          ;(reset! start (-> (add-2d @start @diff)
-                          ;                  round-2d))
-                          (when @dragging
-                            (let [pos' (-> (add-2d @position @diff)
-                                           round-2d)]
-                              (reset! position pos')))
-                          (reset! dragging false))
-            transform (str "translate("
-                            (+ (:x @position)
-                               (:x @diff)) ","
-                            (+ (:y @position)
-                               (:y @diff)) ")")]
-        ;(prn ::<dragable-svg>.render)
-        ;(prn [::position @position])
-        ;(prn [::transform transform])
+      (let [transform (str "translate("
+                           (+ (:x @position)
+                              (:x @diff)) ","
+                           (+ (:y @position)
+                              (:y @diff)) ")")]
         [:g
          (merge
            {:transform  transform
@@ -634,8 +600,23 @@
             :on-click #(when on-token-click
                          (on-token-click @(cursors/token token-id)))}
            (dissoc attr :svg-id :rows :columns :token-id :on-token-click))
-         (for [c content]
-           (with-meta c {:key c}))]))))
+         (let [{:keys [size img-url]
+                :or {size :medium}} @(cursors/token token-id)
+               ss (get {:small 1
+                        :medium 1
+                        :large 2
+                        :huge 4
+                        :gargantuan 8} size)
+               dimensions {:x 0 :y 0
+                           :width ss
+                           :height ss}]
+           [:g {}
+            [:image (merge {:href img-url} dimensions)]
+            [:rect (merge {:filter (str "url(#token-shadow)")
+                           :fill-opacity 0
+                           :stroke "#AAAAAA"
+                           :stroke-width "1%"}
+                          dimensions)]])]))))
 
 (defn- neighborhood
   [{:keys [x y]}]
@@ -725,13 +706,12 @@
               (for [token-id (keys tokens)]
                 [:g
                  {:key token-id}
-                 [<dragable-svg>
+                 [<token-svg>
                   {:svg-id id
                    :rows rows
                    :columns columns
                    :on-token-click on-token-click
-                   :token-id token-id}
-                  [<token-svg> {:id token-id}]]]))]]]]))))
+                   :token-id token-id}]]))]]]]))))
 
 (defn <side-draw>
   [attr & content]
