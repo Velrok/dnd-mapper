@@ -53,14 +53,14 @@
   []
   [@state/current-view {}])
 
-(defn ^:dev/after-load render
+(defn render
   []
   (tap> [::render])
   (r/render
     [<container>]
     (js/document.getElementById "app")))
 
-(defn ^:export  main
+(defn ^:export main
   []
   (let [uri (browser/current-uri)]
     (browser/goto! (:path uri)
