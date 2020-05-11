@@ -15,7 +15,8 @@
  ;:dev-http {8080 "public"}
 
  :builds
- {:app {:target :browser
+ {:app {:devtools {:after-load app.main/render}
+        :target :browser
         :output-dir "public/js"
         :asset-path "/assets/js"
         :modules {:main {:entries [app.main]}}}}}
