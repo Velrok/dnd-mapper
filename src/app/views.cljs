@@ -66,6 +66,7 @@
          (for [k (filter :dm? (local-storage/keys))
                :when (not (empty? (:session-id k)))]
            [:div
+            {:key k}
             [<btn>
              {:on-click #(local-storage/remove! k)
               :class "is-warning"

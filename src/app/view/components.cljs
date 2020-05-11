@@ -1,5 +1,6 @@
 (ns app.view.components
   (:require
+    [app.cursors :as cursors]
     [clojure.set :refer [union difference]]
     [reagent.core :as r]
     [re-frame.core :as rf]))
@@ -25,8 +26,7 @@
   [:div.btn-group
    attr
    (for [btn buttons]
-     ^{:key (gensym "btn-group-btn-")}
-     btn)])
+     (with-meta btn {:key btn}))])
 
 (defn <switch>
   [props & children]
@@ -69,16 +69,18 @@
 
 
 (defn <token>
-  [{:keys [dm?] :as attr} player]
-  (let [{:keys [id img-url hp]} player]
+  [{:keys [id] :as attr}]
+  (let [{:keys [id img-url hp player-visible]} @(cursors/token id)
+        dm? (r/atom false)
+        dm-focused? false]
     [:div.token
      (merge
        {:id id
-        :class [(when-not (:player-visible player)
+        :class [(when-not player-visible
                   (if @dm?
                     "player-invisible-dm-mode"
                     "player-invisible"))
-                (when (and @dm? (:dm-focus player))
+                (when (and @dm? dm-focused?)
                   "dm-focused")]
         :key (str "player-id-" id)
         :style {:background-image (str "url(" (if (< hp 0) dead-icon img-url) ")")}
@@ -425,7 +427,8 @@
             (dissoc attr :title :centered?))
      (when title
        [:p.title title])
-     content]))
+     (for [c content]
+       (with-meta c {:key c}))]))
 
 (defn <avatar>
   [attr & content]
@@ -439,15 +442,15 @@
           (dissoc attr :rounded? :size))]))
 
 (defn <token-card>
-  [{:keys [token on-change]}]
+  [{:keys [id on-change]
+    :or {on-change #(reset! (cursors/token id) %)}}]
   (let [hp-diff (r/atom 0)]
     (fn []
-      (let [t @token
+      (let [t @(cursors/token id)
             {:keys [initiative name img-url hp max-hp player-visible]} t]
         [<container>
          {:title name
           :style {:max-width "41rem"}}
-         ^{:key (gensym "token-card-item-")}
          [:div.flex-rows
           [:div.flex-cols
            [<avatar> {:src img-url :size "large" :style {:margin-right "0.5rem"}}]
@@ -465,30 +468,27 @@
             {}
             [:div.flex-cols
              [<input> {:type "number" :value @hp-diff :on-change #(reset! hp-diff (int %))}]
-             [<btn> {:on-click #(when on-change
-                                  (on-change (update-in t [:hp] - @hp-diff)))
+             [<btn> {:on-click #(on-change (update-in t [:hp] - @hp-diff))
                      :color "error"} "damage"]
-             [<btn> {:on-click #(when on-change
-                                  (on-change (update-in t [:hp] + @hp-diff)))
+             [<btn> {:on-click #(on-change (update-in t [:hp] + @hp-diff))
                      :color "success"} "heal"]]
             [<switch> {:options [{:id true :label "visible"}
                                  {:id false :label "hidden"}]
-                       :on-click #(when on-change (on-change (assoc t :player-visible %)))
+                       :on-click #(on-change (assoc t :player-visible %))
                        :selected player-visible}]
-            [<input> {:label "init"   :on-change #(when on-change (on-change (assoc t :initiative (int %)))) :inline? true :type "number" :value initiative}]
-            [<input> {:label "name"   :on-change #(when on-change (on-change (assoc t :name %))) :inline? true :value name}]
-            [<input> {:label "hp"     :on-change #(when on-change (on-change (assoc t :hp %))) :inline? true :value hp :type "number"}]
-            [<input> {:label "hp max" :on-change #(when on-change (on-change (assoc t :max-hp %))) :inline? true :value max-hp :type "number" :min 0}]
-            [<input> {:label "image"  :on-change #(when on-change (on-change (assoc t :image-url %))) :inline? true :value img-url}]]]]]))))
+            [<input> {:label "init"   :on-change #(on-change (assoc t :initiative (int %))) :inline? true :type "number" :value initiative}]
+            [<input> {:label "name"   :on-change #(on-change (assoc t :name %)) :inline? true :value name}]
+            [<input> {:label "hp"     :on-change #(on-change (assoc t :hp %)) :inline? true :value hp :type "number"}]
+            [<input> {:label "hp max" :on-change #(on-change (assoc t :max-hp %)) :inline? true :value max-hp :type "number" :min 0}]
+            [<input> {:label "image"  :on-change #(on-change (assoc t :image-url %)) :inline? true :value img-url}]]]]]))))
 
 (defn <token-card-mini>
-  [{:keys [token on-change on-close]
-    :or {on-change
-         #(reset! token %)}}]
+  [{:keys [id on-change on-close]
+    :or {on-change #(reset! (cursors/token id) %)}}]
   (let [hp-diff (r/atom 0)]
     (fn []
-      (let [t @token
-            {:keys [initiative name img-url hp max-hp player-visible]} t]
+      (let [t @(cursors/token id)
+            {:keys [name img-url hp max-hp player-visible]} t]
         [<container>
          {:title name
           :style {:max-width "41rem"}}
@@ -537,10 +537,10 @@
         t]))])
 
 (defn <token-svg>
-  [{:keys [img-url
-           size]
-    :or {size :medium}}]
-  (let [ss (get {:small 1
+  [{:keys [id]}]
+  (let [{:keys [size img-url]
+         :or {size :medium}} @(cursors/token id)
+        ss (get {:small 1
                  :medium 1
                  :large 2
                  :huge 4
@@ -551,18 +551,11 @@
     [:g {}
      [:image (merge {:href img-url}
                     dimensions)]
-     [:rect (merge {;:rx 1
-                    ;:ry 1
-                    :filter (str "url(#token-shadow)")
+     [:rect (merge {:filter (str "url(#token-shadow)")
                     :fill-opacity 0
                     :stroke "#AAAAAA"
                     :stroke-width "0.5%"}
                    dimensions)]]))
-
-; (defn mouse-position
-;   [CTM evt]
-;   {:x (/ (- (.clientX evt) (.e CTM)) (.a CTM))
-;    :y (/ (- (.clientY evt) (.f CTM)) (.d CTM))})
 
 (defn add-2d
   [p1 p2]
@@ -588,17 +581,18 @@
      :y (/ y (/ h rows))}))
 
 (defn <dragable-svg>
-  [{:keys [svg-id rows columns position on-coord-changed] :as attr
-    :or {position (r/atom {:x 0 :y 0})}} & content]
+  [{:keys [token-id svg-id rows columns on-token-click] :as attr
+    :or {}} & content]
   (let [dragging (r/atom false)
         origin   (r/atom {:x 0 :y 0})
         diff     (r/atom {:x 0 :y 0})
+        position (cursors/token-position token-id)
         svg-coord   (partial px-to-svg-coords svg-id rows columns)
         debug-print! (fn [_key _atom _old _new]
                        (when-not (= _old _new)
                          (prn [_key _new])))]
-    (add-watch dragging ::dragging debug-print!)
-    (add-watch origin   ::origin debug-print!)
+    ;(add-watch dragging ::dragging debug-print!)
+    ;(add-watch origin   ::origin debug-print!)
     ;(add-watch position ::position debug-print!)
     ;(add-watch start    ::start debug-print!)
     ;(add-watch diff     ::diff debug-print!)
@@ -617,28 +611,31 @@
             finish-up!  (fn []
                           ;(reset! start (-> (add-2d @start @diff)
                           ;                  round-2d))
-                          (when (and on-coord-changed @dragging)
+                          (when @dragging
                             (let [pos' (-> (add-2d @position @diff)
                                            round-2d)]
-                              (on-coord-changed pos')))
+                              (reset! position pos')))
                           (reset! dragging false))
             transform (str "translate("
                             (+ (:x @position)
                                (:x @diff)) ","
                             (+ (:y @position)
                                (:y @diff)) ")")]
-        (prn ::<dragable-svg>.render)
-        (prn [::position @position])
-        (prn [::transform transform])
+        ;(prn ::<dragable-svg>.render)
+        ;(prn [::position @position])
+        ;(prn [::transform transform])
         [:g
          (merge
            {:transform  transform
             :on-mouse-down start!
             :on-mouse-move move!
             :on-mouse-up    finish-up!
-            :on-mouse-leave finish-up!}
-           (dissoc attr :position :svg-id :rows :columns :on-coord-changed))
-         content]))))
+            :on-mouse-leave finish-up!
+            :on-click #(when on-token-click
+                         (on-token-click @(cursors/token token-id)))}
+           (dissoc attr :svg-id :rows :columns :token-id :on-token-click))
+         (for [c content]
+           (with-meta c {:key c}))]))))
 
 (defn- neighborhood
   [{:keys [x y]}]
@@ -649,110 +646,92 @@
            :y (+ y dy)})))
 
 (defn <map-svg>
-  [{:keys [img-url w h
-           id
-           on-cell-click
-           overlay-opacity
-           overlay-color
-           on-cells-reveil
-           on-cells-hide
+  [{:keys [id
            on-token-click
-           on-token-change
-           tokens]
-    :or {scale 20
-         id (gensym "map-svg-")
+           overlay-opacity
+           overlay-color]
+    :or {id (gensym "map-svg-")
          overlay-opacity 0.5
-         overlay-color "#FFFFFF"
-         tokens (delay [])}}]
-  (let [reveiled-cells (r/atom #{})
-        mode           (r/atom "move")
-        toggle-cell (fn [cell]
-                      (if (contains? @reveiled-cells cell)
-                        (swap! reveiled-cells disj cell)
-                        (swap! reveiled-cells conj cell)))]
+         overlay-color "#FFFFFF"}}]
+  (let [mode (r/atom "move") ]
     (fn []
-      [:div.flex-rows
-       [<switch> {:options [{:id "move" :label "move"}
-                            {:id "reveil" :label "reveil"}
-                            {:id "hide" :label "hide"}]
-                  :selected @mode
-                  :on-click #(reset! mode %)}]
-       [:svg {:id id
-              :view-box (str "0 0 " @w " " @h)
-              :width "100%"
-              :xmlns "http://www.w3.org/2000/svg"}
-        [:defs
-         [:filter {:id "token-shadow"
-                   :x 0
-                   :y 0
-                   :width "200%"
-                   :height "200%"}
-          [:feOffset {:reslt "offOut" :in "SourceAlpha" :dx 20 :dy 20}]
-          [:feGaussianBlur {:reslt "blurOut" :in "offOut" :std-deviation 10}]
-          [:feBlend {:reslt "SourceGraphic" :in2 "blurOut" :mode "normal"}]
-          ]]
-        [:g
-         [:image {:href @img-url
-                  :width @w
-                  :height @h}]
-         [:g {:fill overlay-color}
-          (doall
-            (for [y (range @h)]
-              (doall
-                (for [x (range @w)]
-                  (let [cell    {:x x, :y y}
-                        shown? (contains? @reveiled-cells cell)]
-                    [:rect {:x x
-                            :y y
-                            :on-mouse-enter #(do
-                                               (.preventDefault %)
-                                               (when (< 0 (.-buttons %)) ;;button down
-                                                 (case @mode
-                                                   "reveil" (do
-                                                              (swap! reveiled-cells union (neighborhood cell))
-                                                              (when on-cells-reveil (on-cells-reveil (neighborhood cell))))
-                                                   "hide" (do
-                                                            (swap! reveiled-cells difference (neighborhood cell))
-                                                            (when on-cells-hide (on-cells-hide (neighborhood cell))))
-                                                   identity)))
-                            :fill-opacity (if shown? 0 overlay-opacity)
-                            :key (str "map-rect-" x "-" y)
-                            :on-click #(do
-                                         (toggle-cell cell)
-                                         (when on-cell-click
-                                           (on-cell-click cell)))
-                            :width 1
-                            :height 1}])))))]
-         [:g {:style {:stroke "rgba(0, 0, 0, 0.2)"
-                      :stroke-width "0.03"}}
-          (doall
-            (for [y (range @h)]
-              [:line {:x1 0 :y1 y
-                      :x2 @w :y2 y}]))
-          (doall
-            (for [x (range @w)]
-              [:line {:x1 x :y1 0
-                      :x2 x :y2 @h}]))]
-         ;; drag & dro in SVG http://www.petercollingridge.co.uk/tutorials/svg/interactive/dragging/
-         [:g
-          (doall
-            (for [t @tokens]
-              [:g
-               {:key (:id t)}
-               [<dragable-svg>
-                {:svg-id id
-                 :rows @h
-                 :columns @w
-                 :key (:id t)
-                 :position (r/track! #(:position t))
-                 :on-coord-changed #(when on-token-change
-                                      (on-token-change
-                                        (assoc t :position %)))
-                 :on-click #(when on-token-click
-                              (on-token-click t))}
-                [<token-svg>
-                 (merge {:key (:id t)} t)]
-                ]]))]]]])))
+      (let [{:keys [columns rows img-url]} @(cursors/map)
+            reveiled-cells-ref (cursors/reveiled-cells)
+            tokens @(cursors/tokens)
+            toggle-cell (fn [cell]
+                          (if (contains? @reveiled-cells-ref cell)
+                            (swap! reveiled-cells-ref disj cell)
+                            (swap! reveiled-cells-ref conj cell)))]
+        [:div.flex-rows
+         [<switch> {:options [{:id "move" :label "move"}
+                              {:id "reveil" :label "reveil"}
+                              {:id "hide" :label "hide"}]
+                    :selected @mode
+                    :on-click #(reset! mode %)}]
+         [:svg {:id id
+                :view-box (str "0 0 " columns " " rows)
+                :width "100%"
+                :xmlns "http://www.w3.org/2000/svg"}
+          [:defs
+           [:filter {:id "token-shadow"
+                     :x 0
+                     :y 0
+                     :width "200%"
+                     :height "200%"}
+            [:feOffset {:reslt "offOut" :in "SourceAlpha" :dx 20 :dy 20}]
+            [:feGaussianBlur {:reslt "blurOut" :in "offOut" :std-deviation 10}]
+            [:feBlend {:reslt "SourceGraphic" :in2 "blurOut" :mode "normal"}]
+            ]]
+          [:g
+           [:image {:href img-url
+                    :width columns
+                    :height rows}]
+           [:g {:fill overlay-color}
+            (doall
+              (for [y (range rows)]
+                (doall
+                  (for [x (range columns)]
+                    (let [cell    {:x x, :y y}
+                          shown? (contains? @reveiled-cells-ref cell)]
+                      [:rect {:x x
+                              :y y
+                              :on-mouse-enter #(do
+                                                 (.preventDefault %)
+                                                 (when (< 0 (.-buttons %)) ;;button down
+                                                   (case @mode
+                                                     "reveil" (swap! reveiled-cells-ref union (neighborhood cell))
+                                                     "hide"   (swap! reveiled-cells-ref difference (neighborhood cell))
+                                                     identity)))
+                              :fill-opacity (if shown? 0 overlay-opacity)
+                              :key (str "map-rect-" x "-" y)
+                              :on-click #(toggle-cell cell)
+                              :width 1
+                              :height 1}])))))]
+           [:g {:style {:stroke "rgba(0, 0, 0, 0.2)"
+                        :stroke-width "0.03"}}
+            (doall
+              (for [y (range rows)]
+                [:line {:x1 0 :y1 y
+                        :x2 columns :y2 y
+                        :key (str columns "|" y)}]))
+            (doall
+              (for [x (range columns)]
+                [:line {:x1 x :y1 0
+                        :x2 x :y2 rows
+                        :key (str columns "|" x)}]))]
+           ;; drag & dro in SVG http://www.petercollingridge.co.uk/tutorials/svg/interactive/dragging/
+           [:g
+            (doall
+              (for [token-id (keys tokens)]
+                [:g
+                 {:key token-id}
+                 [<dragable-svg>
+                  {:svg-id id
+                   :rows rows
+                   :columns columns
+                   :on-token-click on-token-click
+                   :token-id token-id}
+                  [<token-svg> {:id token-id}]]]))]]]]))))
 
 (defn <side-draw>
   [attr & content]
