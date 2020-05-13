@@ -30,7 +30,6 @@
       (let [columns     (cursors/map-cols)
             rows        (cursors/map-rows)
             map-url     (cursors/map-img-url)
-            session-id  (r/track browser/session-id)
             ws-state    @ws/ready-state]
         [:<>
          [<side-draw>
@@ -39,7 +38,7 @@
            {:title "map settings"}
 
            [<input> {:label "player link"
-                     :value (str "./join?session=" session-id)}]
+                     :value (str (-> (browser/current-uri) (assoc :path "/join")))}]
 
            [<input> {:label "columns"
                      :type "number"
@@ -98,9 +97,8 @@
             :on-click ws/ping!}]]
          [<map-svg>
           {:overlay-opacity 0.5
-           :on-token-click #(do
-                              (prn [::on-token-click %])
-                              (reset! selected-token %))}]
+           :dm-mode? true
+           :on-token-click #(reset! selected-token %)}]
          (when @selected-token
            [:div.dm-view__token-quick-change
             [(<token-card-mini> {:id (:id @selected-token)

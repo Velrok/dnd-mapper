@@ -575,8 +575,8 @@
      :y (/ y (/ h rows))}))
 
 (defn <token-svg>
-  [{:keys [token-id svg-id rows columns on-token-click] :as attr
-    :or {}} & content]
+  [{:keys [dm-mode? token-id svg-id rows columns on-token-click] :as attr
+    :or {dm-mode? false}} & content]
   (let [dragging    (r/atom false)
         origin      (r/atom {:x 0 :y 0})
         diff        (r/atom {:x 0 :y 0})
@@ -607,12 +607,13 @@
                               (:y @diff)) ")")]
         [:g
          (merge
-           {:transform  transform
-            :on-mouse-down start!
-            :on-mouse-move move!
-            :on-mouse-up    finish-up!
-            :on-mouse-leave finish-up!}
-           (dissoc attr :svg-id :rows :columns :token-id :on-token-click))
+           {:transform  transform}
+           (when dm-mode?
+             {:on-mouse-down start!
+              :on-mouse-move move!
+              :on-mouse-up    finish-up!
+              :on-mouse-leave finish-up!})
+           (dissoc attr :dm-mode? :svg-id :rows :columns :token-id :on-token-click))
          (let [{:keys [size img-url]
                 :or {size :medium}} @(cursors/token token-id)
                ss (get {:small 1
@@ -641,10 +642,12 @@
 
 (defn <map-svg>
   [{:keys [id
+           dm-mode?
            on-token-click
            overlay-opacity
            overlay-color]
     :or {id (gensym "map-svg-")
+         dm-mode? false
          overlay-opacity 0.5
          overlay-color "#FFFFFF"}}]
   (let [mode (r/atom "reveil") ]
@@ -657,11 +660,12 @@
                             (swap! reveiled-cells-ref disj cell)
                             (swap! reveiled-cells-ref conj cell)))]
         [:div.flex-rows
-         [<switch> {:options [;{:id "move" :label "move"}
-                              {:id "reveil" :label "reveil"}
-                              {:id "hide" :label "hide"}]
-                    :selected @mode
-                    :on-click #(reset! mode %)}]
+         (when dm-mode?
+           [<switch> {:options [;{:id "move" :label "move"}
+                                {:id "reveil" :label "reveil"}
+                                {:id "hide" :label "hide"}]
+                      :selected @mode
+                      :on-click #(reset! mode %)}])
          [:svg {:id id
                 :view-box (str "0 0 " columns " " rows)
                 :width "100%"
@@ -682,7 +686,7 @@
                           shown? (contains? @reveiled-cells-ref cell)]
                       [:rect {:x x
                               :y y
-                              :on-mouse-enter #(do
+                              :on-mouse-enter #(when dm-mode?
                                                  (.preventDefault %)
                                                  (when (< 0 (.-buttons %)) ;;button down
                                                    (case @mode
@@ -691,7 +695,7 @@
                                                      identity)))
                               :fill-opacity (if shown? 0 overlay-opacity)
                               :key (str "map-rect-" x "-" y)
-                              :on-click #(toggle-cell cell)
+                              :on-click #(when dm-mode? (toggle-cell cell))
                               :width 1
                               :height 1}])))))]
            [:g {:style {:stroke "rgba(0, 0, 0, 0.2)"
@@ -714,9 +718,10 @@
                  {:key token-id}
                  [<token-svg>
                   {:svg-id id
+                   :dm-mode? dm-mode?
                    :rows rows
                    :columns columns
-                   :on-token-click on-token-click
+                   :on-token-click (when dm-mode? on-token-click)
                    :token-id token-id}]]))]]]]))))
 
 (defn <side-draw>

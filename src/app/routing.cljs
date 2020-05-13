@@ -4,7 +4,8 @@
     ;;[app.view.layout :refer [<app>]]
     [app.view.dm :refer [<dm-view>]]
     [app.view.comp-lib :refer [<comp-lib-view>]]
-    [app.views :refer [<player-view> <home>]]
+    [app.views :refer [<home>]]
+    [app.view.player :refer [<player-view>]]
     [app.browser :refer [log!] :as browser]))
 
 (def routes
