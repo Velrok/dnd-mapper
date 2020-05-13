@@ -9,6 +9,7 @@
     [app.view.components :refer [<app-title>
                                  <side-draw>
                                  <websocket-status>
+                                 <btn>
                                  <token-card>
                                  <token-card-mini>
                                  <input>
@@ -30,12 +31,7 @@
             rows        (cursors/map-rows)
             map-url     (cursors/map-img-url)
             session-id  (r/track browser/session-id)
-            ws-state    @ws/ready-state
-            tokens      (or (some->> @(cursors/tokens)
-                                     vals
-                                     (sort-by :initiative)
-                                     reverse)
-                            [])]
+            ws-state    @ws/ready-state]
         [:<>
          [<side-draw>
           {}
@@ -63,15 +59,35 @@
 
           [<container>
            {:title "tokens"}
-           (doall
-             (for [t tokens]
-               [<token-card> {:key (:id t)
-                              :id (:id t)}]))
-           (let [new-token (r/atom {:id (-> (Math/random)
-                                            (* 1000000)
-                                            str)})]
+           [(fn [& _]
+              [:<>
+               (for [t (or (some->> @(cursors/tokens)
+                                    vals
+                                    (sort-by :initiative)
+                                    reverse)
+                           [])]
+                 (with-meta
+                   [<token-card> {:id (:id t)}
+                    [<btn> {:on-click #(swap! (cursors/tokens) dissoc (:id t))
+                            :color "error"}
+                     "remove"]]
+                   {:key (:id t)}))])]
+           (let [make-new-token-value (fn []
+                                        {:id (-> (Math/random)
+                                                 (* 1000000)
+                                                 str)
+                                         :name "new monster"
+                                         :initiative 5
+                                         :img-url "https://i.imgur.com/kCysnYk.png"
+                                         :hp 1
+                                         :max-hp 1})
+                 new-token (r/atom (make-new-token-value))]
              [<token-card> {:key (:id @new-token)
-                            :token-ref new-token}])]]
+                            :token-ref new-token}
+              [<btn> {:on-click #(do (swap! (cursors/tokens) assoc (:id @new-token) @new-token)
+                                     (reset! new-token (make-new-token-value)))
+                      :color "primary"}
+               "add"]])]]
          [<app-title>]
          [:<>
           [<websocket-status>

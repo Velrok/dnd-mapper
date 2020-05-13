@@ -49,8 +49,18 @@
 (defn <input>
   [attr & content]
   (let [field-id        (gensym "field-id-")
-        {:keys [on-change value label inline?]} attr
-        current-value (r/atom (some-> value str))]
+        {:keys [on-change value label inline? delay-ms]} attr
+        current-value (r/atom (some-> value str))
+        js-timeout (atom nil)
+        on-change-delayed (if delay-ms
+                            (fn [v]
+                              (when @js-timeout
+                                (js/clearTimeout @js-timeout))
+                              (reset! js-timeout
+                                      (js/setTimeout
+                                        #(on-change v)
+                                        delay-ms)))
+                            on-change)]
     (fn []
       [:div.nes-field
        {:class (when inline? "is-inline")}
@@ -64,8 +74,8 @@
            :on-change (fn [e]
                         (let [v (-> e .-target .-value)]
                           (reset! current-value v)
-                          (when on-change (on-change v))))}
-          (dissoc attr :label :inline? :on-change :value))]])))
+                          (when on-change (on-change-delayed @current-value))))}
+          (dissoc attr :label :inline? :on-change :value :delay-ms))]])))
 
 
 (defn <token>
@@ -442,11 +452,14 @@
           (dissoc attr :rounded? :size))]))
 
 (defn <token-card>
-  [{:keys [id on-change]
-    :or {on-change #(reset! (cursors/token id) %)}}]
-  (let [hp-diff (r/atom 0)]
+  [{:keys [id token-ref]}
+   & content]
+  (let [hp-diff (r/atom 0)
+        delay-ms 1500
+        t-ref (or token-ref (cursors/token id))
+        on-change #(reset! t-ref %)]
     (fn []
-      (let [t @(cursors/token id)
+      (let [t @t-ref
             {:keys [initiative name img-url hp max-hp player-visible]} t]
         [<container>
          {:title name
@@ -476,14 +489,11 @@
                                  {:id false :label "hidden"}]
                        :on-click #(on-change (assoc t :player-visible %))
                        :selected player-visible}]
-            [<input> {:label "init"   :on-change #(on-change (assoc t :initiative (int %))) :inline? true :type "number" :value initiative}]
-            [<input> {:label "name"   :on-change #(on-change (assoc t :name %)) :inline? true :value name}]
-            [<input> {:label "hp"     :on-change #(on-change (assoc t :hp %)) :inline? true :value hp :type "number"}]
-            [<input> {:label "hp max" :on-change #(on-change (assoc t :max-hp %)) :inline? true :value max-hp :type "number" :min 0}]
-            [<input> {:label "image"  :on-change #(on-change (assoc t :image-url %)) :inline? true :value img-url}]
-            [<btn> {:on-click #(swap! (cursors/tokens) dissoc id)
-                    :color "error"}
-             "remove"]]]]
+            [<input> {:label "init"   :delay-ms delay-ms :on-change #(on-change (assoc t :initiative (int %))) :inline? true :type "number" :value initiative}]
+            [<input> {:label "name"   :delay-ms delay-ms :on-change #(on-change (assoc t :name %)) :inline? true :value name}]
+            [<input> {:label "hp"     :delay-ms delay-ms :on-change #(on-change (assoc t :hp %)) :inline? true :value hp :type "number"}]
+            [<input> {:label "hp max" :delay-ms delay-ms :on-change #(on-change (assoc t :max-hp %)) :inline? true :value max-hp :type "number" :min 0}]
+            [<input> {:label "image"  :delay-ms delay-ms :on-change #(on-change (assoc t :image-url %)) :inline? true :value img-url}] ]]]
          (for [c content]
            (with-meta c {:key c}))]))))
 
