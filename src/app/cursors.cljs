@@ -20,6 +20,18 @@
   []
   (r/cursor state/shared [:map]))
 
+(defn map-cols
+  []
+  (r/cursor state/shared [:map :columns]))
+
+(defn map-rows
+  []
+  (r/cursor state/shared [:map :rows]))
+
+(defn map-img-url
+  []
+  (r/cursor state/shared [:map :img-url]))
+
 (defn reveiled-cells
   []
   (r/cursor state/shared [:map :reveiled-cells]))

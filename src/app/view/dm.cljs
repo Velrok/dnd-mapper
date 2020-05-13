@@ -26,9 +26,9 @@
                              :session-id (browser/session-id)})]
       (reset! state/shared local-init))
     (fn []
-      (let [columns     (r/cursor state/shared [:map :width])
-            rows        (r/cursor state/shared [:map :height])
-            map-url     (r/cursor state/shared [:map :img-url])
+      (let [columns     (cursors/map-cols)
+            rows        (cursors/map-rows)
+            map-url     (cursors/map-img-url)
             session-id  (r/track browser/session-id)
             ws-state    @ws/ready-state]
         [:<>
@@ -59,7 +59,7 @@
           [<container>
            {:title "tokens"}
            (doall
-             (for [t @(cursors/tokens)]
+             (for [t (vals @(cursors/tokens))]
                [<token-card> {:id (:id t)}]))]]
          [<app-title>]
          [:<>
@@ -71,5 +71,10 @@
             :on-click ws/ping!}]]
          [<map-svg>
           {:overlay-opacity 0.5
-           :on-token-click #(reset! selected-token %)}]
-         [<token-card-mini> {:id (:id @selected-token)}]]))))
+           :on-token-click #(do
+                              (prn [::on-token-click %])
+                              (reset! selected-token %))}]
+         (when @selected-token
+           [:div.dm-view__token-quick-change
+            [(<token-card-mini> {:id (:id @selected-token)
+                                 :on-close #(reset! selected-token nil)})]])]))))

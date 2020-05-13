@@ -21,22 +21,12 @@
 
 (def shared
   (r/atom
-    {:map {:columns 12
-           :rows 15
-           :padding {:left 9 :right 11 :top 27 :bottom 57}
-           :img-url "https://pre00.deviantart.net/dee0/th/pre/i/2015/116/0/b/the_desecrated_temple_by_theredepic-d4d4x56.jpg"
-           :img-alt "Map art by JaredBlando https://www.deviantart.com/jaredblando"
+    {:map {:columns 37
+           :rows 37
+           :img-url "https://i.imgur.com/lb5jQr6.jpg"
            :reveiled-cells #{}
-           :highlighted-cells #{}
-           :token-info {}}
-     :tokens {"neg1"   {:id "neg1"
-                        :initiative 0
-                        :hp 100
-                        :max-hp 100
-                        :name "Negwen"
-                        :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/4729/162/150/300/636756769380492799.png"
-                        :player-visible true }
-              "ikara1" {:id "ikara1"
+           :highlighted-cells #{}}
+     :tokens {"ikara1" {:id "ikara1"
                         :initiative 0
                         :hp 100
                         :max-hp 100

@@ -596,9 +596,7 @@
             :on-mouse-down start!
             :on-mouse-move move!
             :on-mouse-up    finish-up!
-            :on-mouse-leave finish-up!
-            :on-click #(when on-token-click
-                         (on-token-click @(cursors/token token-id)))}
+            :on-mouse-leave finish-up!}
            (dissoc attr :svg-id :rows :columns :token-id :on-token-click))
          (let [{:keys [size img-url]
                 :or {size :medium}} @(cursors/token token-id)
@@ -610,7 +608,8 @@
                dimensions {:x 0 :y 0
                            :width ss
                            :height ss}]
-           [:g {}
+           [:g {:on-click #(when on-token-click
+                             (on-token-click @(cursors/token token-id)))}
             [:rect (merge {:style
                            {:filter (str "url(#token-shadow)")
                             :fill-opacity 1}}
@@ -633,7 +632,7 @@
     :or {id (gensym "map-svg-")
          overlay-opacity 0.5
          overlay-color "#FFFFFF"}}]
-  (let [mode (r/atom "move") ]
+  (let [mode (r/atom "reveil") ]
     (fn []
       (let [{:keys [columns rows img-url]} @(cursors/map)
             reveiled-cells-ref (cursors/reveiled-cells)
@@ -643,7 +642,7 @@
                             (swap! reveiled-cells-ref disj cell)
                             (swap! reveiled-cells-ref conj cell)))]
         [:div.flex-rows
-         [<switch> {:options [{:id "move" :label "move"}
+         [<switch> {:options [;{:id "move" :label "move"}
                               {:id "reveil" :label "reveil"}
                               {:id "hide" :label "hide"}]
                     :selected @mode
