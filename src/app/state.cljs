@@ -27,14 +27,14 @@
            :reveiled-cells #{}
            :highlighted-cells #{}}
      :tokens {"ikara1" {:id "ikara1"
-                        :initiative 0
+                        :initiative 10
                         :hp 100
                         :max-hp 100
                         :name "Ikara"
                         :img-url "https://media-waterdeep.cursecdn.com/avatars/thumbnails/17/747/150/150/636378331895705713.jpeg"
                         :player-visible true }
               "Udrik"  {:id "Udrik"
-                        :initiative 0
+                        :initiative 12
                         :hp 100
                         :max-hp 100
                         :name "Udrik"
