@@ -480,7 +480,12 @@
             [<input> {:label "name"   :on-change #(on-change (assoc t :name %)) :inline? true :value name}]
             [<input> {:label "hp"     :on-change #(on-change (assoc t :hp %)) :inline? true :value hp :type "number"}]
             [<input> {:label "hp max" :on-change #(on-change (assoc t :max-hp %)) :inline? true :value max-hp :type "number" :min 0}]
-            [<input> {:label "image"  :on-change #(on-change (assoc t :image-url %)) :inline? true :value img-url}]]]]]))))
+            [<input> {:label "image"  :on-change #(on-change (assoc t :image-url %)) :inline? true :value img-url}]
+            [<btn> {:on-click #(swap! (cursors/tokens) dissoc id)
+                    :color "error"}
+             "remove"]]]]
+         (for [c content]
+           (with-meta c {:key c}))]))))
 
 (defn <token-card-mini>
   [{:keys [id on-change on-close]
