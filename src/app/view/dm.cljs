@@ -30,7 +30,12 @@
             rows        (cursors/map-rows)
             map-url     (cursors/map-img-url)
             session-id  (r/track browser/session-id)
-            ws-state    @ws/ready-state]
+            ws-state    @ws/ready-state
+            tokens      (or (some->> @(cursors/tokens)
+                                     vals
+                                     (sort-by :initiative)
+                                     reverse)
+                            [])]
         [:<>
          [<side-draw>
           {}
@@ -59,8 +64,14 @@
           [<container>
            {:title "tokens"}
            (doall
-             (for [t (vals @(cursors/tokens))]
-               [<token-card> {:id (:id t)}]))]]
+             (for [t tokens]
+               [<token-card> {:key (:id t)
+                              :id (:id t)}]))
+           (let [new-token (r/atom {:id (-> (Math/random)
+                                            (* 1000000)
+                                            str)})]
+             [<token-card> {:key (:id @new-token)
+                            :token-ref new-token}])]]
          [<app-title>]
          [:<>
           [<websocket-status>
