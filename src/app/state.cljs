@@ -52,13 +52,13 @@
   :start (do
            (.log js/console "START report-state-diffs")
            (add-watch shared :differ
-                    (fn [_key _atom old-state new-state]
-                      (when-let [s-id (browser/session-id)]
-                        (let [[strictly-old strictly-new _both] (diff old-state new-state)]
-                          (.log js/console (clj->js ["strictly-old" strictly-old
-                                                     "strictly-new" strictly-new]))
-                          (ws/send! {:state-diff [strictly-old strictly-new]}
-                                    {:session-id s-id}))))))
+                      (fn [_key _atom old-state new-state]
+                        (when-let [s-id (browser/session-id)]
+                          (let [[strictly-old strictly-new _both] (diff old-state new-state)]
+                            (.log js/console (clj->js ["strictly-old" strictly-old
+                                                       "strictly-new" strictly-new]))
+                            (ws/send! {:state-diff [strictly-old strictly-new]}
+                                      {:session-id s-id}))))))
   :stop (do
           (.log js/console "STOP report-state-diffs")
           (remove-watch shared :differ)))

@@ -54,10 +54,10 @@
 (defn handle-socket-msg
   [[event-type _]]
   (cond
-    (= ::open event-type) (reset! ready-state (.-readyState @socket))
-    (= ::close event-type) (reset! ready-state (.-readyState @socket))
+    (= ::open event-type)    (reset! ready-state (.-readyState @socket))
+    (= ::close event-type)   (reset! ready-state (.-readyState @socket))
     (= ::message event-type) (reset! ready-state (.-readyState @socket))
-    (= ::error event-type) (reset! ready-state (.-readyState @socket))))
+    (= ::error event-type)   (reset! ready-state (.-readyState @socket))))
 
 (def state-change-tracker
   (delay
@@ -72,9 +72,9 @@
 
 (defn ^:export send!
   "audience = #{:others :all :host :guests :server}"
-  [msg {:keys [audience session-id host]
+  [msg {:keys [audience host]
         :or {audience :others
-             host false}}]
+             host     false}}]
   (go
     (when (browser/debug?)
       (println (str (if host "!" ".")
