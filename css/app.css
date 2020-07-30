@@ -4,58 +4,53 @@
  * font-family: 'Open Sans', sans-serif;
 */
 
-/* body { */
-/*   font-size: 18px; */
-/*   font-family: 'Open Sans', sans-serif; */
-/*   padding: 0px; */
-/* } */
+body {
+  font-size: 18px;
+  font-family: 'Open Sans', sans-serif;
+  padding: 0px;
+}
 
-/* h1, h2, h3, h4, h5 { */
-/*   font-family: 'Cinzel Decorative', cursive; */
-/*   margin-bottom: 0.5em; */
-/*   margin-left: 12px; */
-/*   margin-top: 8px; */
-/* } */
+h1, h2, h3, h4, h5 {
+  font-family: 'Cinzel Decorative', cursive;
+  margin-bottom: 0.5em;
+  margin-left: 12px;
+  margin-top: 8px;
+}
 
-/* input { */
-/*   font-family: 'Open Sans Condensed', sans-serif; */
-/*   font-size: 0.9rem; */
-/* } */
+input {
+  font-family: 'Open Sans Condensed', sans-serif;
+  font-size: 0.9rem;
+}
 
-/* h1 { */
-/*   font-size: 4rem; */
-/* } */
+h1 {
+  font-size: 4rem;
+}
 
-/* h2 { */
-/*   font-size: 2rem; */
-/* } */
+h2 {
+  font-size: 2rem;
+}
 
-/* nav li { */
-/*   display: inline; */
-/*   margin-right: 2em; */
-/*   text-decoration: underline; */
-/* } */
+nav li {
+  display: inline;
+  margin-right: 2em;
+  text-decoration: underline;
+}
 
-/* nav ul { */
-/*   margin: 1em 0; */
-/* } */
+nav ul {
+  margin: 1em 0;
+}
 
-/* fieldset { */
-/*   margin-bottom: 5px; */
-/* } */
+fieldset {
+  margin-bottom: 5px;
+}
 
-/* fieldset label { */
-/*   margin-right: 1em; */
-/* } */
-
-/* a { */
-/*   color: #743B24; */
-/* } */
+fieldset label {
+  margin-right: 1em;
+}
 
 #app {
   height: 100vh;
   width: 100vw;
-  padding: 0.5rem;
 }
 
 .map-wrapper {
@@ -207,6 +202,10 @@
   margin: 5px 0px;
 }
 
+a {
+  color: #743B24;
+}
+
 .pull-right {
   float: right;
 }
@@ -232,10 +231,6 @@
   grid-template-columns: auto 12em;
   grid-template-areas:
   "map controlls";
-}
-
-.app--title {
-  font-size: 2em;
 }
 
 .app--title__mini {
@@ -277,6 +272,10 @@
   display: none;
 }
 
+.dm-view--title {
+  font-size: 2em;
+}
+
 #player-view {
   margin-top: 62px;
 }
@@ -307,61 +306,4 @@
   background-color: red;
   color: white;
   padding: 1em;
-}
-
-.mapper-link {
-  background: inherit;
-  margin: inherit;
-  padding: inherit;
-  font: inherit;
-  font-size: inherit;
-}
-
-.mapper-link:hover {
-  background: inherit;
-  margin: inherit;
-  padding: inherit;
-  font: inherit;
-  font-size: inherit;
-  text-decoration: underline;
-}
-
-.player-card__initiative-mark {
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-.player-card__header {
-  position: relative;
-}
-
-.side-draw {
-  display: block;
-  position: fixed;
-  padding: 1em;
-  background: white;
-  right: 0px;
-  top: 0px;
-  height: 100vh;
-  transition: right,left 0.5s;
-  z-index: 100;
-}
-
-.side-draw---button {
-  position: absolute;
-  left: -44px;
-  transition: left 0.5s;
-}
-
-.side-draw---content {
-  overflow-y: scroll;
-  height: 100%;
-}
-
-.dm-view__token-quick-change {
-  position: fixed;
-  bottom: 0.1rem;
-  left: 0.1rem;
-  background: rgba(255,255,255,0.7);
 }
