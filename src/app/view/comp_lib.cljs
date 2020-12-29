@@ -11,6 +11,7 @@
                                  <progress>
                                  <token-card>
                                  <token-card-mini>
+                                 <map-2>
                                  <map-svg>
                                  <token-svg>
                                  <switch>]]))
@@ -80,4 +81,5 @@
    [<token> {:id "goblin"}]
 
    [:h2 "Map"]
-   [<map-svg>]])
+   [<map-2>
+    { }]])

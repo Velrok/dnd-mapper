@@ -1,5 +1,6 @@
 (ns app.view.components
   (:require
+    [app.browser :refer [log!]]
     [app.cursors :as cursors]
     [clojure.set :refer [union difference]]
     [reagent.core :as r]
@@ -769,3 +770,52 @@
                     closed "is-empty"}
                    ready-state
                    "is-empty")}]]))
+
+(defn <map-2>
+  [{:keys [id
+           dm-mode?
+           revailed-cells
+           on-token-click
+           on-cell-click
+           on-overlay-click]
+    :or {id (gensym "map-2-")
+         on-token-click identity
+         dm-mode? false}}]
+    (fn []
+      (let [{:keys [columns rows img-url]} @(cursors/map)
+            reveiled-cells @(cursors/reveiled-cells)
+            on-cell-click (or on-cell-click
+                              (fn [cell]
+                                (swap! (cursors/reveiled-cells) dissoc cell)))
+            on-overlay-click (or on-overlay-click
+                                 (fn [cell]
+                                   (swap! (cursors/reveiled-cells) conj cell)))]
+        [:div#map
+         [:img {:id "map__img"
+                :src img-url }]
+         [:div {:id "map__grid"}
+           (doall
+             (for [r (range rows)]
+                (for [c (range columns)]
+                  [:div.map__grid__cell
+                   {:key (str "map__grid__cell" r "|" c)
+                    :on-click #(on-cell-click {:row r :column c})
+                    :style {:grid-column-start (str (inc c))
+                            :grid-column-end "span 1"
+                            :grid-row-start (str (inc r))
+                            :grid-row-end "span 1"
+                            }}])))]
+         [:div {:id "map__overlay"}
+           (doall
+             (for [r (range rows)]
+                (for [c (range columns)]
+                  (let [cell {:row r :column c}]
+                    (when-not (contains? reveiled-cells cell)
+                      [:div.map__overlay__cell
+                       {:key (str "map__overlay__cell" r "|" c)
+                        :on-click #(on-overlay-click cell)
+                        :style {:grid-column-start (str (inc c))
+                                :grid-column-end "span 1"
+                                :grid-row-start (str (inc r))
+                                :grid-row-end "span 1"
+                                }}])))))]])) )
