@@ -58,7 +58,7 @@
   (tap> [::render])
   (r/render
     [<container>]
-    (js/document.getElementById "<app>")))
+    (js/document.getElementById "app")))
 
 (defn ^:export main
   []
