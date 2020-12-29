@@ -64,7 +64,7 @@
        [:h2 (str "start a session")]
        (doall
          (for [k (filter :dm? (local-storage/keys))
-               :when (not (empty? (:session-id k)))]
+               :when (seq? (:session-id k))]
            [:div
             {:key k}
             [<btn>
