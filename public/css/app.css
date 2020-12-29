@@ -404,10 +404,6 @@
   grid-auto-rows: 1fr;
 }
 
-.map__overlay__cell {
-  background: rgba(1,1,1,0.7);
-}
-
 /**
 #map__table {
   grid-area: center;

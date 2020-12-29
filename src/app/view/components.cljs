@@ -779,17 +779,13 @@
            on-cell-click
            on-overlay-click]
     :or {id (gensym "map-2-")
+         on-cell-click identity
+         on-overlay-click identity
          on-token-click identity
          dm-mode? false}}]
     (fn []
       (let [{:keys [columns rows img-url]} @(cursors/map)
-            reveiled-cells @(cursors/reveiled-cells)
-            on-cell-click (or on-cell-click
-                              (fn [cell]
-                                (swap! (cursors/reveiled-cells) dissoc cell)))
-            on-overlay-click (or on-overlay-click
-                                 (fn [cell]
-                                   (swap! (cursors/reveiled-cells) conj cell)))]
+            reveiled-cells @(cursors/reveiled-cells)]
         [:div#map
          [:img {:id "map__img"
                 :src img-url }]
@@ -818,4 +814,7 @@
                                 :grid-column-end "span 1"
                                 :grid-row-start (str (inc r))
                                 :grid-row-end "span 1"
+                                :background-color (if dm-mode?
+                                              "rgba(0, 0, 0, 0.7)"
+                                              "rgba(255,255,255,1.0)")
                                 }}])))))]])) )
