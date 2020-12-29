@@ -11,6 +11,7 @@
 
   :dependencies
   [[org.clojure/clojure "1.10.0"]
+   [javax.xml.bind/jaxb-api "2.4.0-b180830.0359"]
    [org.clojure/tools.logging "0.4.1"]
    [org.clojure/core.async "0.4.490"]
    [compojure "1.6.1"]
