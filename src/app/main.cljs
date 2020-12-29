@@ -42,7 +42,7 @@
            (js/window.clearInterval @heroku-keep-alive)))
 
 
-(defn app
+(defn <app>
   []
   [:<>
    [:h1 "hi"]
@@ -58,7 +58,7 @@
   (tap> [::render])
   (r/render
     [<container>]
-    (js/document.getElementById "app")))
+    (js/document.getElementById "<app>")))
 
 (defn ^:export main
   []
