@@ -783,38 +783,93 @@
          on-overlay-click identity
          on-token-click identity
          dm-mode? false}}]
+  (let [resize-fn (fn []
+                    (let [img-el (.getElementById js/document "map__img")
+                          target-el (.getElementById js/document "map__grids")]
+                      (when img-el
+                        (log! ::resize-fn)
+                        (-> target-el
+                            (.-style)
+                            (.-width)
+                            (set! (str (.-clientWidth img-el) "px")))
+                        (-> target-el
+                            (.-style)
+                            (.-height)
+                            (set! (str (.-clientHeight img-el) "px"))))))]
+    (log! "register on-resize")
+    (.addEventListener js/window "resize" resize-fn)
+    (.setTimeout js/window resize-fn 1000)
     (fn []
+      (resize-fn)
       (let [{:keys [columns rows img-url]} @(cursors/map)
-            reveiled-cells @(cursors/reveiled-cells)]
+            reveiled-cells @(cursors/reveiled-cells)
+            tokens @(cursors/tokens)
+            ]
         [:div#map
-         [:img {:id "map__img"
-                :src img-url }]
-         [:div {:id "map__grid"}
+         [:img#map__img {:src img-url}]
+         [:div#map__grids
+          [:div {:id "map__grid"}
            (doall
              (for [r (range rows)]
-                (for [c (range columns)]
-                  [:div.map__grid__cell
-                   {:key (str "map__grid__cell" r "|" c)
-                    :on-click #(on-cell-click {:row r :column c})
-                    :style {:grid-column-start (str (inc c))
-                            :grid-column-end "span 1"
-                            :grid-row-start (str (inc r))
-                            :grid-row-end "span 1"
-                            }}])))]
-         [:div {:id "map__overlay"}
+               (for [c (range columns)]
+                 [:div.map__grid__cell
+                  {:key (str "map__grid__cell" r "|" c)
+                   :on-click #(on-cell-click {:row r :column c})
+                   :style {:grid-column-start (str (inc c))
+                           :grid-column-end "span 1"
+                           :grid-row-start (str (inc r))
+                           :grid-row-end "span 1"
+                           }}])))]
+
+          ;; hack to make sure we have enought rows and columns
+          [:div {:id "map__tokens"}
+           [:div.map__token__cell
+            {:key (str "map__token__cornerstone")
+             :style {:grid-column-start (str columns)
+                     :grid-column-end "span 1"
+                     :grid-row-start (str rows)
+                     :grid-row-end "span 1"
+                     }}]
+           (doall
+             (for [[_ token] tokens]
+               (do
+                 (let [span (str "span "
+                                 (case (:size token)
+                                   :tiny 1
+                                   :small 1
+                                   :medium 1
+                                   :large 2
+                                   :huge 4
+                                   :gargantuan 8
+                                   1))
+                       ; span "span 1"
+                       pos (:position token)]
+                   [:div.map__token__cell
+                    {:key (str "map__token__cell/" (:id token))
+                     :on-click #(on-token-click token)
+                     :style {:grid-column-start (str (inc (:column pos)))
+                             :grid-column-end span
+                             :grid-row-start (str (inc (:row pos)))
+                             :grid-row-end span
+                             }}
+                    [:img.map__token__image
+                     {:src (:img-url token)}]]))
+               ))]
+
+          [:div {:id "map__overlay"}
            (doall
              (for [r (range rows)]
-                (for [c (range columns)]
-                  (let [cell {:row r :column c}]
-                    (when-not (contains? reveiled-cells cell)
-                      [:div.map__overlay__cell
-                       {:key (str "map__overlay__cell" r "|" c)
-                        :on-click #(on-overlay-click cell)
-                        :style {:grid-column-start (str (inc c))
-                                :grid-column-end "span 1"
-                                :grid-row-start (str (inc r))
-                                :grid-row-end "span 1"
-                                :background-color (if dm-mode?
-                                              "rgba(0, 0, 0, 0.7)"
-                                              "rgba(255,255,255,1.0)")
-                                }}])))))]])) )
+               (for [c (range columns)]
+                 (let [cell {:row r :column c}]
+                   (when-not (contains? reveiled-cells cell)
+                     [:div.map__overlay__cell
+                      {:key (str "map__overlay__cell" r "|" c)
+                       :class (if dm-mode?
+                                "map__overlay__cell__hidden__dm"
+                                "map__overlay__cell__hidden")
+                       :on-click #(on-overlay-click cell)
+                       :style {:grid-column-start (str (inc c))
+                               :grid-column-end "span 1"
+                               :grid-row-start (str (inc r))
+                               :grid-row-end "span 1"
+                               }}])))))]]]))) )
